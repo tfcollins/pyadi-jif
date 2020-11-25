@@ -78,5 +78,44 @@ def test_ad9680_config():
 
 def test_adrv9009_zcu102_config():
 
-    s
+    j = adijif.adrv9009()
+    j.sample_clock = 122880000
+    j.L = 4
+    j.M = 2
+    j.N = 14
+    j.Np = 16
+    j.K = 32
+    # j.S = 1 # assumed
+
+    fpga = adijif.xilinx()
+
+	# XILINX_XCVR_TYPE_S7_GTX2 = 2,
+	# XILINX_XCVR_TYPE_US_GTH3 = 5,
+	# XILINX_XCVR_TYPE_US_GTH4 = 8,
+	# XILINX_XCVR_TYPE_US_GTY4 = 9,
+    # This is a sythesis parameter defined in HDL not DT
+    fpga.transciever_type = 'GTH3'
+
+    # Defined in UG1182
+    fpga.fpga_family = 'Zynq'
+    fpga.fpga_package = 'FF'
+    fpga.speed_grade = -2
+    fpga.transceiver_voltage = 800 # FIXME
+
+    # adi,sys-clk-select
+    # Driver: adi,axi-adxcvr-1.0
+    #define GTH34_SYSCLK_CPLL		0
+    #define GTH34_SYSCLK_QPLL1		2
+    #define GTH34_SYSCLK_QPLL0		3
+    fpga.sys_clk_select = "GTH34_SYSCLK_CPLL"
+
+    # Lane rate
+    bit_clock = j.bit_clock
+    sysref_clock = 122800000
+
+    # Calc
+    vals1 = fpga.determine_cpll(bit_clock,sysref_clock)
+    vals2 = fpga.determine_qpll(bit_clock,sysref_clock)
+
+
 

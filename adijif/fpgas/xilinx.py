@@ -2,7 +2,7 @@ from adijif.fpgas.fpga import fpga
 
 class xilinx(fpga):
 
-    hdl_core_version = 3
+    hdl_core_version = 1.0
 
     available_speed_grades = [-1, -2, -3]
     speed_grade = -2
@@ -52,7 +52,7 @@ class xilinx(fpga):
     def vco_min(self):
         if self.transciever_type == "GTX2":
             return 1600000
-        elif self.transciever_type in ["GTH3", "GTH3", "GTY4"]:
+        elif self.transciever_type in ["GTH3", "GTH4", "GTY4"]:
             return 2000000
         else:
             raise Exception("Unknown transceiver type {self.transciever_type}")
@@ -61,9 +61,9 @@ class xilinx(fpga):
     def vco_max(self):
         if self.transciever_type == "GTX2":
             return 3300000
-        elif self.transciever_type in ["GTH3", "GTH3", "GTY4"]:
+        elif self.transciever_type in ["GTH3", "GTH4", "GTY4"]:
             if self.hdl_core_version > 2:
-                if self.transciever_type in ["GTH3", "GTH3"]:
+                if self.transciever_type in ["GTH3", "GTH4"]:
                     if self.transceiver_voltage < 850 or self.speed_grade == -1:
                         return 4250000
                 elif self.transciever_type == "GTY4" and self.speed_grade == -1:
@@ -77,7 +77,7 @@ class xilinx(fpga):
     def vco0_min(self):
         if self.transciever_type == "GTX2":
             return 5930000
-        elif self.transciever_type in ["GTH3", "GTH3", "GTY4"]:
+        elif self.transciever_type in ["GTH3", "GTH4", "GTY4"]:
             if self.sys_clk_select == "GTH34_SYSCLK_QPLL1":
                 return 8000000
             else:
@@ -95,7 +95,7 @@ class xilinx(fpga):
             ):
                 return 6600000
             return 8000000
-        elif self.transciever_type in ["GTH3", "GTH3", "GTY4"]:
+        elif self.transciever_type in ["GTH3", "GTH4", "GTY4"]:
             if self.sys_clk_select == "GTH34_SYSCLK_QPLL1":
                 return 13000000
             else:
@@ -107,7 +107,7 @@ class xilinx(fpga):
     def vco1_min(self):
         if self.transciever_type == "GTX2":
             return 9800000
-        elif self.transciever_type in ["GTH3", "GTH3", "GTY4"]:
+        elif self.transciever_type in ["GTH3", "GTH4", "GTY4"]:
             return self.vco0_min
         else:
             raise Exception("Unknown transceiver type {self.transciever_type}")
@@ -118,7 +118,7 @@ class xilinx(fpga):
             if self.hdl_core_version > 2 and self.speed_grade == -2:
                 return 10312500
             return 12500000
-        elif self.transciever_type in ["GTH3", "GTH3", "GTY4"]:
+        elif self.transciever_type in ["GTH3", "GTH4", "GTY4"]:
             return self.vco0_max
         else:
             raise Exception("Unknown transceiver type {self.transciever_type}")
@@ -159,8 +159,6 @@ class xilinx(fpga):
             Parameters:
                 bit_clock: 
                     Equivalent to lane rate in bits/second
-                sys_clock:
-                    System clock
                 sysref_clock:
                     System reference clock
         """
