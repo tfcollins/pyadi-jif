@@ -1,8 +1,9 @@
-from adijif.jesd import jesd
 from abc import ABCMeta, abstractmethod
 
+from adijif.jesd import jesd
 
-class converter(jesd,metaclass=ABCMeta):
+
+class converter(jesd, metaclass=ABCMeta):
     @property
     @abstractmethod
     def name(self):
@@ -46,6 +47,16 @@ class converter(jesd,metaclass=ABCMeta):
     @property
     @abstractmethod
     def F_possible(self):
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def device_clock_available(self):
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def device_clock_ranges(self):
         raise NotImplementedError
 
     # available_jesd_modes = ["jesd204b"]

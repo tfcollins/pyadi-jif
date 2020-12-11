@@ -1,4 +1,5 @@
 # from adijif.jesd import jesd
+import numpy as np
 from adijif.converters.converter import converter
 
 
@@ -36,22 +37,26 @@ class ad9680(converter):
     def __init__(self):
         pass
 
+    def device_clock_available(self):
+        """ Generate list of possible device clocks """
+        aicd = sorted(self.available_input_clock_dividers)
+
+        dev_clocks = []
+        for div in aicd:
+            in_clock = self.sample_clock * self.datapath_decimation * div
+            if in_clock <= self.max_input_clock:
+                dev_clocks.append(in_clock)
+        if not dev_clocks:
+            raise Exception(
+                "No device clocks possible in current config. Sample rate too high"
+            )
+        return dev_clocks
+
     def device_clock_ranges(self):
         """ Generate min and max values for device clock """
 
-        aicd = sorted(self.available_input_clock_dividers)
-
-        max_dc = False
-        for div in aicd:
-            in_clock = self.sample_clock * self.datapath_decimation * div
-            print(in_clock)
-            if in_clock <= self.max_input_clock:
-                max_dc = in_clock
-        if not max_dc:
-            raise Exception("Device clock not possible. Sample rate too high")
-        min_dc = self.sample_clock * self.datapath_decimation
-
-        return min_dc, max_dc
+        clks = self.device_clock_available()
+        return np.min(clks), np.max(clks)
 
     def sysref_clock_ranges(self):
         """ sysref must be multiple of LMFC """

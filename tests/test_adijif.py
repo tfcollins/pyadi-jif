@@ -244,7 +244,7 @@ def test_system_daq2_rx():
             }
         ],
     }
-    assert clks == ref
+    assert clks == [ref]
 
 
 # def test_adrv9009_zcu102_config():

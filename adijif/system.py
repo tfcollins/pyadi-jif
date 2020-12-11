@@ -54,58 +54,68 @@ class system:
         return {"name": name, "end_point": end_point, "rate": rate, "config": config}
 
     def determine_clocks(self):
-        # Extract dependent rates from converter
-        #
         # rates = [self.converter.device_clock, self.converter.multiframe_clock]
         # rates = [self.converter.sample_clock, self.converter.multiframe_clock]
-        rates = self.converter.sample_clock
-        rates = np.array(rates, dtype=int)
-        print(rates)
 
-        # Search across clock chip settings for supported modes
-        clk_configs = self.clock.find_dividers(
-            self.vcxo, rates, find=self.configs_to_find
-        )
+        # Extract dependent rates from converter
+        try:
+            rates = self.converter.device_clock_available()
+        except:
+            # FIXME
+            rates = self.converter.device_clock_ranges()
 
-        # Find FPGA PLL settings that meet Lane rate requirements based on available reference clocks
-        valid_clock_configs = []
-        for clk_config in clk_configs:
-            print("clk_config", clk_config)
-            refs = self.clock.list_possible_references(clk_config)
-            for ref in refs:
+        out = []
+        for rate in rates:
+            rate = np.array(rate, dtype=int)
+
+            # Search across clock chip settings for supported modes
+            clk_configs = self.clock.find_dividers(
+                self.vcxo, rate, find=self.configs_to_find
+            )
+
+            # Find FPGA PLL settings that meet Lane rate requirements based on available reference clocks
+            valid_clock_configs = []
+            for clk_config in clk_configs:
+                print("clk_config", clk_config)
+                refs = self.clock.list_possible_references(clk_config)
+                for ref in refs:
+                    try:
+                        info = self.fpga.determine_pll(self.converter.bit_clock, ref)
+                        break
+                    except:
+                        ref = False
+                        continue
+
+                if ref:
+                    clk_config["fpga_pll_config"] = info
+                    valid_clock_configs.append(clk_config)
+
+            if not valid_clock_configs:
+                continue
+                # raise Exception("No valid configurations possible for FPGA")
+
+            # Check available output dividers for sysref required
+            complete_clock_configs = []
+            for clk_config in valid_clock_configs:
+                refs = self.clock.list_possible_references(clk_config)
                 try:
-                    info = self.fpga.determine_pll(self.converter.bit_clock, ref)
-                    break
+                    sysref_rate = self.determine_sysref(refs)
+                    clk_config["sysref_rate"] = sysref_rate
+                    complete_clock_configs.append(clk_config)
                 except:
-                    ref = False
                     continue
 
-            if ref:
-                clk_config["fpga_pll_config"] = info
-                valid_clock_configs.append(clk_config)
-
-        if not valid_clock_configs:
-            raise Exception("No valid configurations possible for FPGA")
-
-        # Check available output dividers for sysref required
-        complete_clock_configs = []
-        for clk_config in valid_clock_configs:
-            refs = self.clock.list_possible_references(clk_config)
-            try:
-                sysref_rate = self.determine_sysref(refs)
-                clk_config["sysref_rate"] = sysref_rate
-                complete_clock_configs.append(clk_config)
-            except:
+            if not complete_clock_configs:
                 continue
+                # raise Exception("No valid configurations possible for sysref")
+            out.append({"Converter": rate, "ClockChip": complete_clock_configs})
 
-        if not complete_clock_configs:
-            raise Exception("No valid configurations possible for sysref")
+            # Organize
+            # cnv_rate = rates
+            # converter_clock = self._gen_clock_type("direct_converter_clock",self.converter.name,cnv_rate,[])
 
-        # Organize
-        # cnv_rate = rates
-        # converter_clock = self._gen_clock_type("direct_converter_clock",self.converter.name,cnv_rate,[])
-
-        out = {"Converter": rates, "ClockChip": complete_clock_configs}
+        if not out:
+            raise Exception("No valid configurations possible converter sample rate")
 
         return out
 
