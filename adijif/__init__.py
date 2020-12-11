@@ -5,6 +5,7 @@ __email__ = "travis.collins@analog.com"
 __version__ = "0.0.1"
 
 from adijif.jesd import jesd
+from adijif.converters.converter import converter
 from adijif.converters.ad9680 import ad9680
 
 from adijif.clocks.clock import clock

@@ -1,7 +1,8 @@
-from adijif.jesd import jesd
+# from adijif.jesd import jesd
+from adijif.converters.converter import converter
 
 
-class ad9680(jesd):
+class ad9680(converter):
 
     name = "AD9680"
 

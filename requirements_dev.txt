@@ -15,3 +15,4 @@ codespell
 pre-commit
 isort
 coveralls
+numpy
