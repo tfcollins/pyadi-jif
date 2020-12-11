@@ -1,5 +1,13 @@
-class jesd:
+from abc import ABCMeta, abstractmethod
+
+
+class jesd(metaclass=ABCMeta):
     """ JESD Rate Manager """
+
+    @property
+    @abstractmethod
+    def available_jesd_modes(self):
+        raise NotImplementedError
 
     """ CS: Control bits per conversion sample 0-3"""
     _CS = 0
@@ -44,7 +52,7 @@ class jesd:
         return self.encodings_n[self._encoding]
 
     def _check_encoding(self, encode):
-        if "jesd204C" in self.supported_jesd_modes:
+        if "jesd204C" in self.available_jesd_modes:
             allowed_encodings = ["8b10b", "64b66b"]
         else:
             allowed_encodings = ["8b10b"]
@@ -92,17 +100,12 @@ class jesd:
         return self._data_path_width * self.encoding_d / self.encoding_n
 
     """ S: Samples per converter per frame"""
-    _S = 1
+    # _S = 1
 
     @property
     def S(self):
-        return self._S
-
-    @S.setter
-    def S(self, value):
-        if int(value) != value:
-            raise Exception("S must be an integer")
-        self._S = value
+        # F == self.M * self.S * self.Np / (self.encoding_n * self.L)
+        return self.F / (self.M * self.Np) * self.encoding_n * self.L
 
     """ L: Lanes per link """
     L_min = 1
@@ -175,15 +178,23 @@ class jesd:
     F_min = 1
     F_max = 16
     F_possible = [1, 2, 4, 8, 16]
-    # _F = 1
+    _F = 1
+
     @property
     def F(self):
-        return self.M * self.S * self.Np / (self.encoding_n * self.L)
+        return self._F
+
+    @F.setter
+    def F(self, value):
+        if int(value) != value:
+            raise Exception("F must be an integer")
+        self._F = value
 
     ########### CLOCKS
     """ sample_clock: Data rate after decimation stages in Samples/second """
 
     _sample_clock = 122.88e6
+
     @property
     def sample_clock(self):
         """ Data rate after decimation stages in Samples/second """
@@ -201,6 +212,7 @@ class jesd:
 
     @property
     def multiframe_clock(self):
+        """ multiframe_clock: aka LMFC """
         return self.frame_clock / self.K
 
     @property

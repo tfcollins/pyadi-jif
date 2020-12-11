@@ -1,0 +1,23 @@
+site_name: pyadi-jif
+site_description: Python interface and configurator for ADI JESD Interface Framework
+site_author: Travis F. Collins
+
+#theme: readthedocs
+theme:
+  name: material
+
+repo_url: https://github.com/tfcollins/pyadi-jif
+
+pages:
+- Home: index.md
+
+nav:
+    - Home: index.md
+    - Definitions: defs.md
+    - Usage Flow: flow.md
+    - Supported Parts: parts.md
+    - CLI: cli.md
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences

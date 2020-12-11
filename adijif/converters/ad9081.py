@@ -4,7 +4,7 @@ from adijif.jesd import jesd
 class ad9081(jesd):
 
     name = "AD9081"
-    supported_jesd_modes = ["jesd204b","jesd204c"]
+    supported_jesd_modes = ["jesd204b", "jesd204c"]
     K_possible = [4, 8, 12, 16, 20, 24, 28, 32]
     L_possible = [1, 2, 4]
     M_possible = [1, 2, 4, 8]

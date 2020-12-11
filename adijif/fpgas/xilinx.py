@@ -1,5 +1,6 @@
 from adijif.fpgas.fpga import fpga
 
+
 class xilinx(fpga):
 
     hdl_core_version = 1.0
@@ -10,7 +11,7 @@ class xilinx(fpga):
     transceiver_voltage = 800
 
     available_fpga_packages = [
-        "UNKNOWN",
+        f"Unknown",
         "RF",
         "FL",
         "FF",
@@ -31,7 +32,7 @@ class xilinx(fpga):
     ]
     fpga_package = "FB"
 
-    available_fpga_families = ["UNKNOWN","Artix", "Kintex", "Virtex", "Zynq"]
+    available_fpga_families = [f"Unknown", "Artix", "Kintex", "Virtex", "Zynq"]
     fpga_family = "Zynq"
 
     available_transceiver_types = ["GTX2"]
@@ -47,43 +48,64 @@ class xilinx(fpga):
     def __init__(self):
         pass
 
+    @property
+    def ref_clock_max(self):
+        # https://www.xilinx.com/support/documentation/data_sheets/ds191-XC7Z030-XC7Z045-data-sheet.pdf
+        if self.transciever_type == "GTX2":
+            if self.speed_grade == "-3E":
+                return 700000000
+            else:
+                return 670000000
+        else:
+            raise Exception(f"Unknown ref_clock_max for transceiver")
+            # raise Exception(f"Unknown transceiver type {self.transciever_type}")
+
+    @property
+    def ref_clock_min(self):
+        # https://www.xilinx.com/support/documentation/data_sheets/ds191-XC7Z030-XC7Z045-data-sheet.pdf
+        if self.transciever_type == "GTX2":
+            return 60000000
+        else:
+            raise Exception(f"Unknown ref_clock_max for transceiver")
+            # raise Exception(f"Unknown transceiver type {self.transciever_type}")
+
     # CPLL
     @property
     def vco_min(self):
         if self.transciever_type == "GTX2":
-            return 1600000
+            return 1600000000
         elif self.transciever_type in ["GTH3", "GTH4", "GTY4"]:
-            return 2000000
+            return 2000000000
         else:
-            raise Exception("Unknown transceiver type {self.transciever_type}")
+            raise Exception(f"Unknown transceiver type {self.transciever_type}")
 
     @property
     def vco_max(self):
         if self.transciever_type == "GTX2":
-            return 3300000
+            return 3300000000
         elif self.transciever_type in ["GTH3", "GTH4", "GTY4"]:
             if self.hdl_core_version > 2:
                 if self.transciever_type in ["GTH3", "GTH4"]:
                     if self.transceiver_voltage < 850 or self.speed_grade == -1:
-                        return 4250000
+                        return 4250000000
                 elif self.transciever_type == "GTY4" and self.speed_grade == -1:
-                    return 4250000
-            return 6250000
+                    return 4250000000
+            return 6250000000
         else:
-            raise Exception("Unknown transceiver type {self.transciever_type}")
+            raise Exception(f"Unknown transceiver type {self.transciever_type}")
 
     # QPLL
     @property
     def vco0_min(self):
         if self.transciever_type == "GTX2":
-            return 5930000
+            return 5930000000
         elif self.transciever_type in ["GTH3", "GTH4", "GTY4"]:
             if self.sys_clk_select == "GTH34_SYSCLK_QPLL1":
-                return 8000000
+                return 8000000000
             else:
-                return 9800000
+                return 9800000000
         else:
-            raise Exception("Unknown transceiver type {self.transciever_type}")
+            raise Exception(f"Unknown transceiver type {self.transciever_type}")
 
     @property
     def vco0_max(self):
@@ -93,51 +115,77 @@ class xilinx(fpga):
                 and self.fpga_family == "Kintex"
                 and self.fpga_package in ["FB", "RF", "FF"]
             ):
-                return 6600000
-            return 8000000
+                return 6600000000
+            return 8000000000
         elif self.transciever_type in ["GTH3", "GTH4", "GTY4"]:
             if self.sys_clk_select == "GTH34_SYSCLK_QPLL1":
-                return 13000000
+                return 13000000000
             else:
-                return 16375000
+                return 16375000000
         else:
-            raise Exception("Unknown transceiver type {self.transciever_type}")
+            raise Exception(f"Unknown transceiver type {self.transciever_type}")
 
     @property
     def vco1_min(self):
         if self.transciever_type == "GTX2":
-            return 9800000
+            return 9800000000
         elif self.transciever_type in ["GTH3", "GTH4", "GTY4"]:
             return self.vco0_min
         else:
-            raise Exception("Unknown transceiver type {self.transciever_type}")
+            raise Exception(f"Unknown transceiver type {self.transciever_type}")
 
     @property
     def vco1_max(self):
         if self.transciever_type == "GTX2":
             if self.hdl_core_version > 2 and self.speed_grade == -2:
-                return 10312500
-            return 12500000
+                return 10312500000
+            return 12500000000
         elif self.transciever_type in ["GTH3", "GTH4", "GTY4"]:
             return self.vco0_max
         else:
-            raise Exception("Unknown transceiver type {self.transciever_type}")
+            raise Exception(f"Unknown transceiver type {self.transciever_type}")
 
     @property
     def N(self):
         if self.transciever_type == "GTX2":
             return [16, 20, 32, 40, 64, 66, 80, 100]
         else:
-            raise Exception("Unknown transceiver type {self.transciever_type}")
+            raise Exception(f"Unknown transceiver type {self.transciever_type}")
 
-    def determine_cpll(self, bit_clock, sysref_clock):
+    def setup_by_dev_kit_name(self, name):
+
+        if name.lower() == "zc706":
+            self.transciever_type = "GTX2"
+            self.fpga_family = "Zynq"
+            self.fpga_package = "FF"
+            self.speed_grade = -2
+        else:
+            raise Exception(f"No boardname found in library for {name}")
+
+    def determine_pll(self, bit_clock, fpga_ref_clock):
         """
             Parameters:
                 bit_clock: 
                     Equivalent to lane rate in bits/second
-                sysref_clock:
+                fpga_ref_clock:
                     System reference clock
         """
+        try:
+            info = self.determine_cpll(bit_clock, fpga_ref_clock)
+        except:
+            info = self.determine_qpll(bit_clock, fpga_ref_clock)
+        return info
+
+    def determine_cpll(self, bit_clock, fpga_ref_clock):
+        """
+            Parameters:
+                bit_clock: 
+                    Equivalent to lane rate in bits/second
+                fpga_ref_clock:
+                    System reference clock
+        """
+        assert isinstance(bit_clock, int), "bit_clock must be an int"
+        assert isinstance(fpga_ref_clock, int), "fpga_ref_clock must be an int"
 
         # VCO = ( REF_CLK * N1 * N2 ) / M
         # bit_clock = ( VCO * 2 ) / D
@@ -146,20 +194,35 @@ class xilinx(fpga):
             for d in [1, 2, 4, 8]:
                 for n1 in [5, 4]:
                     for n2 in [5, 4, 3, 2, 1]:
-                        vco = sysref_clock * n1 * n2 / m
+                        vco = fpga_ref_clock * n1 * n2 / m
+                        # print("VCO", self.vco_min/1e9, vco/1e9, self.vco_max/1e9)
                         if vco > self.vco_max or vco < self.vco_min:
                             continue
-                        if sysref_clock / m / d == bit_clock / (2 * n1 * n2):
-                            return d, m, n1, n2
+                        # print("VCO", vco)
+                        fpga_lane_rate = vco * 2 / d
+                        # print("lane rate", fpga_lane_rate)
+
+                        # VCO == 5,10,20,40 GHz
+
+                        # print(fpga_ref_clock / m / d, bit_clock / (2 * n1 * n2))
+                        if fpga_ref_clock / m / d == bit_clock / (2 * n1 * n2):
+                            return {
+                                "vco": vco,
+                                "d": d,
+                                "m": m,
+                                "n1": n1,
+                                "n2": n2,
+                                "type": "CPLL",
+                            }
 
         raise Exception("No valid CPLL configuration found")
 
-    def determine_qpll(self, bit_clock, sysref_clock):
+    def determine_qpll(self, bit_clock, fpga_ref_clock):
         """
             Parameters:
                 bit_clock: 
                     Equivalent to lane rate in bits/second
-                sysref_clock:
+                fpga_ref_clock:
                     System reference clock
         """
 
@@ -175,10 +238,13 @@ class xilinx(fpga):
         # VCO = ( REF_CLK * N ) / M
         # bit_clock = ( VCO ) / D
 
+        if self.ref_clock_max < fpga_ref_clock or fpga_ref_clock < self.ref_clock_min:
+            raise Exception("fpga_ref_clock not within range")
+
         for m in [1, 2, 3, 4]:
             for d in [1, 2, 4, 8, 16]:
                 for n in self.N:
-                    vco = sysref_clock * n / m
+                    vco = fpga_ref_clock * n / m
                     if self.vco1_min <= vco <= self.vco1_max:
                         band = 1
                     elif self.vco0_min <= vco <= self.vco0_max:
@@ -186,13 +252,29 @@ class xilinx(fpga):
                     else:
                         continue
 
-                    if sysref_clock / m / d == bit_clock / n:
-                        return band, d, m, n, 0
+                    if fpga_ref_clock / m / d == bit_clock / n:
+                        return {
+                            "vco": vco,
+                            "band": band,
+                            "d": d,
+                            "m": m,
+                            "n": n,
+                            "qty4_full_rate": 0,
+                            "type": "QPLL",
+                        }
 
                     if self.transciever_type != "GTY4":
                         continue
 
-                    if sysref_clock / m / d == bit_clock / 2 / n:
-                        return band, d, m, n, 1
+                    if fpga_ref_clock / m / d == bit_clock / 2 / n:
+                        return {
+                            "vco": vco,
+                            "band": band,
+                            "d": d,
+                            "m": m,
+                            "n": n,
+                            "qty4_full_rate": 1,
+                            "type": "QPLL",
+                        }
 
         raise Exception("No valid QPLL configuration found")

@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
-class fpga(metaclass=ABCMeta):
 
+class fpga(metaclass=ABCMeta):
     @property
     @abstractmethod
     def determine_cpll(self):
