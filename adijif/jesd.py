@@ -62,7 +62,7 @@ class jesd(metaclass=ABCMeta):
 
     """ bits
         Usually:
-            32 for JESD204B 
+            32 for JESD204B
             64 for JESD204C
     """
     _data_path_width = 32

@@ -1,5 +1,5 @@
-import numpy as np
 import adijif
+import numpy as np
 
 
 class system:

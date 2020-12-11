@@ -1,5 +1,5 @@
-from adijif.clocks.clock import clock
 import numpy as np
+from adijif.clocks.clock import clock
 
 
 class hmc7044(clock):

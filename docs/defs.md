@@ -14,4 +14,3 @@ To better understand the system as a whole common definitions must be used betwe
 
 **system reference (sysref) clock**
 : Clock used for synchronization in subclass 1 and subclass 2 configurations for deterministic latency. It is assumed to be aligned with sample clock from clock clock chip but with a periods at integer multiple of device clock
-

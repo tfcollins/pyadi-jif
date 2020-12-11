@@ -2,15 +2,13 @@
 
 """Tests for `adijif` package."""
 
-import pytest
-import numpy as np
-
 import adijif
-
-from click.testing import CliRunner
+import numpy as np
+import pytest
 
 # from adijif import adijif
 from adijif import cli
+from click.testing import CliRunner
 
 
 @pytest.fixture

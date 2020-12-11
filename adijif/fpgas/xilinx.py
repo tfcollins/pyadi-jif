@@ -165,7 +165,7 @@ class xilinx(fpga):
     def determine_pll(self, bit_clock, fpga_ref_clock):
         """
             Parameters:
-                bit_clock: 
+                bit_clock:
                     Equivalent to lane rate in bits/second
                 fpga_ref_clock:
                     System reference clock
@@ -179,7 +179,7 @@ class xilinx(fpga):
     def determine_cpll(self, bit_clock, fpga_ref_clock):
         """
             Parameters:
-                bit_clock: 
+                bit_clock:
                     Equivalent to lane rate in bits/second
                 fpga_ref_clock:
                     System reference clock
@@ -220,7 +220,7 @@ class xilinx(fpga):
     def determine_qpll(self, bit_clock, fpga_ref_clock):
         """
             Parameters:
-                bit_clock: 
+                bit_clock:
                     Equivalent to lane rate in bits/second
                 fpga_ref_clock:
                     System reference clock

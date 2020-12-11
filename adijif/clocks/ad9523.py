@@ -1,5 +1,5 @@
-from adijif.clocks.clock import clock
 import numpy as np
+from adijif.clocks.clock import clock
 
 
 class ad9523_1(clock):
