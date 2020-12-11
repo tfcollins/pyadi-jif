@@ -15,12 +15,12 @@ class ad9523_1(clock):
 
     use_vcxo_double = False
 
+    """ VCXO multiplier """
+    n_available = [12, 16, 17, 20, 21, 22, 24, 25, 26, *range(28, 255)]
     a_available = range(0, 3)
     b_available = range(3, 63)
     # N = (PxB) + A, P=4, A==[0,1,2,3], B=[3..63]
     # See table 46 of DS for limits
-    """ VCXO multiplier """
-    n_available = [12, 16, 17, 20, 21, 22, 24, 25, 26, *range(28, 255)]
     """ VCXO dividers """
     r2_available = range(1, 31)
 
@@ -101,46 +101,3 @@ class ad9523_1(clock):
                                     )
 
         return configs
-
-    def check_sysref_divider(self, configs, ratio):
-        valid = []
-        even = np.arange(2, 4096, 2, dtype=int)
-        odivs = np.append([1, 3, 5], even)
-
-        for config in configs:
-            d = config["Divider"]
-            print(d)
-            required = d * ratio
-            if required in odivs:
-                valid.append(config)
-
-        if not valid:
-            raise Exception(
-                "SYSREF to sample clock ratio not possible based on required ratio {}".format(
-                    required
-                )
-            )
-        return valid
-
-    def all_params(self):
-        pass
-        # Target dependent
-        # adi,jesd204-max-sysref-frequency-hz = <2000000>; /* 2 MHz */
-
-        # VCXO Dependent
-
-
-# adi,vcxo-frequency = <122880000>;
-# adi,pll1-clkin-frequencies = <122880000 30720000 0 0>;
-
-# adi,pll1-loop-bandwidth-hz = <200>;
-
-
-# adi,pll2-output-frequency = <3100000000>;
-
-# adi,sysref-timer-divider = <1024>;
-# adi,pulse-generator-mode = <0>;
-
-# adi,clkin0-buffer-mode  = <0x07>;
-# adi,clkin1-buffer-mode  = <0x07>;
-# adi,oscin-buffer-mode = <0x15>;

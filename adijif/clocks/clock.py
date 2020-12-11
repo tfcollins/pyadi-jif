@@ -6,3 +6,8 @@ class clock(metaclass=ABCMeta):
     @abstractmethod
     def find_dividers(self):
         raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def list_possible_references(self):
+        raise NotImplementedError
