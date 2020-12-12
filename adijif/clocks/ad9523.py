@@ -7,6 +7,7 @@ class ad9523_1(clock):
 
     """ VCO divider """
     m12_available = [3, 4, 5]
+
     """ Output dividers """
     d_available = np.arange(1, 1024, 1, dtype=int)
 
@@ -19,12 +20,13 @@ class ad9523_1(clock):
 
     """ VCXO multiplier """
     n2_available = [12, 16, 17, 20, 21, 22, 24, 25, 26, *range(28, 255)]
-    a_available = range(0, 3)
-    b_available = range(3, 63)
+    a_available = range(0, 4)
+    b_available = range(3, 64)
     # N = (PxB) + A, P=4, A==[0,1,2,3], B=[3..63]
     # See table 46 of DS for limits
+
     """ VCXO dividers """
-    r2_available = range(1, 31)
+    r2_available = range(1, 32)
 
     def __init__(self):
         pass
