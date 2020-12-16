@@ -8,7 +8,8 @@ import pytest
 
 # from adijif import adijif
 from adijif import cli
-from click.testing import CliRunner
+
+# from click.testing import CliRunner
 
 
 @pytest.fixture
@@ -27,15 +28,15 @@ def test_content(response):
     # assert 'GitHub' in BeautifulSoup(response.content).title.string
 
 
-def test_command_line_interface():
-    """Test the CLI."""
-    runner = CliRunner()
-    result = runner.invoke(cli.main)
-    assert result.exit_code == 0
-    assert "adijif.cli.main" in result.output
-    help_result = runner.invoke(cli.main, ["--help"])
-    assert help_result.exit_code == 0
-    assert "--help  Show this message and exit." in help_result.output
+# def test_command_line_interface():
+#     """Test the CLI."""
+#     runner = CliRunner()
+#     result = runner.invoke(cli.main)
+#     assert result.exit_code == 0
+#     assert "adijif.cli.main" in result.output
+#     help_result = runner.invoke(cli.main, ["--help"])
+#     assert help_result.exit_code == 0
+#     assert "--help  Show this message and exit." in help_result.output
 
 
 # def test_mxfe_config():
@@ -551,23 +552,20 @@ def test_daq2_fpga_qpll_rxtx_zc706_config():
 
 
 def test_system_daq2_rx():
-    adc = adijif.ad9680()
-    adc.sample_clock = 1e9
-    adc.datapath_decimation = 1
-    adc.L = 4
-    adc.M = 2
-    adc.N = 14
-    adc.Np = 16
-    adc.K = 32
-    adc.F = 1
-
-    clk = adijif.ad9523_1()
     vcxo = 125000000
 
-    fpga = adijif.xilinx()
-    fpga.setup_by_dev_kit_name("zc706")
+    sys = adijif.system("ad9680", "ad9523_1", "xilinx", vcxo)
+    sys.converter.sample_clock = 1e9
+    sys.converter.datapath_decimation = 1
+    sys.converter.L = 4
+    sys.converter.M = 2
+    sys.converter.N = 14
+    sys.converter.Np = 16
+    sys.converter.K = 32
+    sys.converter.F = 1
 
-    sys = adijif.system(adc, clk, fpga, vcxo)
+    sys.fpga.setup_by_dev_kit_name("zc706")
+
     clks = sys.determine_clocks()
 
     ref = [
@@ -748,6 +746,148 @@ def test_system_daq2_rx():
         }
     ]
     assert clks == ref
+
+
+def test_adc_clk_solver():
+
+    vcxo = 125000000
+    sys = adijif.system("ad9680", "ad9523_1", "xilinx", vcxo)
+
+    # Get Converter clocking requirements
+    sys.converter.sample_clock = 1e9
+    sys.converter.datapath_decimation = 1
+    sys.converter.L = 4
+    sys.converter.M = 2
+    sys.converter.N = 14
+    sys.converter.Np = 16
+    sys.converter.K = 32
+    sys.converter.F = 1
+
+    cnv_clocks = sys.converter.get_required_clocks()
+
+    sys.clock._update_model(vcxo, cnv_clocks)
+
+    sys.model.options.SOLVER = 1  # APOPT solver
+    sys.model.solve(disp=False)
+
+    # for c in sys.clock.config:
+    #     vs = sys.clock.config[c]
+    #     for v in vs:
+    #         if len(vs)>1:
+    #             print(c,v[0])
+    #         else:
+    #             print(c,v)
+    assert sys.clock.config["r2"].value[0] == 1
+    assert sys.clock.config["m1"].value[0] == 3
+    assert sys.clock.config["n2"].value[0] == 24
+    assert sys.clock.config["out_dividers"][0][0] == 1
+    assert sys.clock.config["out_dividers"][1][0] == 800
+
+
+def test_fpga_solver():
+
+    vcxo = 125000000
+    sys = adijif.system("ad9680", "ad9523_1", "xilinx", vcxo)
+
+    # Get Converter clocking requirements
+    sys.converter.sample_clock = 1e9
+    sys.converter.datapath_decimation = 1
+    sys.converter.L = 4
+    sys.converter.M = 2
+    sys.converter.N = 14
+    sys.converter.Np = 16
+    sys.converter.K = 32
+    sys.converter.F = 1
+
+    cnv_config = type("AD9680", (), {})()
+    cnv_config.bit_clock = 10e9
+
+    sys.fpga.setup_by_dev_kit_name("zc706")
+    required_clocks = sys.fpga._get_required_clocks_qpll(cnv_config)
+
+    sys.clock._update_model(vcxo, [required_clocks])
+
+    sys.model.options.SOLVER = 1  # APOPT solver
+    sys.model.solve(disp=True)
+    sys.model.options = [
+        "minlp_maximum_iterations 1000",  # minlp iterations with integer solution
+        "minlp_max_iter_with_int_sol 100",  # treat minlp as nlp
+        "minlp_as_nlp 0",  # nlp sub-problem max iterations
+        "nlp_maximum_iterations 5000",  # 1 = depth first, 2 = breadth first
+        "minlp_branch_method 1",  # maximum deviation from whole number
+        "minlp_integer_tol 0.05",  # covergence tolerance
+        "minlp_gap_tol 0.01",
+    ]
+    # "fpga_pll_config": {
+    #     "vco": 10000000000.0,
+    #     "band": 1,
+    #     "d": 1,
+    #     "m": 1,
+    #     "n": 20,
+    #     "qty4_full_rate": 0,
+    #     "type": "QPLL",
+    # },
+    clk_config = sys.clock.config
+    print(clk_config)
+    divs = sys.clock.config["out_dividers"]
+    assert clk_config["n2"][0] == 25
+    assert clk_config["r2"][0] == 1
+    assert clk_config["m1"][0] == 5
+    assert sys.fpga.config["fpga_ref"].value[0] == 620000000
+    # for div in divs:
+    #     assert div[0] in [1, 2, 1023]
+
+
+def test_sys_solver():
+    vcxo = 125000000
+
+    sys = adijif.system("ad9680", "ad9523_1", "xilinx", vcxo)
+
+    # Get Converter clocking requirements
+    sys.converter.sample_clock = 1e9
+    sys.converter.datapath_decimation = 1
+    sys.converter.L = 4
+    sys.converter.M = 2
+    sys.converter.N = 14
+    sys.converter.Np = 16
+    sys.converter.K = 32
+    sys.converter.F = 1
+
+    cnv_clocks = sys.converter.get_required_clocks()
+
+    # Get FPGA clocking requirements
+    sys.fpga.setup_by_dev_kit_name("zc706")
+    fpga_dev_clock = sys.fpga._get_required_clocks_qpll(sys.converter)
+
+    # Collect all requirements
+    sys.clock._update_model(vcxo, [fpga_dev_clock] + cnv_clocks)
+
+    sys.model.options.SOLVER = 1  # APOPT solver
+    # sys.model.solver_options = ['minlp_maximum_iterations 1000', \
+    #                     # minlp iterations with integer solution
+    #                     'minlp_max_iter_with_int_sol 100', \
+    #                     # treat minlp as nlp
+    #                     'minlp_as_nlp 0', \
+    #                     # nlp sub-problem max iterations
+    #                     'nlp_maximum_iterations 5000', \
+    #                     # 1 = depth first, 2 = breadth first
+    #                     'minlp_branch_method 1', \
+    #                     # maximum deviation from whole number
+    #                     'minlp_integer_tol 0.05', \
+    #                     # covergence tolerance
+    #                     'minlp_gap_tol 0.01']
+
+    sys.model.solve(disp=False)
+
+    clk_config = sys.clock.config
+    print(clk_config)
+    divs = sys.clock.config["out_dividers"]
+    assert clk_config["n2"][0] == 24
+    assert clk_config["r2"][0] == 1
+    assert clk_config["m1"][0] == 3
+    assert sys.fpga.config["fpga_ref"].value[0] == 500000000
+    for div in divs:
+        assert div[0] in [1, 2, 800]
 
 
 # def test_adrv9009_zcu102_config():

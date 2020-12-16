@@ -1,5 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
+from gekko import GEKKO
+
 
 class clock(metaclass=ABCMeta):
     @property
@@ -11,3 +13,10 @@ class clock(metaclass=ABCMeta):
     @abstractmethod
     def list_possible_references(self):
         raise NotImplementedError
+
+    def __init__(self, model=None):
+        if model:
+            assert isinstance(model, GEKKO), "Input model must be of type gekko.GEKKO"
+        else:
+            model = GEKKO()
+        self.model = model

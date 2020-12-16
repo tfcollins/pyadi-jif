@@ -45,9 +45,6 @@ class xilinx(fpga):
     ]
     sys_clk_select = "GTH34_SYSCLK_QPLL1"
 
-    def __init__(self):
-        pass
-
     @property
     def ref_clock_max(self):
         # https://www.xilinx.com/support/documentation/data_sheets/ds191-XC7Z030-XC7Z045-data-sheet.pdf
@@ -153,6 +150,7 @@ class xilinx(fpga):
             raise Exception(f"Unknown transceiver type {self.transciever_type}")
 
     def setup_by_dev_kit_name(self, name):
+        """ Configure object based on board name. Ex: zc706, zcu102 """
 
         if name.lower() == "zc706":
             self.transciever_type = "GTX2"
@@ -175,6 +173,61 @@ class xilinx(fpga):
         except:
             info = self.determine_qpll(bit_clock, fpga_ref_clock)
         return info
+
+    def _cpll_model_setup(self, clock, converter):
+
+        self.config = {"m": self.model.Var(integer=True, lb=1, ub=2, value=1)}
+        self.config["d"] = self.model.sos1([1, 2, 4, 8])
+        self.config["n1"] = self.model.Var(integer=True, lb=4, ub=5, value=1)
+        self.config["n2"] = self.model.Var(integer=True, lb=1, ub=5, value=1)
+
+        self.model.Equations(
+            [
+                clock.config["fpga_ref"]
+                * self.config["n1"]
+                * self.config["n2"]
+                / self.config["m"]
+                >= self.vco_min,
+                clock.config["fpga_ref"]
+                * self.config["n1"]
+                * self.config["n2"]
+                / self.config["m"]
+                <= self.vco_max,
+                clock.config["fpga_ref"] / self.config["m"] / self.config["d"]
+                == converter.bit_clock / (2 * self.config["n1"] * self.config["n2"]),
+            ]
+        )
+        self.model.Obj(self.config["fpga_ref"] * -1)
+
+    def _get_required_clocks_qpll(self, converter):
+
+        self.config = {"m": self.model.Var(integer=True, lb=1, ub=4, value=1)}
+        self.config["d"] = self.model.sos1([1, 2, 4, 8, 16])
+        self.config["n"] = self.model.sos1(self.N)
+        self.config["fpga_ref"] = self.model.Var(
+            integer=True,
+            lb=self.ref_clock_min,
+            ub=self.ref_clock_max,
+            value=self.ref_clock_min,
+        )
+
+        self.model.Equations(
+            [
+                self.config["fpga_ref"] * self.config["n"] / self.config["m"]
+                >= self.vco1_min,
+                self.config["fpga_ref"] * self.config["n"] / self.config["m"]
+                <= self.vco1_max,
+                self.config["fpga_ref"]
+                * self.config["n"]
+                / self.config["m"]
+                / self.config["d"]
+                == converter.bit_clock,
+            ]
+        )
+        self.model.Obj(self.config["d"])
+        self.model.Obj(self.config["fpga_ref"] * -1)
+
+        return self.config["fpga_ref"]
 
     def determine_cpll(self, bit_clock, fpga_ref_clock):
         """
@@ -225,18 +278,6 @@ class xilinx(fpga):
                 fpga_ref_clock:
                     System reference clock
         """
-
-        #  Ref: https://www.xilinx.com/support/documentation/user_guides/ug476_7Series_Transceivers.pdf
-        #  Page: 55
-        #     Vco_Freq = (refclk_khz * n) / m
-        #  LineRate = Vco_Freq / d
-
-        #  Make sure to not confuse Vco_Freq with fPLLClkout.
-        #  fPLLClkout = (refclk_khz * n) / (m * 2), so technically Vco_Freq = 2 * fPLLClkout
-        #  And the 2 is reduced in both equations.
-
-        # VCO = ( REF_CLK * N ) / M
-        # bit_clock = ( VCO ) / D
 
         if self.ref_clock_max < fpga_ref_clock or fpga_ref_clock < self.ref_clock_min:
             raise Exception("fpga_ref_clock not within range")

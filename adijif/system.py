@@ -1,18 +1,18 @@
 import adijif
 import numpy as np
+from gekko import GEKKO
 
 
 class system:
     def __init__(self, conv, clk, fpga, vcxo):
 
-        assert isinstance(clk, adijif.clock), "clk input must be of type adijif.clock"
-        assert isinstance(
-            conv, adijif.jesd
-        ), "conv input must be of type adijif.converter"
-        assert isinstance(fpga, adijif.fpga), "fpga input must be of type adijif.fpga"
-        self.converter = conv
-        self.clock = clk
-        self.fpga = fpga
+        self.model = GEKKO()
+        self.vcxo = vcxo
+        # FIXME: Do checks
+
+        self.converter = eval(f"adijif.{conv}(self.model)")
+        self.clock = eval(f"adijif.{clk}(self.model)")
+        self.fpga = eval(f"adijif.{fpga}(self.model)")
         self.vcxo = vcxo
         self.configs_to_find = 3
         self.sysref_sample_clock_ratio = 16

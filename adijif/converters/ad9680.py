@@ -34,8 +34,19 @@ class ad9680(converter):
     """
     max_input_clock = 4e9
 
-    def __init__(self):
-        pass
+    def get_required_clocks(self):
+        """ Generate list required clocks
+            For AD9680 this will contain [converter clock, sysref requirement SOS]
+        """
+        possible_sysrefs = []
+        for n in range(1, 20):
+            r = self.multiframe_clock / (n * n)
+            if r == int(r):
+                possible_sysrefs.append(r)
+
+        self.config = {"sysref": self.model.sos1(possible_sysrefs)}
+        self.model.Obj(self.config["sysref"])
+        return [self.sample_clock, self.config["sysref"]]
 
     def device_clock_available(self):
         """ Generate list of possible device clocks """

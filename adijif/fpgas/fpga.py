@@ -1,5 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
+from gekko import GEKKO
+
 
 class fpga(metaclass=ABCMeta):
     @property
@@ -11,3 +13,10 @@ class fpga(metaclass=ABCMeta):
     @abstractmethod
     def determine_qpll(self):
         raise NotImplementedError
+
+    def __init__(self, model=None):
+        if model:
+            assert isinstance(model, GEKKO), "Input model must be of type gekko.GEKKO"
+        else:
+            model = GEKKO()
+        self.model = model

@@ -1,5 +1,6 @@
 import numpy as np
 from adijif.clocks.clock import clock
+from gekko import GEKKO
 
 
 class ad9523_1(clock):
@@ -14,7 +15,7 @@ class ad9523_1(clock):
     vco_min = 2.94e9
     vco_max = 3.1e9
 
-    pfb_max = 259e6
+    pfd_max = 259e6
 
     use_vcxo_double = False
 
@@ -28,8 +29,39 @@ class ad9523_1(clock):
     """ VCXO dividers """
     r2_available = range(1, 32)
 
-    def __init__(self):
-        pass
+    def _update_model(self, vcxo, out_freqs):
+        self.config = {"r2": self.model.Var(integer=True, lb=1, ub=31, value=1)}
+        self.config["m1"] = self.model.Var(integer=True, lb=3, ub=5)
+        self.config["n2"] = self.model.sos1(self.n2_available)
+
+        # PLL2 equations
+        self.model.Equations(
+            [
+                vcxo / self.config["r2"] <= self.pfd_max,
+                vcxo / self.config["r2"] * self.config["n2"] <= self.vco_max,
+                vcxo / self.config["r2"] * self.config["n2"] >= self.vco_min,
+            ]
+        )
+
+        # Add requested clocks to output constraints
+        self.config["out_dividers"] = []
+        for out_freq in out_freqs:
+            od = self.model.Var(integer=True, lb=1, ub=1023, value=1)
+            # od = self.model.sos1([n*n for n in range(1,9)])
+            self.model.Equations(
+                [
+                    vcxo
+                    / self.config["r2"]
+                    * self.config["n2"]
+                    / self.config["m1"]
+                    / od
+                    == out_freq
+                ]
+            )
+            self.config["out_dividers"].append(od)
+
+        # Minimization objective
+        self.model.Obj(self.config["n2"])
 
     def list_possible_references(self, divider_set):
         """ list_possible_references: Based on config list possible
@@ -66,7 +98,7 @@ class ad9523_1(clock):
         for n2 in self.n2_available:
             for r2 in self.r2_available:
                 pfb = vcxo / r2
-                if pfb > self.pfb_max:
+                if pfb > self.pfd_max:
                     continue
                 vco = pfb * n2
                 if vco > self.vco_min and vco < self.vco_max:

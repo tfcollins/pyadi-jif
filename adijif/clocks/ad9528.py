@@ -7,7 +7,7 @@ class ad9528(clock):
 
     """ VCO divider """
     m1_available = [3, 4, 5]
-    
+
     """ Output dividers """
     d_available = np.arange(1, 1024, 1, dtype=int)
 
@@ -19,8 +19,8 @@ class ad9528(clock):
     use_vcxo_double = False
 
     """ VCXO multiplier """
-    n1_available = [16, 17, 20, 21, 22, 24, 25, 26, *range(28, 255)] # VCO Cal divider
-    n2_available = range(1,257)
+    n1_available = [16, 17, 20, 21, 22, 24, 25, 26, *range(28, 255)]  # VCO Cal divider
+    n2_available = range(1, 257)
     a_available = range(0, 4)
     b_available = range(3, 64)
     # N = (PxB) + A, P=4, A==[0,1,2,3], B=[3..63]
@@ -68,10 +68,7 @@ class ad9528(clock):
             for m1 in self.m1_available:
                 for n2 in self.n2_available:
                     # RECHECK THIS. NOT WELL DOCUMETNED
-                    if (
-                        n2 * m1 not in self.n1_available
-                        and not self.use_vcxo_double
-                    ):
+                    if n2 * m1 not in self.n1_available and not self.use_vcxo_double:
                         continue
                     if n2 * m1 * 2 not in self.n1_available:
                         continue
@@ -89,11 +86,9 @@ class ad9528(clock):
                                     "m1": m1,
                                     "vco": vco,
                                     "n2": n2,
-                                    "r1":r1,
+                                    "r1": r1,
                                     "required_output_divs": required_output_divs,
                                 }
                             )
-
-
 
         return configs

@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
 from adijif.jesd import jesd
+from gekko import GEKKO
 
 
 class converter(jesd, metaclass=ABCMeta):
@@ -58,6 +59,18 @@ class converter(jesd, metaclass=ABCMeta):
     @abstractmethod
     def device_clock_ranges(self):
         raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def get_required_clocks(self):
+        raise NotImplementedError
+
+    def __init__(self, model=None):
+        if model:
+            assert isinstance(model, GEKKO), "Input model must be of type gekko.GEKKO"
+        else:
+            model = GEKKO()
+        self.model = model
 
     # available_jesd_modes = ["jesd204b"]
     # K_possible = [4, 8, 12, 16, 20, 24, 28, 32]
