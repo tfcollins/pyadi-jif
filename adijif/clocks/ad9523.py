@@ -12,11 +12,12 @@ class ad9523_1(clock):
     """ Output dividers """
     d_available = np.arange(1, 1024, 1, dtype=int)
 
+    """ Internal limits """
     vco_min = 2.94e9
     vco_max = 3.1e9
-
     pfd_max = 259e6
 
+    """ Enable internal VCXO/PLL1 doubler """
     use_vcxo_double = False
 
     """ VCXO multiplier """
@@ -29,7 +30,9 @@ class ad9523_1(clock):
     """ VCXO dividers """
     r2_available = range(1, 32)
 
-    def _update_model(self, vcxo, out_freqs):
+    def _setup_solver_constraints(self, vcxo):
+        """ Apply constraints to solver model
+        """
         self.config = {"r2": self.model.Var(integer=True, lb=1, ub=31, value=1)}
         self.config["m1"] = self.model.Var(integer=True, lb=3, ub=5)
         self.config["n2"] = self.model.sos1(self.n2_available)
@@ -42,6 +45,20 @@ class ad9523_1(clock):
                 vcxo / self.config["r2"] * self.config["n2"] >= self.vco_min,
             ]
         )
+        # Minimization objective
+        self.model.Obj(self.config["n2"])
+
+    def set_requested_clocks(self, vcxo, out_freqs):
+        """ set_requested_clocks: Define necessary clocks to be generated in model
+
+            Parameters:
+                vcxo:
+                    VCXO frequency in hertz
+                out_freqs:
+                    list of required clocks to be output
+        """
+        # Setup clock chip internal constraints
+        self._setup_solver_constraints(vcxo)
 
         # Add requested clocks to output constraints
         self.config["out_dividers"] = []
@@ -59,9 +76,6 @@ class ad9523_1(clock):
                 ]
             )
             self.config["out_dividers"].append(od)
-
-        # Minimization objective
-        self.model.Obj(self.config["n2"])
 
     def list_possible_references(self, divider_set):
         """ list_possible_references: Based on config list possible

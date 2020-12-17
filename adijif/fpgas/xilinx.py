@@ -199,7 +199,13 @@ class xilinx(fpga):
         )
         self.model.Obj(self.config["fpga_ref"] * -1)
 
-    def _get_required_clocks_qpll(self, converter):
+    def get_required_clocks_qpll(self, converter):
+        """ get_required_clocks_qpll: Get necessary clocks for QPLL configuration
+
+            Parameters:
+                converter:
+                    Converter object of converter connected to FPGA
+        """
 
         self.config = {"m": self.model.Var(integer=True, lb=1, ub=4, value=1)}
         self.config["d"] = self.model.sos1([1, 2, 4, 8, 16])

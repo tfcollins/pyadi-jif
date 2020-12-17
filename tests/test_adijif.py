@@ -765,7 +765,7 @@ def test_adc_clk_solver():
 
     cnv_clocks = sys.converter.get_required_clocks()
 
-    sys.clock._update_model(vcxo, cnv_clocks)
+    sys.clock.set_requested_clocks(vcxo, cnv_clocks)
 
     sys.model.options.SOLVER = 1  # APOPT solver
     sys.model.solve(disp=False)
@@ -789,23 +789,13 @@ def test_fpga_solver():
     vcxo = 125000000
     sys = adijif.system("ad9680", "ad9523_1", "xilinx", vcxo)
 
-    # Get Converter clocking requirements
-    sys.converter.sample_clock = 1e9
-    sys.converter.datapath_decimation = 1
-    sys.converter.L = 4
-    sys.converter.M = 2
-    sys.converter.N = 14
-    sys.converter.Np = 16
-    sys.converter.K = 32
-    sys.converter.F = 1
-
     cnv_config = type("AD9680", (), {})()
     cnv_config.bit_clock = 10e9
 
     sys.fpga.setup_by_dev_kit_name("zc706")
-    required_clocks = sys.fpga._get_required_clocks_qpll(cnv_config)
+    required_clocks = sys.fpga.get_required_clocks_qpll(cnv_config)
 
-    sys.clock._update_model(vcxo, [required_clocks])
+    sys.clock.set_requested_clocks(vcxo, [required_clocks])
 
     sys.model.options.SOLVER = 1  # APOPT solver
     sys.model.solve(disp=True)
@@ -857,10 +847,10 @@ def test_sys_solver():
 
     # Get FPGA clocking requirements
     sys.fpga.setup_by_dev_kit_name("zc706")
-    fpga_dev_clock = sys.fpga._get_required_clocks_qpll(sys.converter)
+    fpga_dev_clock = sys.fpga.get_required_clocks_qpll(sys.converter)
 
     # Collect all requirements
-    sys.clock._update_model(vcxo, [fpga_dev_clock] + cnv_clocks)
+    sys.clock.set_requested_clocks(vcxo, [fpga_dev_clock] + cnv_clocks)
 
     sys.model.options.SOLVER = 1  # APOPT solver
     # sys.model.solver_options = ['minlp_maximum_iterations 1000', \
