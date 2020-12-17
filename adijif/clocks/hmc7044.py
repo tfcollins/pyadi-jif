@@ -4,33 +4,81 @@ from adijif.clocks.clock import clock
 
 class hmc7044(clock):
 
-    pre_scaler_min = 1
-    pre_scaler_max = 255
-
-    vcxo_scaler_min = 1
-    vcxo_scaler_max = 255
-
-    r1_divider_min = 1
-    r1_divider_max = 65535
-
-    n1_divider_min = 1
-    n1_divider_max = 65535
-
     r2_divider_min = 1
     r2_divider_max = 4095
 
     n2_divider_min = 8
     n2_divider_max = 65535
 
+    """ Internal limits """
     vco_min = 2150e6
     vco_max = 3550e6
+    pfd_max = 250e6
+    vcxo_min = 10e6
+    vcxo_max = 500e6
 
-    osc_divider_options = [1, 2, 4, 8]
+    """ Output dividers """
+    d_available = [1, 3, 5, *np.arange(2, 4095, 2, dtype=int)]
 
     use_vcxo_double = True
 
-    def __init__(self):
-        pass
+    def _setup_solver_constraints(self, vcxo):
+        """ Apply constraints to solver model
+        """
+        self.config = {"r2": self.model.Var(integer=True, lb=1, ub=4095, value=1)}
+        self.config["n2"] = self.model.Var(
+            integer=True, lb=8, ub=4095
+        )  # FIXME: CHECK UB
+
+        # PLL2 equations
+        self.model.Equations(
+            [
+                vcxo / self.config["r2"] <= self.pfd_max,
+                vcxo / self.config["r2"] * self.config["n2"] <= self.vco_max,
+                vcxo / self.config["r2"] * self.config["n2"] >= self.vco_min,
+            ]
+        )
+        # Minimization objective
+        self.model.Obj(self.config["n2"])
+        self.model.Obj(-1 * vcxo / self.config["r2"])
+
+    def set_requested_clocks(self, vcxo, out_freqs):
+        """ set_requested_clocks: Define necessary clocks to be generated in model
+
+            Parameters:
+                vcxo:
+                    VCXO frequency in hertz
+                out_freqs:
+                    list of required clocks to be output
+        """
+
+        # Setup clock chip internal constraints
+        if self.use_vcxo_double:
+            vcxo *= 2
+        assert self.vcxo_min <= vcxo <= self.vcxo_max, "VCXO out of range"
+        self._setup_solver_constraints(vcxo)
+
+        # Add requested clocks to output constraints
+        self.config["out_dividers"] = []
+        for out_freq in out_freqs:
+
+            even = self.model.Var(integer=True, lb=1, ub=4094 / 2)
+            odd = self.model.sos1([1, 3, 5])
+            eo = self.model.Var(integer=True, lb=0, ub=1)
+            od = self.model.Intermediate(eo * odd + (1 - eo) * even * 2)
+
+            self.model.Equations(
+                [vcxo / self.config["r2"] * self.config["n2"] / od == out_freq]
+            )
+            self.config["out_dividers"].append(od)
+            # self.model.Obj(-1*eo) # Favor even dividers
+
+    def list_possible_references(self, divider_set):
+        """ list_possible_references: Based on config list possible
+            references that can be generated based on VCO and output
+            dividers
+        """
+        raise Exception("Not implemented")
 
     def find_dividers(self, vcxo, rates, find=3):
 
@@ -87,26 +135,3 @@ class hmc7044(clock):
                 )
             )
         return valid
-
-    def all_params(self):
-        pass
-        # Target dependent
-        # adi,jesd204-max-sysref-frequency-hz = <2000000>; /* 2 MHz */
-
-        # VCXO Dependent
-
-
-# adi,vcxo-frequency = <122880000>;
-# adi,pll1-clkin-frequencies = <122880000 30720000 0 0>;
-
-# adi,pll1-loop-bandwidth-hz = <200>;
-
-
-# adi,pll2-output-frequency = <3100000000>;
-
-# adi,sysref-timer-divider = <1024>;
-# adi,pulse-generator-mode = <0>;
-
-# adi,clkin0-buffer-mode  = <0x07>;
-# adi,clkin1-buffer-mode  = <0x07>;
-# adi,oscin-buffer-mode = <0x15>;

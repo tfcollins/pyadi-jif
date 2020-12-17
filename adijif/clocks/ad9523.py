@@ -58,6 +58,8 @@ class ad9523_1(clock):
                     list of required clocks to be output
         """
         # Setup clock chip internal constraints
+        if self.use_vcxo_double:
+            vcxo *= 2
         self._setup_solver_constraints(vcxo)
 
         # Add requested clocks to output constraints

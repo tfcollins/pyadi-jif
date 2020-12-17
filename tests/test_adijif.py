@@ -799,15 +799,15 @@ def test_fpga_solver():
 
     sys.model.options.SOLVER = 1  # APOPT solver
     sys.model.solve(disp=True)
-    sys.model.options = [
-        "minlp_maximum_iterations 1000",  # minlp iterations with integer solution
-        "minlp_max_iter_with_int_sol 100",  # treat minlp as nlp
-        "minlp_as_nlp 0",  # nlp sub-problem max iterations
-        "nlp_maximum_iterations 5000",  # 1 = depth first, 2 = breadth first
-        "minlp_branch_method 1",  # maximum deviation from whole number
-        "minlp_integer_tol 0.05",  # covergence tolerance
-        "minlp_gap_tol 0.01",
-    ]
+    # sys.model.options = [
+    #     "minlp_maximum_iterations 1000",  # minlp iterations with integer solution
+    #     "minlp_max_iter_with_int_sol 100",  # treat minlp as nlp
+    #     "minlp_as_nlp 0",  # nlp sub-problem max iterations
+    #     "nlp_maximum_iterations 5000",  # 1 = depth first, 2 = breadth first
+    #     "minlp_branch_method 1",  # maximum deviation from whole number
+    #     "minlp_integer_tol 0.05",  # covergence tolerance
+    #     "minlp_gap_tol 0.01",
+    # ]
     # "fpga_pll_config": {
     #     "vco": 10000000000.0,
     #     "band": 1,

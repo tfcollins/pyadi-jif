@@ -19,6 +19,43 @@ class system:
         self.sysref_min_div = 4
         self.sysref_max_div = 2 ** 14
 
+        self.enable_converter_clocks = True
+        self.enable_fpga_clocks = True
+        self.Debug_Solver = False
+
+    def solve(self):
+
+        if not self.enable_converter_clocks and not self.enable_fpga_clocks:
+            raise Exception("Converter and/or FPGA clocks must be enabled")
+
+        if self.enable_converter_clocks:
+            cnv_clocks = self.converter.get_required_clocks()
+        else:
+            cnv_clocks = []
+
+        if self.enable_fpga_clocks:
+            self.fpga.setup_by_dev_kit_name("zc706")
+            fpga_dev_clock = self.fpga.get_required_clocks_qpll(self.converter)
+            if not isinstance(fpga_dev_clock, list):
+                fpga_dev_clock = [fpga_dev_clock]
+        else:
+            fpga_dev_clock = []
+
+        # Collect all requirements
+        self.clock.set_requested_clocks(self.vcxo, fpga_dev_clock + cnv_clocks)
+
+        self.model.options.SOLVER = 1  # APOPT solver
+        self.model.solve(disp=self.Debug_Solver)
+        self.model.solver_options = [
+            "minlp_maximum_iterations 1000",  # minlp iterations with integer solution
+            "minlp_max_iter_with_int_sol 100",  # treat minlp as nlp
+            "minlp_as_nlp 0",  # nlp sub-problem max iterations
+            "nlp_maximum_iterations 5000",  # 1 = depth first, 2 = breadth first
+            "minlp_branch_method 1",  # maximum deviation from whole number
+            "minlp_integer_tol 0.05",  # covergence tolerance
+            "minlp_gap_tol 0.01",
+        ]
+
     def determine_clocks2(self):
 
         # Get ranges based on required sample rate and other configs
