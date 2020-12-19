@@ -41,10 +41,10 @@ sys.model.solver_options = [
 for c in sys.clock.config:
     vs = sys.clock.config[c]
     for v in vs:
-        if len(vs)>1:
-            print(c,v[0])
+        if len(vs) > 1:
+            print(c, v[0])
         else:
-            print(c,v)
+            print(c, v)
 
 print("sysref: " + str(sys.converter.config["sysref"].value[0]))
 print("fpga_ref: ", sys.fpga.config["fpga_ref"].value[0])

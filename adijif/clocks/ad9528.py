@@ -105,11 +105,7 @@ class ad9528(clock):
                 continue
             for m1 in self.m1_available:
                 for n2 in self.n2_available:
-                    # RECHECK THIS. NOT WELL DOCUMETNED
-                    if n2 * m1 not in self.n1_available and not self.use_vcxo_double:
-                        continue
-                    if n2 * m1 * 2 not in self.n1_available:
-                        continue
+                    # RECHECK THIS. NOT WELL DOCUMENTED
                     vco = pfd * m1 * n2
                     # Check bounds and integer
                     if (

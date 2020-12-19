@@ -2,42 +2,51 @@
 import numpy as np
 from adijif.converters.converter import converter
 
+# References
+# https://ez.analog.com/wide-band-rf-transceivers/design-support-adrv9008-1-adrv9008-2-adrv9009/f/q-a/103757/adrv9009-clock-configuration/308013#308013
 
-class ad9680(converter):
 
-    name = "AD9680"
+class adrv9009(converter):
 
-    direct_clocking = True
+    name = "ADRV9009"
+
+    direct_clocking = False
     available_jesd_modes = ["jesd204b"]
-    K_possible = [4, 8, 12, 16, 20, 24, 28, 32]
+    K_possible = [*np.arange(20, 256, 4)]
     L_possible = [1, 2, 4]
-    M_possible = [1, 2, 4, 8]
-    N_possible = [*range(7, 16)]
-    Np_possible = [8, 16]
+    M_possible = [1, 2, 4]
+    N_possible = [12, 16, 24]
+    Np_possible = [12, 16, 24]
     F_possible = [1, 2, 4, 8, 16]
-    CS_possible = [0, 1, 2, 3]
+    CS_possible = [0]
     CF_possible = [0]
     S_possible = [1]  # Not found in DS
-    link_min = 3.125e9
-    link_max = 12.5e9
+    link_min = 3.6864e9
+    link_max = 12.288e9
+
+    max_rx_sample_clock = 250e6
+    max_tx_sample_clock = 500e6
+    max_obs_sample_clock = 500e6
 
     # Input clock requirements
-    available_input_clock_dividers = [1, 2, 4, 8]
+    available_input_clock_dividers = [1 / 2, 1, 2, 4, 8, 16]
     input_clock_divider = 1
-    available_datapath_decimation = [1, 2, 4, 8, 16]
-    datapath_decimation = 1
+
+    device_clock_min = 10e6
+    device_clock_max = 1e9
 
     """ Clocking
-        AD9680 has directly clocked ADCs that have optional input dividers.
-        The sample rate can be determined as follows:
+        ADRV9009 uses onboard PLLs to generate the JESD clocks
 
-        baseband_sample_rate = (input_clock / input_clock_divider) / datapath_decimation
+        Lane Rate = I/Q Sample Rate * M * Np * (10 / 8) / L
+        Lane Rate = sample_clock * M * Np * (10 / 8) / L
     """
     max_input_clock = 4e9
 
     def get_required_clocks(self):
-        """ Generate list required clocks
-            For AD9680 this will contain [converter clock, sysref requirement SOS]
+        """ Generate list of required clocks
+            For ADRV9009 this will contain:
+            [device clock requirement SOS, sysref requirement SOS]
         """
         possible_sysrefs = []
         for n in range(1, 20):
@@ -47,7 +56,18 @@ class ad9680(converter):
 
         self.config = {"sysref": self.model.sos1(possible_sysrefs)}
         self.model.Obj(self.config["sysref"])
-        return [self.sample_clock, self.config["sysref"]]
+
+        possible_device_clocks = []
+        for div in self.available_input_clock_dividers:
+            dev_clock = self.sample_clock / div
+            if self.device_clock_min <= dev_clock <= self.device_clock_max:
+                possible_device_clocks.append(dev_clock)
+
+        self.config["device_clock"] = self.model.sos1(possible_device_clocks)
+        self.model.Obj(-1 * self.config["device_clock"])
+
+        return [self.config["device_clock"], self.config["sysref"]]
+        # return [possible_device_clocks[1], self.config["sysref"]]
 
     def device_clock_available(self):
         """ Generate list of possible device clocks """

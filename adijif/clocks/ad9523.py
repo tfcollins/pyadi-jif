@@ -1,6 +1,5 @@
 import numpy as np
 from adijif.clocks.clock import clock
-from gekko import GEKKO
 
 
 class ad9523_1(clock):
@@ -62,6 +61,8 @@ class ad9523_1(clock):
             vcxo *= 2
         self._setup_solver_constraints(vcxo)
 
+        # FIXME: ADD SPLIT m1 configuration support
+
         # Add requested clocks to output constraints
         self.config["out_dividers"] = []
         for out_freq in out_freqs:
@@ -122,27 +123,23 @@ class ad9523_1(clock):
                         # print("vco",vco,mod,m1)
                         if (vco / m1) % mod == 0:
                             # See if we can use only m1 and not both m1+m2
-                            required_output_divs = (vco / m1) / required_output_rates
-                            if np.all(np.in1d(required_output_divs, self.d_available)):
+                            rods = (vco / m1) / required_output_rates
+                            if np.all(np.in1d(rods, self.d_available)):
                                 configs.append(
                                     {
                                         "m1": m1,
                                         "n2": n2,
                                         "vco": vco,
                                         "r2": r2,
-                                        "required_output_divs": required_output_divs,
+                                        "required_output_divs": rods,
                                     }
                                 )
                             else:
                                 # Try to use m2 as well to meet required out clocks
-                                f1 = np.in1d(required_output_divs, self.d_available)
+                                f1 = np.in1d(rods, self.d_available)
                                 for m2 in self.m12_available:
-                                    required_output_divs2 = (
-                                        vco / m2
-                                    ) / required_output_rates
-                                    f2 = np.in1d(
-                                        required_output_divs2, self.d_available
-                                    )
+                                    rods2 = (vco / m2) / required_output_rates
+                                    f2 = np.in1d(rods2, self.d_available)
                                     if np.logical_or(f1, f2).all():
                                         configs.append(
                                             {
@@ -151,10 +148,10 @@ class ad9523_1(clock):
                                                 "n2": n2,
                                                 "vco": vco,
                                                 "r2": r2,
-                                                "required_output_divs": required_output_divs[
+                                                "required_output_divs": rods[
                                                     f1
                                                 ].tolist(),
-                                                "required_output_divs2": required_output_divs2[
+                                                "required_output_divs2": rods2[
                                                     f2
                                                 ].tolist(),
                                             }

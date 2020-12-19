@@ -27,7 +27,7 @@ class jesd(metaclass=ABCMeta):
         self.Np = Np
         self.S = S
 
-    ########### Encoding functions
+    # Encoding functions
 
     encodings_n = {"8b10b": 8, "64b66b": 64}
     encodings_d = {"8b10b": 10, "64b66b": 66}
@@ -58,7 +58,7 @@ class jesd(metaclass=ABCMeta):
             allowed_encodings = ["8b10b"]
         return encode in allowed_encodings
 
-    ########### SCALERS
+    # SCALERS
 
     """ bits
         Usually:
@@ -142,7 +142,7 @@ class jesd(metaclass=ABCMeta):
     """ N: Number of non-dummy bits per sample """
     N_min = 12
     N_max = 16
-    N_possible = range(12, 16)
+    N_possible = [12, 14, 16]
     _N = 12
 
     @property
@@ -158,7 +158,7 @@ class jesd(metaclass=ABCMeta):
     """ Np: Number of bits per sample """
     Np_min = 12
     Np_max = 16
-    Np_possible = range(12, 16)
+    Np_possible = [12, 14, 16]
     _Np = 16
 
     @property
@@ -171,7 +171,7 @@ class jesd(metaclass=ABCMeta):
             raise Exception("Np must be an integer")
         self._Np = value
 
-    ########### DERIVED SCALERS
+    # DERIVED SCALERS
     """ F: Octets per frame per link
         This is read-only since it depends on L,M,Np,S, and encoding
     """
@@ -190,7 +190,7 @@ class jesd(metaclass=ABCMeta):
             raise Exception("F must be an integer")
         self._F = value
 
-    ########### CLOCKS
+    # CLOCKS
     """ sample_clock: Data rate after decimation stages in Samples/second """
 
     _sample_clock = 122.88e6

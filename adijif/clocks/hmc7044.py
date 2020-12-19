@@ -78,7 +78,19 @@ class hmc7044(clock):
             references that can be generated based on VCO and output
             dividers
         """
-        raise Exception("Not implemented")
+        # Check input
+        ref = {
+            "n2": 2,
+            "vco": 3000000000,
+            "r2": 24,
+            "required_output_divs": np.array([1.0]),
+        }
+        for key in ref:
+            if key not in divider_set:
+                raise Exception(
+                    "Input must be of type dict with fields: " + str(ref.keys())
+                )
+        return [divider_set["vco"] / div for div in self.d_available]
 
     def find_dividers(self, vcxo, rates, find=3):
 
@@ -104,34 +116,13 @@ class hmc7044(clock):
                             if f not in vcos:
                                 vcos.append(f)
                                 config = {
-                                    "N2": n,
-                                    "R2": r,
-                                    "VCO": f,
-                                    "Divider": d,
-                                    "PFD": vcxo / n,
+                                    "n2": n,
+                                    "r2": r,
+                                    "vco": f,
+                                    "required_output_divs": d,
                                 }
                                 configs.append(config)
                                 if len(configs) >= find:
                                     return configs
 
         return configs
-
-    def check_sysref_divider(self, configs, ratio):
-        valid = []
-        even = np.arange(2, 4096, 2, dtype=int)
-        odivs = np.append([1, 3, 5], even)
-
-        for config in configs:
-            d = config["Divider"]
-            print(d)
-            required = d * ratio
-            if required in odivs:
-                valid.append(config)
-
-        if not valid:
-            raise Exception(
-                "SYSREF to sample clock ratio not possible based on required ratio {}".format(
-                    required
-                )
-            )
-        return valid
