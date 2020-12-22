@@ -11,7 +11,7 @@ class xilinx(fpga):
     transceiver_voltage = 800
 
     available_fpga_packages = [
-        f"Unknown",
+        "Unknown",
         "RF",
         "FL",
         "FF",
@@ -32,7 +32,7 @@ class xilinx(fpga):
     ]
     fpga_package = "FB"
 
-    available_fpga_families = [f"Unknown", "Artix", "Kintex", "Virtex", "Zynq"]
+    available_fpga_families = ["Unknown", "Artix", "Kintex", "Virtex", "Zynq"]
     fpga_family = "Zynq"
 
     available_transceiver_types = ["GTX2"]
@@ -57,7 +57,9 @@ class xilinx(fpga):
             else:
                 return 670000000
         else:
-            raise Exception(f"Unknown ref_clock_max for transceiver")
+            raise Exception(
+                f"Unknown ref_clock_max for transceiver {self.transciever_type}"
+            )
             # raise Exception(f"Unknown transceiver type {self.transciever_type}")
 
     @property
@@ -66,7 +68,9 @@ class xilinx(fpga):
         if self.transciever_type == "GTX2":
             return 60000000
         else:
-            raise Exception(f"Unknown ref_clock_max for transceiver")
+            raise Exception(
+                f"Unknown ref_clock_max for transceiver {self.transciever_type}"
+            )
             # raise Exception(f"Unknown transceiver type {self.transciever_type}")
 
     # CPLL
