@@ -69,7 +69,7 @@ class converter(jesd, metaclass=ABCMeta):
         if model:
             assert isinstance(model, GEKKO), "Input model must be of type gekko.GEKKO"
         else:
-            model = GEKKO()
+            model = GEKKO(remote=False)
         self.model = model
 
     # available_jesd_modes = ["jesd204b"]

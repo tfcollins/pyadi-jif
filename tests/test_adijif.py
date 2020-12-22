@@ -75,18 +75,18 @@ def test_adc_clk_solver():
     sys.model.options.SOLVER = 1  # APOPT solver
     sys.model.solve(disp=False)
 
-    # for c in sys.clock.config:
-    #     vs = sys.clock.config[c]
-    #     for v in vs:
-    #         if len(vs)>1:
-    #             print(c,v[0])
-    #         else:
-    #             print(c,v)
+    for c in sys.clock.config:
+        vs = sys.clock.config[c]
+        for v in vs:
+            if len(vs) > 1:
+                print(c, v[0])
+            else:
+                print(c, v)
     assert sys.clock.config["r2"].value[0] == 1
     assert sys.clock.config["m1"].value[0] == 3
     assert sys.clock.config["n2"].value[0] == 24
-    assert sys.clock.config["out_dividers"][0][0] == 1
-    assert sys.clock.config["out_dividers"][1][0] == 800
+    assert sys.clock.config["out_dividers"][0][0] == 1  # Converter
+    assert sys.clock.config["out_dividers"][1][0] == 32  # SYSREF
 
 
 def test_fpga_solver():
@@ -150,7 +150,7 @@ def test_sys_solver():
     assert clk_config["m1"][0] == 3
     assert sys.fpga.config["fpga_ref"].value[0] == 100000000
     for div in divs:
-        assert div[0] in [1, 10, 800]
+        assert div[0] in [1, 10, 128]
 
 
 def test_adrv9009_ad9528_solver():
@@ -279,3 +279,41 @@ def test_daq2_qpll_or_cpll():
     # sys.fpga.force_qpll = 1
 
     sys.solve()
+
+    assert sys.fpga.config["qpll_0_cpll_1"].value[0] == 0
+
+
+def test_daq2_cpll():
+    vcxo = 125000000
+
+    sys = adijif.system("ad9680", "hmc7044", "xilinx", vcxo)
+
+    # Get Converter clocking requirements
+    sys.converter.sample_clock = 1e9 / 2
+    sys.converter.datapath_decimation = 1
+    sys.converter.L = 4
+    sys.converter.M = 2
+    sys.converter.N = 14
+    sys.converter.Np = 16
+    sys.converter.K = 32
+    sys.converter.F = 1
+    sys.Debug_Solver = True
+
+    # Get FPGA clocking requirements
+    sys.fpga.setup_by_dev_kit_name("zc706")
+    sys.fpga.force_cpll = 1
+    print(sys.converter.bit_clock / 1e9)
+
+    sys.solve()
+
+    print("----- FPGA config:")
+    for c in sys.fpga.config:
+        vs = sys.fpga.config[c]
+        if not isinstance(vs, list) and not isinstance(vs, dict):
+            print(c, vs.value)
+            continue
+        for v in vs:
+            if len(vs) > 1:
+                print(c, v[0])
+            else:
+                print(c, v)

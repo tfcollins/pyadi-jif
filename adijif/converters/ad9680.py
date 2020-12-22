@@ -42,11 +42,12 @@ class ad9680(converter):
         possible_sysrefs = []
         for n in range(1, 20):
             r = self.multiframe_clock / (n * n)
-            if r == int(r):
+            if r == int(r) and r > 1e6:
                 possible_sysrefs.append(r)
-
         self.config = {"sysref": self.model.sos1(possible_sysrefs)}
-        self.model.Obj(self.config["sysref"])
+
+        # self.model.Obj(self.config["sysref"])  # This breaks many searches
+
         return [self.sample_clock, self.config["sysref"]]
 
     def device_clock_available(self):

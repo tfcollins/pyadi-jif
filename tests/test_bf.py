@@ -4,12 +4,14 @@
 
 import adijif
 import numpy as np
-import pytest
+
+# import pytest
 
 # from adijif import adijif
-from adijif import cli
+# from adijif import cli
 
 # from click.testing import CliRunner
+
 
 def test_ad9680_config_ex1a():
     # Full bandwidth example 1a
@@ -506,7 +508,8 @@ def test_daq2_fpga_qpll_rxtx_zc706_config():
         "type": "QPLL",
     }
     assert info == ref
-    
+
+
 def test_system_daq2_rx_ad9528():
     vcxo = 125000000
 
@@ -524,11 +527,511 @@ def test_system_daq2_rx_ad9528():
 
     clks = sys.determine_clocks()
 
-    ref = [{'Converter': np.array(1000000000), 'ClockChip': [{'m1': 4, 'vco': 4000000000.0, 'n2': 16, 'r1': 2, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 24, 'r1': 3, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 32, 'r1': 4, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 40, 'r1': 5, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 48, 'r1': 6, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 56, 'r1': 7, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 64, 'r1': 8, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 72, 'r1': 9, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 80, 'r1': 10, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 88, 'r1': 11, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 96, 'r1': 12, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 104, 'r1': 13, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 112, 'r1': 14, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 120, 'r1': 15, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 128, 'r1': 16, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 136, 'r1': 17, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 144, 'r1': 18, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 152, 'r1': 19, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 160, 'r1': 20, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 168, 'r1': 21, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 176, 'r1': 22, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 184, 'r1': 23, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 192, 'r1': 24, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 200, 'r1': 25, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 208, 'r1': 26, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 216, 'r1': 27, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 224, 'r1': 28, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 240, 'r1': 30, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}, {'m1': 4, 'vco': 4000000000.0, 'n2': 248, 'r1': 31, 'required_output_divs': 1.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}]}]
+    ref = [
+        {
+            "Converter": np.array(1000000000),
+            "ClockChip": [
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 16,
+                    "r1": 2,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 24,
+                    "r1": 3,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 32,
+                    "r1": 4,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 40,
+                    "r1": 5,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 48,
+                    "r1": 6,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 56,
+                    "r1": 7,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 64,
+                    "r1": 8,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 72,
+                    "r1": 9,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 80,
+                    "r1": 10,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 88,
+                    "r1": 11,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 96,
+                    "r1": 12,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 104,
+                    "r1": 13,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 112,
+                    "r1": 14,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 120,
+                    "r1": 15,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 128,
+                    "r1": 16,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 136,
+                    "r1": 17,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 144,
+                    "r1": 18,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 152,
+                    "r1": 19,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 160,
+                    "r1": 20,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 168,
+                    "r1": 21,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 176,
+                    "r1": 22,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 184,
+                    "r1": 23,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 192,
+                    "r1": 24,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 200,
+                    "r1": 25,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 208,
+                    "r1": 26,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 216,
+                    "r1": 27,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 224,
+                    "r1": 28,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 240,
+                    "r1": 30,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+                {
+                    "m1": 4,
+                    "vco": 4000000000.0,
+                    "n2": 248,
+                    "r1": 31,
+                    "required_output_divs": 1.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                },
+            ],
+        }
+    ]
 
-    assert clks==ref
+    assert clks == ref
 
-@pytest.mark.skip(reason="Takes too long")
+
+# @pytest.mark.skip(reason="Takes too long")
 def test_system_daq2_rx_hmc7044():
     vcxo = 125000000
 
@@ -548,9 +1051,32 @@ def test_system_daq2_rx_hmc7044():
 
     print(clks)
 
-    ref = [{'Converter': np.array(1000000000), 'ClockChip': [{'n2': 12, 'r2': 1, 'vco': 3000000000.0, 'required_output_divs': 3.0, 'fpga_pll_config': {'vco': 10000000000.0, 'band': 1, 'd': 1, 'm': 1, 'n': 20, 'qty4_full_rate': 0, 'type': 'QPLL'}, 'sysref_rate': 7812500.0}]}]
+    ref = [
+        {
+            "Converter": np.array(1000000000),
+            "ClockChip": [
+                {
+                    "n2": 12,
+                    "r2": 1,
+                    "vco": 3000000000.0,
+                    "required_output_divs": 3.0,
+                    "fpga_pll_config": {
+                        "vco": 10000000000.0,
+                        "band": 1,
+                        "d": 1,
+                        "m": 1,
+                        "n": 20,
+                        "qty4_full_rate": 0,
+                        "type": "QPLL",
+                    },
+                    "sysref_rate": 7812500.0,
+                }
+            ],
+        }
+    ]
 
-    assert clks==ref
+    assert clks == ref
+
 
 def test_system_daq2_rx():
     vcxo = 125000000
@@ -747,4 +1273,3 @@ def test_system_daq2_rx():
         }
     ]
     assert clks == ref
-

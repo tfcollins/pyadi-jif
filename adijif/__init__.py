@@ -4,6 +4,7 @@ __author__ = """Travis F. Collins"""
 __email__ = "travis.collins@analog.com"
 __version__ = "0.0.1"
 
+from adijif.converters.ad9144 import ad9144
 from adijif.converters.ad9680 import ad9680
 from adijif.converters.adrv9009 import adrv9009
 

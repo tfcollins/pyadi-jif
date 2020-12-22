@@ -27,32 +27,35 @@ print("Clock config:")
 for c in sys.clock.config:
     vs = sys.clock.config[c]
     for v in vs:
-        if len(vs)>1:
-            print(c,v[0])
+        if len(vs) > 1:
+            print(c, v[0])
         else:
-            print(c,v)
+            print(c, v)
 
 print("FPGA config:")
 for c in sys.fpga.config:
     vs = sys.fpga.config[c]
-    if not isinstance(vs,list) and not isinstance(vs,dict):
-        print(c,vs.value)
+    if not isinstance(vs, list) and not isinstance(vs, dict):
+        print(c, vs.value)
         continue
     for v in vs:
-        if len(vs)>1:
-            print(c,v[0])
+        if len(vs) > 1:
+            print(c, v[0])
         else:
-            print(c,v)
+            print(c, v)
 
 print("Converter config:")
 for c in sys.converter.config:
     vs = sys.converter.config[c]
     for v in vs:
-        if len(vs)>1:
-            print(c,v[0])
+        if len(vs) > 1:
+            print(c, v[0])
         else:
-            print(c,v)
+            print(c, v)
 
 print(sys.fpga.config["vco_select"].value[0] / sys.fpga.config["d_select"].value[0])
 print(sys.converter.bit_clock / sys.fpga.config["rate_divisor_select"].value[0])
-print(sys.converter.bit_clock / (2 * sys.fpga.config["n1_cpll"].value[0] * sys.fpga.config["n2_cpll"].value[0]) )
+print(
+    sys.converter.bit_clock
+    / (2 * sys.fpga.config["n1_cpll"].value[0] * sys.fpga.config["n2_cpll"].value[0])
+)
