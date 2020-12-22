@@ -16,10 +16,17 @@ class system:
         self.vcxo = vcxo
         # FIXME: Do checks
 
-        self.converter = eval(f"adijif.{conv}(self.model)")
+        if isinstance(conv, list):
+            self.converter = []
+            for c in conv:
+                self.converter.append(eval(f"adijif.{c}(self.model)"))
+        else:
+            self.converter = eval(f"adijif.{conv}(self.model)")
         self.clock = eval(f"adijif.{clk}(self.model)")
         self.fpga = eval(f"adijif.{fpga}(self.model)")
         self.vcxo = vcxo
+
+        # TODO: Add these constraints to solver options
         self.configs_to_find = 1
         self.sysref_sample_clock_ratio = 16
         self.sysref_min_div = 4
@@ -45,11 +52,16 @@ class system:
         if not self.enable_converter_clocks and not self.enable_fpga_clocks:
             raise Exception("Converter and/or FPGA clocks must be enabled")
 
+        cnv_clocks = []
         if self.enable_converter_clocks:
-            cnv_clocks = self.converter.get_required_clocks()
-        else:
-            cnv_clocks = []
-
+            convs = (
+                self.converter if isinstance(self.converter, list) else [self.converter]
+            )
+            for conv in convs:
+                clk = conv.get_required_clocks()
+                if not isinstance(clk, list):
+                    clk = [clk]
+                cnv_clocks += clk
         if self.enable_fpga_clocks:
             self.fpga.setup_by_dev_kit_name("zc706")
             fpga_dev_clock = self.fpga.get_required_clocks_qpll(self.converter)
@@ -61,11 +73,12 @@ class system:
         # Collect all requirements
         self.clock.set_requested_clocks(self.vcxo, fpga_dev_clock + cnv_clocks)
 
+        # Set up solver
         self.model.options.SOLVER = 1  # APOPT solver
         # self.model.options.SOLVER = 3  # 1 APOPT, 2 BPOPT, 3 IPOPT
-        # self.model.options.IMODE = 5      # simultaneous estimation
+        # self.model.options.IMODE = 5   # simultaneous estimation
+        # self.model.solver_options = self.solver_options
         self.model.solve(disp=self.Debug_Solver)
-        self.model.solver_options = self.solver_options
 
     def determine_clocks(self):
         """ Defined clocking requirements and search over all possible dividers

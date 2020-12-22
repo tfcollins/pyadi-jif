@@ -280,7 +280,7 @@ def test_daq2_qpll_or_cpll():
 
     sys.solve()
 
-    assert sys.fpga.config["qpll_0_cpll_1"].value[0] == 0
+    assert sys.fpga.configs[0]["qpll_0_cpll_1"].value[0] == 0
 
 
 def test_daq2_cpll():

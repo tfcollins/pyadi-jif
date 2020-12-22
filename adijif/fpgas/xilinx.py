@@ -45,8 +45,16 @@ class xilinx(fpga):
     ]
     sys_clk_select = "GTH34_SYSCLK_QPLL1"
 
+    """ Force use of QPLL for transceiver source """
     force_qpll = 0
+
+    """ Force use of CPLL for transceiver source """
     force_cpll = 0
+
+    """ Force all transceiver sources to be from a single PLL quad.
+        This will try to leverage the output dividers of the PLLs
+    """
+    force_single_quad_tile = 0
 
     @property
     def ref_clock_max(self):
@@ -181,29 +189,91 @@ class xilinx(fpga):
             info = self.determine_qpll(bit_clock, fpga_ref_clock)
         return info
 
-    def _cpll_model_setup(self, clock, converter):
+    def _setup_quad_tile(self, converter, fpga_ref):
+        config = {}
+        # QPLL
+        config["m"] = self.model.Var(integer=True, lb=1, ub=4, value=1)
+        config["d"] = self.model.sos1([1, 2, 4, 8, 16])
+        config["n"] = self.model.sos1(self.N)
 
-        self.config = {"m": self.model.Var(integer=True, lb=1, ub=2, value=1)}
-        self.config["d"] = self.model.sos1([1, 2, 4, 8])
-        self.config["n1"] = self.model.Var(integer=True, lb=4, ub=5, value=1)
-        self.config["n2"] = self.model.Var(integer=True, lb=1, ub=5, value=1)
+        config["vco"] = self.model.Intermediate(fpga_ref * config["n"] / config["m"])
 
-        self.config["vco"] = self.model.Intermediate(
-            clock.config["fpga_ref"]
-            * self.config["n1"]
-            * self.config["n2"]
-            / self.config["m"]
+        # Define QPLL band requirements
+        config["band"] = self.model.Var(integer=True, lb=0, ub=1)
+        config["vco_max"] = self.model.Intermediate(
+            config["band"] * self.vco1_max + (1 - config["band"]) * self.vco0_max
+        )
+        config["vco_min"] = self.model.Intermediate(
+            config["band"] * self.vco1_min + (1 - config["band"]) * self.vco0_min
         )
 
+        # Define if we can use GTY (is available) at full rate
+        if self.transciever_type != "GTY4":
+            config["qty4_full_rate_divisor"] = self.model.Const(value=1)
+        else:
+            config["qty4_full_rate_divisor"] = self.model.Var(integer=True, lb=1, ub=2)
+        config["qty4_full_rate_enabled"] = self.model.Intermediate(
+            1 - config["qty4_full_rate_divisor"]
+        )
+
+        #######################
+        # CPLL
+        config["m_cpll"] = self.model.Var(integer=True, lb=1, ub=2, value=1)
+        config["d_cpll"] = self.model.sos1([1, 2, 4, 8])
+        config["n1_cpll"] = self.model.Var(integer=True, lb=4, ub=5, value=5)
+        config["n2_cpll"] = self.model.Var(integer=True, lb=1, ub=5, value=1)
+
+        config["vco_cpll"] = self.model.Intermediate(
+            fpga_ref * config["n1_cpll"] * config["n2_cpll"] / config["m_cpll"]
+        )
+
+        # Merge
+        if self.force_qpll and self.force_cpll:
+            raise Exception("Cannot force both CPLL and QPLL")
+        if self.force_qpll:
+            config["qpll_0_cpll_1"] = self.model.Const(value=0)
+        elif self.force_cpll:
+            if converter.bit_clock > self.vco_max * 2:
+                raise Exception(f"CPLL too slow for lane rate. Max: {2*self.vco_max}")
+            config["qpll_0_cpll_1"] = self.model.Const(value=1)
+        else:
+            config["qpll_0_cpll_1"] = self.model.Var(integer=True, lb=0, ub=1, value=0)
+
+        config["vco_select"] = self.model.Intermediate(
+            config["qpll_0_cpll_1"] * config["vco_cpll"]
+            + config["vco"] * (1 - config["qpll_0_cpll_1"])
+        )
+        config["vco_min_select"] = self.model.Intermediate(
+            config["qpll_0_cpll_1"] * self.vco_min
+            + config["vco_min"] * (1 - config["qpll_0_cpll_1"])
+        )
+        config["vco_max_select"] = self.model.Intermediate(
+            config["qpll_0_cpll_1"] * self.vco_max
+            + config["vco_max"] * (1 - config["qpll_0_cpll_1"])
+        )
+
+        config["d_select"] = self.model.Intermediate(
+            config["qpll_0_cpll_1"] * config["d_cpll"]
+            + (1 - config["qpll_0_cpll_1"]) * config["d"]
+        )
+
+        config["rate_divisor_select"] = self.model.Intermediate(
+            config["qpll_0_cpll_1"] * (2)
+            + (1 - config["qpll_0_cpll_1"]) * config["qty4_full_rate_divisor"]
+        )
+        #######################
+
+        # Set all relations
+        # QPLL+CPLL
         self.model.Equations(
             [
-                self.config["vco"] >= self.vco_min,
-                self.config["vco"] <= self.vco_max,
-                clock.config["fpga_ref"] / self.config["m"] / self.config["d"]
-                == converter.bit_clock / (2 * self.config["n1"] * self.config["n2"]),
+                config["vco_select"] >= config["vco_min_select"],
+                config["vco_select"] <= config["vco_max_select"],
+                config["vco_select"] * config["rate_divisor_select"]
+                == converter.bit_clock * config["d_select"],
             ]
         )
-        self.model.Obj(self.config["fpga_ref"] * -1)
+        return config
 
     def get_required_clocks_qpll(self, converter):
         """ get_required_clocks_qpll: Get necessary clocks for QPLL configuration
@@ -212,6 +282,8 @@ class xilinx(fpga):
                 converter:
                     Converter object of converter connected to FPGA
         """
+        if not isinstance(converter, list):
+            converter = [converter]
 
         self.config = {
             "fpga_ref": self.model.Var(
@@ -224,124 +296,18 @@ class xilinx(fpga):
 
         # https://www.xilinx.com/support/documentation/user_guides/ug476_7Series_Transceivers.pdf
 
-        # QPLL
-        self.config["m"] = self.model.Var(integer=True, lb=1, ub=4, value=1)
-        self.config["d"] = self.model.sos1([1, 2, 4, 8, 16])
-        self.config["n"] = self.model.sos1(self.N)
-
-        self.config["vco"] = self.model.Intermediate(
-            self.config["fpga_ref"] * self.config["n"] / self.config["m"]
-        )
-
-        # Define QPLL band requirements
-        self.config["band"] = self.model.Var(integer=True, lb=0, ub=1)
-        self.config["vco_max"] = self.model.Intermediate(
-            self.config["band"] * self.vco1_max
-            + (1 - self.config["band"]) * self.vco0_max
-        )
-        self.config["vco_min"] = self.model.Intermediate(
-            self.config["band"] * self.vco1_min
-            + (1 - self.config["band"]) * self.vco0_min
-        )
-
-        # Define if we can use GTY (is available) at full rate
-        if self.transciever_type != "GTY4":
-            self.config["qty4_full_rate_divisor"] = self.model.Const(value=1)
+        if self.force_single_quad_tile:
+            raise Exception("not implemented")
         else:
-            self.config["qty4_full_rate_divisor"] = self.model.Var(
-                integer=True, lb=1, ub=2
-            )
-        self.config["qty4_full_rate_enabled"] = self.model.Intermediate(
-            1 - self.config["qty4_full_rate_divisor"]
-        )
-
-        #######################
-        # CPLL
-        self.config["m_cpll"] = self.model.Var(integer=True, lb=1, ub=2, value=1)
-        self.config["d_cpll"] = self.model.sos1([1, 2, 4, 8])
-        self.config["n1_cpll"] = self.model.Var(integer=True, lb=4, ub=5, value=5)
-        self.config["n2_cpll"] = self.model.Var(integer=True, lb=1, ub=5, value=1)
-
-        self.config["vco_cpll"] = self.model.Intermediate(
-            self.config["fpga_ref"]
-            * self.config["n1_cpll"]
-            * self.config["n2_cpll"]
-            / self.config["m_cpll"]
-        )
-
-        # Merge
-        if self.force_qpll and self.force_cpll:
-            raise Exception("Cannot force both CPLL and QPLL")
-        if self.force_qpll:
-            self.config["qpll_0_cpll_1"] = self.model.Const(value=0)
-        elif self.force_cpll:
-            if converter.bit_clock > self.vco_max * 2:
-                raise Exception(f"CPLL too slow for lane rate. Max: {2*self.vco_max}")
-            self.config["qpll_0_cpll_1"] = self.model.Const(value=1)
-        else:
-            self.config["qpll_0_cpll_1"] = self.model.Var(
-                integer=True, lb=0, ub=1, value=0
-            )
-
-        self.config["vco_select"] = self.model.Intermediate(
-            self.config["qpll_0_cpll_1"] * self.config["vco_cpll"]
-            + self.config["vco"] * (1 - self.config["qpll_0_cpll_1"])
-        )
-        self.config["vco_min_select"] = self.model.Intermediate(
-            self.config["qpll_0_cpll_1"] * self.vco_min
-            + self.config["vco_min"] * (1 - self.config["qpll_0_cpll_1"])
-        )
-        self.config["vco_max_select"] = self.model.Intermediate(
-            self.config["qpll_0_cpll_1"] * self.vco_max
-            + self.config["vco_max"] * (1 - self.config["qpll_0_cpll_1"])
-        )
-
-        self.config["d_select"] = self.model.Intermediate(
-            self.config["qpll_0_cpll_1"] * self.config["d_cpll"]
-            + (1 - self.config["qpll_0_cpll_1"]) * self.config["d"]
-        )
-
-        self.config["rate_divisor_select"] = self.model.Intermediate(
-            self.config["qpll_0_cpll_1"] * (2)
-            + (1 - self.config["qpll_0_cpll_1"]) * self.config["qty4_full_rate_divisor"]
-        )
-        #######################
-
-        # Set all relations
-        # QPLL+CPLL
-        self.model.Equations(
-            [
-                self.config["vco_select"] >= self.config["vco_min_select"],
-                self.config["vco_select"] <= self.config["vco_max_select"],
-                self.config["vco_select"] * self.config["rate_divisor_select"]
-                == converter.bit_clock * self.config["d_select"],
-            ]
-        )
-
-        # QPLL ONLY
-        # self.model.Equations(
-        #     [
-        #         self.config["vco"] >= self.config["vco_min"],
-        #         self.config["vco"] <= self.config["vco_max"],
-        #         self.config["vco"] / self.config["d"]
-        #         == converter.bit_clock / self.config["qty4_full_rate_divisor"],
-        #     ]
-        # )
-
-        # CPLL ONLY
-        # self.model.Equations(
-        #     [
-        #         self.config["vco_cpll"] >= self.vco_min,
-        #         self.config["vco_cpll"] <= self.vco_max,
-        #         2 * self.config["vco_cpll"]
-        #         == converter.bit_clock * self.config["d_cpll"],
-        #     ]
-        # )
-
-        # Set optimizations
-        # self.model.Obj(self.config["d"])
-        # self.model.Obj(self.config["d_cpll"])
-        self.model.Obj(self.config["d_select"])
+            #######################
+            self.configs = []
+            for cnv in converter:
+                config = self._setup_quad_tile(cnv, self.config["fpga_ref"])
+                # Set optimizations
+                # self.model.Obj(self.config["d"])
+                # self.model.Obj(self.config["d_cpll"])
+                self.model.Obj(config["d_select"])
+                self.configs.append(config)
 
         self.model.Obj(self.config["fpga_ref"])
 

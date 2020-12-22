@@ -4,8 +4,7 @@
 
 import adijif
 import numpy as np
-
-# import pytest
+import pytest
 
 # from adijif import adijif
 # from adijif import cli
@@ -1031,7 +1030,7 @@ def test_system_daq2_rx_ad9528():
     assert clks == ref
 
 
-# @pytest.mark.skip(reason="Takes too long")
+@pytest.mark.skip(reason="Takes too long")
 def test_system_daq2_rx_hmc7044():
     vcxo = 125000000
 
