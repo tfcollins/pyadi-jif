@@ -1,5 +1,5 @@
-import pytest
 import adijif
+import pytest
 
 
 def print_sys(sys):
@@ -103,6 +103,7 @@ def test_ad9680_all_clk_chips_solver(qpll, cpll, rate, clock_chip):
 
     print_sys(sys)
 
+
 def test_ad9144_solver():
 
     vcxo = 125000000
@@ -123,7 +124,6 @@ def test_ad9144_solver():
 
     assert sys.converter.S == 1
     assert sys.converter.bit_clock == 10e9
-
 
     if 0:
         # cnv_config = type("AD9680", (), {})()

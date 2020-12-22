@@ -9,8 +9,7 @@ class ad9144(converter):
 
     direct_clocking = True
     use_direct_clocking = True
-    
-    
+
     available_jesd_modes = ["jesd204b"]
     K_possible = [4, 8, 12, 16, 20, 24, 28, 32]
     L_possible = [1, 2, 4]
@@ -34,10 +33,7 @@ class ad9144(converter):
     pfd_min = 35e6
     pfd_max = 80e6
 
-
-
-    config = {} # type: ignore
-
+    config = {}  # type: ignore
 
     """ Clocking
         AD9144 has directly clocked DAC that have optional input dividers.
@@ -49,32 +45,37 @@ class ad9144(converter):
 
     def _pll_config(self):
 
-        dac_clk = self.datapath_interpolation*self.sample_clock
-        self.config['dac_clk'] = self.model.Const(dac_clk)
-        self.config['ref_div_factor'] = self.model.sos1([1,2,4,8,16])
-        self.config['BCount'] = self.model.Var(integer=True, lb=6, ub=127)
-        self.config['ref_clk'] = self.model.Var(integer=True, lb=35e6, ub=1e9)
+        dac_clk = self.datapath_interpolation * self.sample_clock
+        self.config["dac_clk"] = self.model.Const(dac_clk)
+        self.config["ref_div_factor"] = self.model.sos1([1, 2, 4, 8, 16])
+        self.config["BCount"] = self.model.Var(integer=True, lb=6, ub=127)
+        self.config["ref_clk"] = self.model.Var(integer=True, lb=35e6, ub=1e9)
 
-        if dac_clk>2800e6:
+        if dac_clk > 2800e6:
             raise Exception("DAC Clock too fast")
-        elif dac_clk>=1500e6:
-            self.config['lo_div_mode_p2'] = self.model.Const(2**(1+1))
-        elif dac_clk>=720e6:
-            self.config['lo_div_mode_p2'] = self.model.Const(2**(2+1))
-        elif dac_clk>=420e6:
-            self.config['lo_div_mode_p2'] = self.model.Const(2**(3+1))
+        elif dac_clk >= 1500e6:
+            self.config["lo_div_mode_p2"] = self.model.Const(2 ** (1 + 1))
+        elif dac_clk >= 720e6:
+            self.config["lo_div_mode_p2"] = self.model.Const(2 ** (2 + 1))
+        elif dac_clk >= 420e6:
+            self.config["lo_div_mode_p2"] = self.model.Const(2 ** (3 + 1))
         else:
             raise Exception("DAC Clock too slow")
 
-        self.config['vco'] = self.model.Intermediate(self.config['dac_clk'] * self.config['lo_div_mode_p2'])
+        self.config["vco"] = self.model.Intermediate(
+            self.config["dac_clk"] * self.config["lo_div_mode_p2"]
+        )
 
-        self.model.Equation([
-            self.config['ref_div_factor'] * self.pfd_min < self.config['ref_clk'],
-            self.config['ref_div_factor'] * self.pfd_max > self.config['ref_clk'],
-            self.config['ref_clk']*2*self.config['BCount'] == self.config['dac_clk'] * self.config['ref_div_factor']
-            ])
+        self.model.Equation(
+            [
+                self.config["ref_div_factor"] * self.pfd_min < self.config["ref_clk"],
+                self.config["ref_div_factor"] * self.pfd_max > self.config["ref_clk"],
+                self.config["ref_clk"] * 2 * self.config["BCount"]
+                == self.config["dac_clk"] * self.config["ref_div_factor"],
+            ]
+        )
 
-        return self.config['ref_clk']
+        return self.config["ref_clk"]
 
     def get_required_clocks(self):
         """ Generate list required clocks
@@ -88,9 +89,9 @@ class ad9144(converter):
         self.config["sysref"] = self.model.sos1(possible_sysrefs)
 
         if self.use_direct_clocking:
-            clk = self.sample_clock*self.datapath_interpolation
+            clk = self.sample_clock * self.datapath_interpolation
             # LaneRate = (20 × DataRate × M)/L
-            assert self.bit_clock == (20*self.sample_clock * self.M)/self.L
+            assert self.bit_clock == (20 * self.sample_clock * self.M) / self.L
         else:
             # vco = dac_clk * 2^(LO_DIV_MODE + 1)
             # 6 GHz <= vco <= 12 GHz
@@ -101,7 +102,7 @@ class ad9144(converter):
 
         print(self.config)
 
-        self.model.Obj(self.config["sysref"]) # This breaks many searches
+        self.model.Obj(self.config["sysref"])  # This breaks many searches
 
         return [clk, self.config["sysref"]]
 
