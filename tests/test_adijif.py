@@ -99,7 +99,7 @@ def test_fpga_solver():
     cnv_config.device_clock = 10e9 / 40
 
     sys.fpga.setup_by_dev_kit_name("zc706")
-    required_clocks = sys.fpga.get_required_clocks_qpll(cnv_config)
+    required_clocks = sys.fpga.get_required_clocks(cnv_config)
 
     sys.clock.set_requested_clocks(vcxo, required_clocks)
 
@@ -135,7 +135,7 @@ def test_sys_solver():
 
     # Get FPGA clocking requirements
     sys.fpga.setup_by_dev_kit_name("zc706")
-    fpga_dev_clock = sys.fpga.get_required_clocks_qpll(sys.converter)
+    fpga_dev_clock = sys.fpga.get_required_clocks(sys.converter)
 
     # Collect all requirements
     sys.clock.set_requested_clocks(vcxo, fpga_dev_clock + cnv_clocks)
@@ -180,7 +180,7 @@ def test_adrv9009_ad9528_solver():
 
     # Get FPGA clocking requirements
     sys.fpga.setup_by_dev_kit_name("zc706")
-    fpga_dev_clock = sys.fpga.get_required_clocks_qpll(sys.converter)
+    fpga_dev_clock = sys.fpga.get_required_clocks(sys.converter)
 
     # Collect all requirements
     sys.clock.set_requested_clocks(vcxo, fpga_dev_clock + cnv_clocks)
@@ -244,7 +244,7 @@ def test_xilinx_solver():
 
     fpga = adijif.xilinx()
     fpga.setup_by_dev_kit_name("zc706")
-    fpga.get_required_clocks_qpll(cnv_config)
+    fpga.get_required_clocks(cnv_config)
 
     m = 1
     d = 1

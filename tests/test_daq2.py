@@ -59,7 +59,7 @@ def test_fpga_cpll_solver():
     if 0:
         # cnv_config = type("AD9680", (), {})()
         # cnv_config.bit_clock = 10e9/2
-        required_clocks = sys.fpga.get_required_clocks_qpll(sys.converter)
+        required_clocks = sys.fpga.get_required_clocks(sys.converter)
         sys.clock.set_requested_clocks(vcxo, [required_clocks])
 
         sys.model.options.SOLVER = 1  # APOPT solver
@@ -128,7 +128,7 @@ def test_ad9144_solver():
     if 0:
         # cnv_config = type("AD9680", (), {})()
         # cnv_config.bit_clock = 10e9/2
-        required_clocks = sys.fpga.get_required_clocks_qpll(sys.converter)
+        required_clocks = sys.fpga.get_required_clocks(sys.converter)
         sys.clock.set_requested_clocks(vcxo, [required_clocks])
 
         sys.model.options.SOLVER = 1  # APOPT solver

@@ -111,7 +111,7 @@ class system:
 
         if self.enable_fpga_clocks:
             self.fpga.setup_by_dev_kit_name("zc706")
-            fpga_dev_clock = self.fpga.get_required_clocks_qpll(self.converter)
+            fpga_dev_clock = self.fpga.get_required_clocks(self.converter)
             if not isinstance(fpga_dev_clock, list):
                 fpga_dev_clock = [fpga_dev_clock]
         else:

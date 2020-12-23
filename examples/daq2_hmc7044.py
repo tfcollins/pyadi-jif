@@ -20,7 +20,7 @@ cnv_clocks = sys.converter.get_required_clocks()
 
 # Get FPGA clocking requirements
 sys.fpga.setup_by_dev_kit_name("zc706")
-fpga_dev_clock = sys.fpga.get_required_clocks_qpll(sys.converter)
+fpga_dev_clock = sys.fpga.get_required_clocks(sys.converter)
 
 # Collect all requirements
 sys.clock.set_requested_clocks(vcxo, [fpga_dev_clock] + cnv_clocks)

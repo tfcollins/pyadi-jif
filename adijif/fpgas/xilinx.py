@@ -310,8 +310,8 @@ class xilinx(xilinx_bf):
         )
         return config
 
-    def get_required_clocks_qpll(self, converter):
-        """ get_required_clocks_qpll: Get necessary clocks for QPLL configuration
+    def get_required_clocks(self, converter):
+        """ get_required_clocks: Get necessary clocks for QPLL/CPLL configuration
 
             Parameters:
                 converter:
