@@ -29,9 +29,25 @@ class ad9523_1(clock):
     """ VCXO dividers """
     r2_available = range(1, 32)
 
+    def get_config(self):
+        config = {
+            "m1": self.config["m1"].value[0],
+            "n2": self.config["n2"].value[0],
+            "r2": self.config["r2"].value[0],
+            "out_dividers": [x.value[0] for x in self.config["out_dividers"]],
+            "output_clocks": [],
+        }
+
+        clk = self.vcxo / config["r2"] * config["n2"] / config["m1"]
+        for div in self.config["out_dividers"]:
+            config["output_clocks"].append(clk / div.value[0])
+
+        return config
+
     def _setup_solver_constraints(self, vcxo):
         """ Apply constraints to solver model
         """
+        self.vcxo = vcxo
         self.config = {"r2": self.model.Var(integer=True, lb=1, ub=31, value=1)}
         self.config["m1"] = self.model.Var(integer=True, lb=3, ub=5)
         self.config["n2"] = self.model.sos1(self.n2_available)

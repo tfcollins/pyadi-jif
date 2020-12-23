@@ -14,6 +14,11 @@ class fpga(metaclass=ABCMeta):
     def determine_qpll(self):
         raise NotImplementedError
 
+    @property
+    @abstractmethod
+    def get_config(self):
+        raise NotImplementedError
+
     def __init__(self, model=None):
         if model:
             assert isinstance(model, GEKKO), "Input model must be of type gekko.GEKKO"

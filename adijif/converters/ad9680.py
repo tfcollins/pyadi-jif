@@ -45,6 +45,7 @@ class ad9680(converter):
             if r == int(r) and r > 1e6:
                 possible_sysrefs.append(r)
         self.config = {"sysref": self.model.sos1(possible_sysrefs)}
+        self.config["sysref"].value = possible_sysrefs[0]
 
         # self.model.Obj(self.config["sysref"])  # This breaks many searches
 

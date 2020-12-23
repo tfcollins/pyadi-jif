@@ -96,11 +96,12 @@ def test_fpga_solver():
 
     cnv_config = type("AD9680", (), {})()
     cnv_config.bit_clock = 10e9
+    cnv_config.device_clock = 10e9 / 40
 
     sys.fpga.setup_by_dev_kit_name("zc706")
     required_clocks = sys.fpga.get_required_clocks_qpll(cnv_config)
 
-    sys.clock.set_requested_clocks(vcxo, [required_clocks])
+    sys.clock.set_requested_clocks(vcxo, required_clocks)
 
     sys.model.options.SOLVER = 1  # APOPT solver
     sys.model.solve(disp=True)
@@ -136,7 +137,7 @@ def test_sys_solver():
     fpga_dev_clock = sys.fpga.get_required_clocks_qpll(sys.converter)
 
     # Collect all requirements
-    sys.clock.set_requested_clocks(vcxo, [fpga_dev_clock] + cnv_clocks)
+    sys.clock.set_requested_clocks(vcxo, fpga_dev_clock + cnv_clocks)
 
     sys.model.options.SOLVER = 1
 
@@ -150,7 +151,7 @@ def test_sys_solver():
     assert clk_config["m1"][0] == 3
     assert sys.fpga.config["fpga_ref"].value[0] == 100000000
     for div in divs:
-        assert div[0] in [1, 10, 128]
+        assert div[0] in [1, 4, 10, 32]
 
 
 def test_adrv9009_ad9528_solver():
@@ -181,7 +182,7 @@ def test_adrv9009_ad9528_solver():
     fpga_dev_clock = sys.fpga.get_required_clocks_qpll(sys.converter)
 
     # Collect all requirements
-    sys.clock.set_requested_clocks(vcxo, [fpga_dev_clock] + cnv_clocks)
+    sys.clock.set_requested_clocks(vcxo, fpga_dev_clock + cnv_clocks)
 
     sys.model.options.SOLVER = 1
     sys.model.solve(disp=False)
@@ -194,7 +195,7 @@ def test_adrv9009_ad9528_solver():
     assert clk_config["m1"][0] == 4
     assert sys.fpga.config["fpga_ref"].value[0] == 98304000
     for div in divs:
-        assert div[0] in [10, 4, 256]
+        assert div[0] in [4, 8, 10, 256]
 
 
 def test_adrv9009_ad9528_solver_compact():
@@ -231,13 +232,14 @@ def test_adrv9009_ad9528_solver_compact():
     assert clk_config["m1"][0] == 4
     assert sys.fpga.config["fpga_ref"].value[0] == 98304000
     for div in divs:
-        assert div[0] in [10, 4, 256]
+        assert div[0] in [4, 8, 10, 256]
 
 
 def test_xilinx_solver():
 
     cnv_config = type("ADRV9009", (), {})()
     cnv_config.bit_clock = 122.88e6 * 40
+    cnv_config.device_clock = cnv_config.bit_clock / 40
 
     fpga = adijif.xilinx()
     fpga.setup_by_dev_kit_name("zc706")
@@ -297,11 +299,11 @@ def test_daq2_cpll():
     sys.converter.Np = 16
     sys.converter.K = 32
     sys.converter.F = 1
-    sys.Debug_Solver = True
+    sys.Debug_Solver = False
 
     # Get FPGA clocking requirements
     sys.fpga.setup_by_dev_kit_name("zc706")
-    sys.fpga.force_cpll = 1
+    sys.fpga.force_cpll = 1  # Uncomment to pass?
     print(sys.converter.bit_clock / 1e9)
 
     sys.solve()

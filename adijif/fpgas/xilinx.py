@@ -56,6 +56,11 @@ class xilinx(fpga):
     """
     force_single_quad_tile = 0
 
+    """ Request that clock chip generated device clock
+        device clock == LMFC/40
+    """
+    request_device_clock = True
+
     @property
     def ref_clock_max(self):
         # https://www.xilinx.com/support/documentation/data_sheets/ds191-XC7Z030-XC7Z045-data-sheet.pdf
@@ -189,6 +194,35 @@ class xilinx(fpga):
             info = self.determine_qpll(bit_clock, fpga_ref_clock)
         return info
 
+    def get_config(self):
+        """ Helper function for model to extract solved parameters
+            in a readable way
+        """
+        out = []
+        for config in self.configs:
+            pll_config = {}
+            if config["qpll_0_cpll_1"].value[0]:
+                pll_config["type"] = "cpll"
+                pll_config["m"] = config["m_cpll"].value[0]
+                pll_config["d"] = config["d_cpll"].value[0]
+                pll_config["n1"] = config["n1_cpll"].value[0]
+                pll_config["n2"] = config["n2_cpll"].value[0]
+                pll_config["vco"] = config["vco_cpll"].value[0]
+            else:
+                pll_config["type"] = "qpll"
+                pll_config["m"] = config["m"].value[0]
+                pll_config["d"] = config["d"].value[0]
+                pll_config["n"] = config["n"].value[0]
+                pll_config["vco"] = config["vco"].value[0]
+                pll_config["band"] = config["band"].value[0]
+                pll_config["qty4_full_rate_enabled"] = config[
+                    "qty4_full_rate_enabled"
+                ].value[0]
+            out.append(pll_config)
+        if len(out) == 1:
+            out = out[0]
+        return out
+
     def _setup_quad_tile(self, converter, fpga_ref):
         config = {}
         # QPLL
@@ -297,10 +331,11 @@ class xilinx(fpga):
         # https://www.xilinx.com/support/documentation/user_guides/ug476_7Series_Transceivers.pdf
 
         if self.force_single_quad_tile:
-            raise Exception("not implemented")
+            raise Exception("force_single_quad_tile==1 not implemented")
         else:
             #######################
             self.configs = []
+            self.dev_clocks = []
             for cnv in converter:
                 config = self._setup_quad_tile(cnv, self.config["fpga_ref"])
                 # Set optimizations
@@ -308,10 +343,13 @@ class xilinx(fpga):
                 # self.model.Obj(self.config["d_cpll"])
                 self.model.Obj(config["d_select"])
                 self.configs.append(config)
+                # FPGA also requires clock at device clock rate
+                if self.request_device_clock:
+                    self.dev_clocks.append(cnv.device_clock)
 
         self.model.Obj(self.config["fpga_ref"])
 
-        return self.config["fpga_ref"]
+        return [self.config["fpga_ref"]] + self.dev_clocks
 
     def determine_cpll(self, bit_clock, fpga_ref_clock):
         """

@@ -100,8 +100,6 @@ class ad9144(converter):
             # ref_div = 2^ref_div_mode = 1,2,4,8,16
             clk = self._pll_config()
 
-        print(self.config)
-
         self.model.Obj(self.config["sysref"])  # This breaks many searches
 
         return [clk, self.config["sysref"]]

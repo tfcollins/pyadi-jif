@@ -10,6 +10,16 @@ class system:
         generation algorithms
     """
 
+    """ All converters shared a common sysref. This requires that all
+        converters have the same multiframe clock (LMFC)
+    """
+    use_common_sysref = False
+
+    enable_converter_clocks = True
+    enable_fpga_clocks = True
+
+    Debug_Solver = False
+
     def __init__(self, conv, clk, fpga, vcxo):
 
         self.model = GEKKO(remote=False)
@@ -32,9 +42,6 @@ class system:
         self.sysref_min_div = 4
         self.sysref_max_div = 2 ** 14
 
-        self.enable_converter_clocks = True
-        self.enable_fpga_clocks = True
-        self.Debug_Solver = False
         self.solver_options = [
             "minlp_maximum_iterations 1000",  # minlp iterations with integer solution
             "minlp_max_iter_with_int_sol 100",  # treat minlp as nlp
@@ -54,6 +61,7 @@ class system:
 
         cnv_clocks = []
         if self.enable_converter_clocks:
+
             convs = (
                 self.converter if isinstance(self.converter, list) else [self.converter]
             )
@@ -62,6 +70,27 @@ class system:
                 if not isinstance(clk, list):
                     clk = [clk]
                 cnv_clocks += clk
+            # Filter out multiple sysrefs
+            cnv_clocks_filters = []
+            if len(cnv_clocks) > 2:
+                if self.use_common_sysref:
+                    ref = convs[0].multiframe_clock
+                    for conv in convs:
+                        if ref != conv.multiframe_clock:
+                            raise Exception(
+                                "SYSREF cannot be shared. "
+                                + "Converters at different LMFCs."
+                                + "\nSet use_common_sysref to False "
+                                + "for current rates"
+                            )
+
+                    for i, clk in enumerate(cnv_clocks):
+                        # 1,3,5,... are sysrefs. Keep first 1
+                        if i / 2 == int(i / 2) or i == 1:
+                            cnv_clocks_filters.append(clk)
+            else:
+                cnv_clocks_filters = cnv_clocks
+
         if self.enable_fpga_clocks:
             self.fpga.setup_by_dev_kit_name("zc706")
             fpga_dev_clock = self.fpga.get_required_clocks_qpll(self.converter)
@@ -71,7 +100,7 @@ class system:
             fpga_dev_clock = []
 
         # Collect all requirements
-        self.clock.set_requested_clocks(self.vcxo, fpga_dev_clock + cnv_clocks)
+        self.clock.set_requested_clocks(self.vcxo, cnv_clocks_filters + fpga_dev_clock)
 
         # Set up solver
         self.model.options.SOLVER = 1  # APOPT solver
