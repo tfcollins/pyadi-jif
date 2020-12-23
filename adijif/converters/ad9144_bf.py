@@ -1,12 +1,14 @@
 import numpy as np
 from adijif.converters.converter import converter
 
+
 class ad9144_bf(converter):
     """ Brute force methods for calculating clocks
 
         These are currently meant for debug to compare against
         the solver solutions
     """
+
     def device_clock_available(self):
         """ Generate list of possible device clocks """
         raise Exception("Not implemented")
