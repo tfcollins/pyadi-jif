@@ -42,14 +42,17 @@ class system:
         self.sysref_min_div = 4
         self.sysref_max_div = 2 ** 14
 
+        # self.solver_options = [
+        #     "minlp_maximum_iterations 1000",  # minlp iterations with integer solution
+        #     "minlp_max_iter_with_int_sol 100",  # treat minlp as nlp
+        #     "minlp_as_nlp 0",  # nlp sub-problem max iterations
+        #     "nlp_maximum_iterations 5000",  # 1 = depth first, 2 = breadth first
+        #     "minlp_branch_method 1",  # maximum deviation from whole number
+        #     "minlp_integer_tol 0.05",  # covergence tolerance
+        #     "minlp_gap_tol 0.01",
+        # ]
         self.solver_options = [
-            "minlp_maximum_iterations 1000",  # minlp iterations with integer solution
-            "minlp_max_iter_with_int_sol 100",  # treat minlp as nlp
-            "minlp_as_nlp 0",  # nlp sub-problem max iterations
-            "nlp_maximum_iterations 5000",  # 1 = depth first, 2 = breadth first
-            "minlp_branch_method 1",  # maximum deviation from whole number
-            "minlp_integer_tol 0.05",  # covergence tolerance
-            "minlp_gap_tol 0.01",
+            "minlp_maximum_iterations 100000",  # minlp iterations with integer solution
         ]
 
     def solve(self):
@@ -100,13 +103,14 @@ class system:
             fpga_dev_clock = []
 
         # Collect all requirements
+        # print("Requested clocks:", cnv_clocks_filters + fpga_dev_clock)
         self.clock.set_requested_clocks(self.vcxo, cnv_clocks_filters + fpga_dev_clock)
 
         # Set up solver
         self.model.options.SOLVER = 1  # APOPT solver
         # self.model.options.SOLVER = 3  # 1 APOPT, 2 BPOPT, 3 IPOPT
         # self.model.options.IMODE = 5   # simultaneous estimation
-        # self.model.solver_options = self.solver_options
+        self.model.solver_options = self.solver_options
         self.model.solve(disp=self.Debug_Solver)
 
     def determine_clocks(self):

@@ -145,7 +145,7 @@ def test_daq2_split_rates_solver():
     sys = adijif.system(["ad9680", "ad9144"], "ad9523_1", "xilinx", vcxo)
     sys.fpga.setup_by_dev_kit_name("zc706")
     sys.Debug_Solver = False
-    sys.fpga.request_device_clock = False  # FIXME
+    # sys.fpga.request_device_clock = False
 
     # Get Converter clocking requirements
     sys.converter[0].sample_clock = 1e9 / 2

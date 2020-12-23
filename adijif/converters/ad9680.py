@@ -45,8 +45,9 @@ class ad9680(converter):
             if r == int(r) and r > 1e6:
                 possible_sysrefs.append(r)
         self.config = {"sysref": self.model.sos1(possible_sysrefs)}
-        self.config["sysref"].value = possible_sysrefs[0]
 
+        # Need to pick one of below
+        self.config["sysref"].value = possible_sysrefs[-1]
         # self.model.Obj(self.config["sysref"])  # This breaks many searches
 
         return [self.sample_clock, self.config["sysref"]]

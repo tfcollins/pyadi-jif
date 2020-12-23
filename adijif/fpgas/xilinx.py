@@ -58,8 +58,9 @@ class xilinx(fpga):
 
     """ Request that clock chip generated device clock
         device clock == LMFC/40
+        NOTE: THIS IS NOT FPGA REF CLOCK
     """
-    request_device_clock = True
+    request_device_clock = False
 
     @property
     def ref_clock_max(self):
@@ -342,6 +343,7 @@ class xilinx(fpga):
                 # self.model.Obj(self.config["d"])
                 # self.model.Obj(self.config["d_cpll"])
                 self.model.Obj(config["d_select"])
+                self.model.Obj(-1 * config["qpll_0_cpll_1"])  # Favor CPLL over QPLL
                 self.configs.append(config)
                 # FPGA also requires clock at device clock rate
                 if self.request_device_clock:

@@ -61,7 +61,6 @@ class hmc7044(clock):
         # Add requested clocks to output constraints
         self.config["out_dividers"] = []
         for out_freq in out_freqs:
-
             even = self.model.Var(integer=True, lb=1, ub=4094 / 2)
             odd = self.model.sos1([1, 3, 5])
             eo = self.model.Var(integer=True, lb=0, ub=1)

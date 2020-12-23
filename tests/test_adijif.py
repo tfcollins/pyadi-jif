@@ -111,8 +111,9 @@ def test_fpga_solver():
     # divs = sys.clock.config["out_dividers"]
     assert clk_config["n2"][0] == 24
     assert clk_config["r2"][0] == 1
-    assert clk_config["m1"][0] == 3
+    assert clk_config["m1"][0] == 5
     assert sys.fpga.config["fpga_ref"].value[0] == 100e6
+    assert sys.fpga.configs[0]["qpll_0_cpll_1"].value[0] == 0
 
 
 def test_sys_solver():
@@ -151,7 +152,7 @@ def test_sys_solver():
     assert clk_config["m1"][0] == 3
     assert sys.fpga.config["fpga_ref"].value[0] == 100000000
     for div in divs:
-        assert div[0] in [1, 4, 10, 32]
+        assert div[0] in [1, 4, 10, 800]
 
 
 def test_adrv9009_ad9528_solver():
