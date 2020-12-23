@@ -1,12 +1,12 @@
 # from adijif.jesd import jesd
 import numpy as np
-from adijif.converters.converter import converter
+from adijif.converters.adrv9009_bf import adrv9009_bf
 
 # References
 # https://ez.analog.com/wide-band-rf-transceivers/design-support-adrv9008-1-adrv9008-2-adrv9009/f/q-a/103757/adrv9009-clock-configuration/308013#308013
 
 
-class adrv9009(converter):
+class adrv9009(adrv9009_bf):
 
     name = "ADRV9009"
 
@@ -41,7 +41,14 @@ class adrv9009(converter):
         Lane Rate = I/Q Sample Rate * M * Np * (10 / 8) / L
         Lane Rate = sample_clock * M * Np * (10 / 8) / L
     """
-    max_input_clock = 4e9
+    max_input_clock = 1e9
+
+    def get_required_clock_names(self):
+        """ Get list of strings of names of requested clocks
+            This list of names is for the clocks defined by
+            get_required_clocks
+        """
+        return ["adrv9009_device_clock", "adrv9009_sysref"]
 
     def get_required_clocks(self):
         """ Generate list of required clocks
@@ -68,35 +75,3 @@ class adrv9009(converter):
 
         return [self.config["device_clock"], self.config["sysref"]]
         # return [possible_device_clocks[1], self.config["sysref"]]
-
-    def device_clock_available(self):
-        """ Generate list of possible device clocks """
-        aicd = sorted(self.available_input_clock_dividers)
-
-        dev_clocks = []
-        for div in aicd:
-            in_clock = self.sample_clock * self.datapath_decimation * div
-            if in_clock <= self.max_input_clock:
-                dev_clocks.append(in_clock)
-        if not dev_clocks:
-            raise Exception(
-                "No device clocks possible in current config. Sample rate too high"
-            )
-        return dev_clocks
-
-    def device_clock_ranges(self):
-        """ Generate min and max values for device clock """
-
-        clks = self.device_clock_available()
-        return np.min(clks), np.max(clks)
-
-    def sysref_clock_ranges(self):
-        """ sysref must be multiple of LMFC """
-        lmfc = self.multiframe_clock
-        return lmfc / 2048, lmfc / 2
-
-    def sysref_met(self, sysref_clock, sample_clock):
-        if sysref_clock % self.multiframe_clock != 0:
-            raise Exception("SYSREF not a multiple of LMFC")
-        if (self.multiframe_clock / sysref_clock) < 2 * self.input_clock_divider:
-            raise Exception("SYSREF not a multiple of LMFC > 1")

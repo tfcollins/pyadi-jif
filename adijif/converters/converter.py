@@ -65,6 +65,11 @@ class converter(jesd, metaclass=ABCMeta):
     def get_required_clocks(self):
         raise NotImplementedError
 
+    @property
+    @abstractmethod
+    def get_required_clock_names(self):
+        raise NotImplementedError
+
     def __init__(self, model=None):
         if model:
             assert isinstance(model, GEKKO), "Input model must be of type gekko.GEKKO"

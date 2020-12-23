@@ -1,9 +1,7 @@
-# from adijif.jesd import jesd
-import numpy as np
-from adijif.converters.converter import converter
+from adijif.converters.ad9680_bf import ad9680_bf
 
 
-class ad9680(converter):
+class ad9680(ad9680_bf):
 
     name = "AD9680"
 
@@ -35,6 +33,13 @@ class ad9680(converter):
     """
     max_input_clock = 4e9
 
+    def get_required_clock_names(self):
+        """ Get list of strings of names of requested clocks
+            This list of names is for the clocks defined by
+            get_required_clocks
+        """
+        return ["ad9680_adc_clock", "ad9680_sysref"]
+
     def get_required_clocks(self):
         """ Generate list required clocks
             For AD9680 this will contain [converter clock, sysref requirement SOS]
@@ -51,35 +56,3 @@ class ad9680(converter):
         # self.model.Obj(self.config["sysref"])  # This breaks many searches
 
         return [self.sample_clock, self.config["sysref"]]
-
-    def device_clock_available(self):
-        """ Generate list of possible device clocks """
-        aicd = sorted(self.available_input_clock_dividers)
-
-        dev_clocks = []
-        for div in aicd:
-            in_clock = self.sample_clock * self.datapath_decimation * div
-            if in_clock <= self.max_input_clock:
-                dev_clocks.append(in_clock)
-        if not dev_clocks:
-            raise Exception(
-                "No device clocks possible in current config. Sample rate too high"
-            )
-        return dev_clocks
-
-    def device_clock_ranges(self):
-        """ Generate min and max values for device clock """
-
-        clks = self.device_clock_available()
-        return np.min(clks), np.max(clks)
-
-    def sysref_clock_ranges(self):
-        """ sysref must be multiple of LMFC """
-        lmfc = self.multiframe_clock
-        return lmfc / 2048, lmfc / 2
-
-    def sysref_met(self, sysref_clock, sample_clock):
-        if sysref_clock % self.multiframe_clock != 0:
-            raise Exception("SYSREF not a multiple of LMFC")
-        if (self.multiframe_clock / sysref_clock) < 2 * self.input_clock_divider:
-            raise Exception("SYSREF not a multiple of LMFC > 1")

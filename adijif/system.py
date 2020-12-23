@@ -55,6 +55,32 @@ class system:
             "minlp_maximum_iterations 100000",  # minlp iterations with integer solution
         ]
 
+    def _filter_sysref(self, cnv_clocks, clock_names, convs):
+        cnv_clocks_filters = []
+        clock_names_filters = []
+        if len(cnv_clocks) > 2:
+            if self.use_common_sysref:
+                ref = convs[0].multiframe_clock
+                for conv in convs:
+                    if ref != conv.multiframe_clock:
+                        raise Exception(
+                            "SYSREF cannot be shared. "
+                            + "Converters at different LMFCs."
+                            + "\nSet use_common_sysref to False "
+                            + "for current rates"
+                        )
+
+                for i, clk in enumerate(cnv_clocks):
+                    # 1,3,5,... are sysrefs. Keep first 1
+                    if i / 2 == int(i / 2) or i == 1:
+                        cnv_clocks_filters.append(clk)
+                        clock_names_filters.append(clock_names[i])
+        else:
+            cnv_clocks_filters = cnv_clocks
+            clock_names_filters = clock_names
+
+        return cnv_clocks_filters, clock_names_filters
+
     def solve(self):
         """ Defined clocking requirements in Solver model and start solvers routine
         """
@@ -63,6 +89,7 @@ class system:
             raise Exception("Converter and/or FPGA clocks must be enabled")
 
         cnv_clocks = []
+        clock_names = []
         if self.enable_converter_clocks:
 
             convs = (
@@ -70,29 +97,17 @@ class system:
             )
             for conv in convs:
                 clk = conv.get_required_clocks()
+                names = conv.get_required_clock_names()
                 if not isinstance(clk, list):
                     clk = [clk]
+                if not isinstance(names, list):
+                    names = [names]
                 cnv_clocks += clk
+                clock_names += names
             # Filter out multiple sysrefs
-            cnv_clocks_filters = []
-            if len(cnv_clocks) > 2:
-                if self.use_common_sysref:
-                    ref = convs[0].multiframe_clock
-                    for conv in convs:
-                        if ref != conv.multiframe_clock:
-                            raise Exception(
-                                "SYSREF cannot be shared. "
-                                + "Converters at different LMFCs."
-                                + "\nSet use_common_sysref to False "
-                                + "for current rates"
-                            )
-
-                    for i, clk in enumerate(cnv_clocks):
-                        # 1,3,5,... are sysrefs. Keep first 1
-                        if i / 2 == int(i / 2) or i == 1:
-                            cnv_clocks_filters.append(clk)
-            else:
-                cnv_clocks_filters = cnv_clocks
+            cnv_clocks_filters, clock_names_filters = self._filter_sysref(
+                cnv_clocks, clock_names, convs
+            )
 
         if self.enable_fpga_clocks:
             self.fpga.setup_by_dev_kit_name("zc706")
