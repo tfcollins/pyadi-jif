@@ -71,7 +71,6 @@ class adrv9009(adrv9009_bf):
                 possible_device_clocks.append(dev_clock)
 
         self.config["device_clock"] = self.model.sos1(possible_device_clocks)
-        self.model.Obj(-1 * self.config["device_clock"])
+        # self.model.Obj(-1 * self.config["device_clock"])
 
         return [self.config["device_clock"], self.config["sysref"]]
-        # return [possible_device_clocks[1], self.config["sysref"]]

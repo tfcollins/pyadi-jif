@@ -52,33 +52,40 @@ class system:
         #     "minlp_gap_tol 0.01",
         # ]
         self.solver_options = [
-            "minlp_maximum_iterations 100000",  # minlp iterations with integer solution
+            "minlp_maximum_iterations 1000",  # minlp iterations with integer solution
+            "minlp_max_iter_with_int_sol 100",  # treat minlp as nlp
+            "minlp_as_nlp 0",  # nlp sub-problem max iterations
+            "nlp_maximum_iterations 500",  # 1 = depth first, 2 = breadth first
+            "minlp_branch_method 1",  # maximum deviation from whole number
+            "minlp_integer_tol 0.05",  # covergence tolerance
+            "minlp_gap_tol 0.1",
         ]
+        # self.solver_options = [
+        #     "minlp_maximum_iterations 1000",  # minlp iterations with integer solution
+        # ]
 
     def _filter_sysref(self, cnv_clocks, clock_names, convs):
         cnv_clocks_filters = []
         clock_names_filters = []
-        if len(cnv_clocks) > 2:
-            if self.use_common_sysref:
-                ref = convs[0].multiframe_clock
-                for conv in convs:
-                    if ref != conv.multiframe_clock:
-                        raise Exception(
-                            "SYSREF cannot be shared. "
-                            + "Converters at different LMFCs."
-                            + "\nSet use_common_sysref to False "
-                            + "for current rates"
-                        )
+        if len(cnv_clocks) > 2 and self.use_common_sysref:
+            ref = convs[0].multiframe_clock
+            for conv in convs:
+                if ref != conv.multiframe_clock:
+                    raise Exception(
+                        "SYSREF cannot be shared. "
+                        + "Converters at different LMFCs."
+                        + "\nSet use_common_sysref to False "
+                        + "for current rates"
+                    )
 
-                for i, clk in enumerate(cnv_clocks):
-                    # 1,3,5,... are sysrefs. Keep first 1
-                    if i / 2 == int(i / 2) or i == 1:
-                        cnv_clocks_filters.append(clk)
-                        clock_names_filters.append(clock_names[i])
+            for i, clk in enumerate(cnv_clocks):
+                # 1,3,5,... are sysrefs. Keep first 1
+                if i / 2 == int(i / 2) or i == 1:
+                    cnv_clocks_filters.append(clk)
+                    clock_names_filters.append(clock_names[i])
         else:
             cnv_clocks_filters = cnv_clocks
             clock_names_filters = clock_names
-
         return cnv_clocks_filters, clock_names_filters
 
     def solve(self):
@@ -89,7 +96,9 @@ class system:
             raise Exception("Converter and/or FPGA clocks must be enabled")
 
         cnv_clocks = []
+        cnv_clocks_filters = []
         clock_names = []
+        clock_names_filters = []
         if self.enable_converter_clocks:
 
             convs = (
@@ -105,28 +114,44 @@ class system:
                 cnv_clocks += clk
                 clock_names += names
             # Filter out multiple sysrefs
+            print(clock_names)
             cnv_clocks_filters, clock_names_filters = self._filter_sysref(
                 cnv_clocks, clock_names, convs
             )
+            print(clock_names_filters)
 
         if self.enable_fpga_clocks:
             self.fpga.setup_by_dev_kit_name("zc706")
             fpga_dev_clock = self.fpga.get_required_clocks(self.converter)
+            fpga_clock_names = self.fpga.get_required_clock_names()
             if not isinstance(fpga_dev_clock, list):
                 fpga_dev_clock = [fpga_dev_clock]
+            if not isinstance(fpga_clock_names, list):
+                fpga_clock_names = [fpga_clock_names]
         else:
             fpga_dev_clock = []
 
         # Collect all requirements
-        # print("Requested clocks:", cnv_clocks_filters + fpga_dev_clock)
         self.clock.set_requested_clocks(self.vcxo, cnv_clocks_filters + fpga_dev_clock)
+        all_clock_names = clock_names_filters + fpga_clock_names
+        print("Requested clocks:", cnv_clocks_filters + fpga_dev_clock)
+        print("Clock names:", all_clock_names)
+
+        self.model.solver_options = self.solver_options
+        # Get close with non-integer solution
+        # try:
+        # self.model.options.SOLVER=3
+        # self.model.solve(disp=False) # Solve
+        # except:
+        #     pass
 
         # Set up solver
         self.model.options.SOLVER = 1  # APOPT solver
         # self.model.options.SOLVER = 3  # 1 APOPT, 2 BPOPT, 3 IPOPT
         # self.model.options.IMODE = 5   # simultaneous estimation
-        self.model.solver_options = self.solver_options
-        self.model.solve(disp=self.Debug_Solver)
+        self.model.solve(disp=self.Debug_Solver, debug=True)
+
+        return all_clock_names
 
     def determine_clocks(self):
         """ Defined clocking requirements and search over all possible dividers

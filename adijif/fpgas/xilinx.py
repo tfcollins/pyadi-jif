@@ -62,6 +62,8 @@ class xilinx(xilinx_bf):
     """
     request_device_clock = False
 
+    _clock_names = -1
+
     @property
     def ref_clock_max(self):
         # https://www.xilinx.com/support/documentation/data_sheets/ds191-XC7Z030-XC7Z045-data-sheet.pdf
@@ -194,6 +196,14 @@ class xilinx(xilinx_bf):
         except:
             info = self.determine_qpll(bit_clock, fpga_ref_clock)
         return info
+
+    def get_required_clock_names(self):
+        if not self._clock_names:
+            raise Exception(
+                "get_required_clocks must be run to generated"
+                + " dependent clocks before names are available"
+            )
+        return self._clock_names
 
     def get_config(self):
         """ Helper function for model to extract solved parameters
@@ -331,6 +341,8 @@ class xilinx(xilinx_bf):
 
         # https://www.xilinx.com/support/documentation/user_guides/ug476_7Series_Transceivers.pdf
 
+        clock_names = ["fpga_ref"]
+
         if self.force_single_quad_tile:
             raise Exception("force_single_quad_tile==1 not implemented")
         else:
@@ -342,13 +354,16 @@ class xilinx(xilinx_bf):
                 # Set optimizations
                 # self.model.Obj(self.config["d"])
                 # self.model.Obj(self.config["d_cpll"])
-                self.model.Obj(config["d_select"])
+                # self.model.Obj(config["d_select"])
                 self.model.Obj(-1 * config["qpll_0_cpll_1"])  # Favor CPLL over QPLL
                 self.configs.append(config)
                 # FPGA also requires clock at device clock rate
                 if self.request_device_clock:
                     self.dev_clocks.append(cnv.device_clock)
+                    clock_names.append(cnv.name + "_fpga_device_clock")
 
         self.model.Obj(self.config["fpga_ref"])
+
+        self._clock_names = clock_names
 
         return [self.config["fpga_ref"]] + self.dev_clocks

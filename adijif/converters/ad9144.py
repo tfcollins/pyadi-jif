@@ -53,9 +53,19 @@ class ad9144(ad9144_bf):
 
         dac_clk = self.datapath_interpolation * self.sample_clock
         self.config["dac_clk"] = self.model.Const(dac_clk)
-        self.config["ref_div_factor"] = self.model.sos1([1, 2, 4, 8, 16])
-        self.config["BCount"] = self.model.Var(integer=True, lb=6, ub=127)
-        self.config["ref_clk"] = self.model.Var(integer=True, lb=35e6, ub=1e9)
+
+        # self.config["ref_div_factor"] = self.model.sos1([1, 2, 4, 8, 16])
+        self.config["ref_div_factor_i"] = self.model.Var(
+            integer=True, lb=0, ub=4, value=4
+        )
+        self.config["ref_div_factor"] = self.model.Intermediate(
+            2 ** (self.config["ref_div_factor_i"])
+        )
+
+        self.config["BCount"] = self.model.Var(integer=True, lb=6, ub=127, value=6)
+        self.config["ref_clk"] = self.model.Var(
+            integer=True, lb=35e6, ub=1e9, value=35e6
+        )
 
         if dac_clk > 2800e6:
             raise Exception("DAC Clock too fast")
@@ -87,12 +97,21 @@ class ad9144(ad9144_bf):
         """ Generate list required clocks
             For AD9144 this will contain [converter clock, sysref requirement SOS]
         """
-        possible_sysrefs = []
-        for n in range(1, 20):
-            r = self.multiframe_clock / (n * n)
-            if r == int(r) and r > 1e6:
-                possible_sysrefs.append(r)
-        self.config["sysref"] = self.model.sos1(possible_sysrefs)
+        # possible_sysrefs = []
+        # for n in range(1, 20):
+        #     r = self.multiframe_clock / (n * n)
+        #     if r == int(r) and r > 1e6:
+        #         possible_sysrefs.append(r)
+        # self.config["sysref"] = self.model.sos1(possible_sysrefs)
+
+        self.config = {}
+        self.config["lmfc_divisor_sysref"] = self.model.Var(
+            integer=True, lb=1, ub=20, value=19
+        )
+        self.config["sysref"] = self.model.Intermediate(
+            self.multiframe_clock
+            / (self.config["lmfc_divisor_sysref"] * self.config["lmfc_divisor_sysref"])
+        )
 
         if self.use_direct_clocking:
             clk = self.sample_clock * self.datapath_interpolation
@@ -106,6 +125,8 @@ class ad9144(ad9144_bf):
             # ref_div = 2^ref_div_mode = 1,2,4,8,16
             clk = self._pll_config()
 
-        self.model.Obj(self.config["sysref"])  # This breaks many searches
+        # Objectives
+        # self.model.Obj(self.config["sysref"])  # This breaks many searches
+        # self.model.Obj(-1*self.config["lmfc_divisor_sysref"])
 
         return [clk, self.config["sysref"]]

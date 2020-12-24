@@ -152,51 +152,7 @@ def test_sys_solver():
     assert clk_config["m1"][0] == 3
     assert sys.fpga.config["fpga_ref"].value[0] == 100000000
     for div in divs:
-        assert div[0] in [1, 4, 10, 800]
-
-
-def test_adrv9009_ad9528_solver():
-    vcxo = 122.88e6
-
-    sys = adijif.system("adrv9009", "ad9528", "xilinx", vcxo)
-
-    # Get Converter clocking requirements
-    sys.converter.sample_clock = 122.88e6
-    sys.converter.L = 2
-    sys.converter.M = 4
-    sys.converter.N = 14
-    sys.converter.Np = 16
-
-    sys.converter.K = 32
-    sys.converter.F = 4
-    assert sys.converter.S == 1
-    sys.Debug_Solver = True
-
-    assert 9830.4e6 / 2 == sys.converter.bit_clock
-    assert sys.converter.multiframe_clock == 7.68e6 / 2  # LMFC
-    assert sys.converter.device_clock == 9830.4e6 / 2 / 40
-
-    cnv_clocks = sys.converter.get_required_clocks()
-
-    # Get FPGA clocking requirements
-    sys.fpga.setup_by_dev_kit_name("zc706")
-    fpga_dev_clock = sys.fpga.get_required_clocks(sys.converter)
-
-    # Collect all requirements
-    sys.clock.set_requested_clocks(vcxo, fpga_dev_clock + cnv_clocks)
-
-    sys.model.options.SOLVER = 1
-    sys.model.solve(disp=False)
-
-    clk_config = sys.clock.config
-    print(clk_config)
-    divs = sys.clock.config["out_dividers"]
-    assert clk_config["r1"][0] == 2
-    assert clk_config["n2"][0] == 16
-    assert clk_config["m1"][0] == 4
-    assert sys.fpga.config["fpga_ref"].value[0] == 98304000
-    for div in divs:
-        assert div[0] in [4, 8, 10, 256]
+        assert div[0] in [1, 4, 10, 288]
 
 
 def test_adrv9009_ad9528_solver_compact():
@@ -228,12 +184,12 @@ def test_adrv9009_ad9528_solver_compact():
     clk_config = sys.clock.config
     print(clk_config)
     divs = sys.clock.config["out_dividers"]
-    assert clk_config["r1"][0] == 2
-    assert clk_config["n2"][0] == 16
-    assert clk_config["m1"][0] == 4
-    assert sys.fpga.config["fpga_ref"].value[0] == 98304000
+    assert clk_config["r1"][0] == 3
+    assert clk_config["n2"][0] == 17
+    assert clk_config["m1"][0] == 5
+    assert sys.fpga.config["fpga_ref"].value[0] == 62836363.0  # 98304000
     for div in divs:
-        assert div[0] in [4, 8, 10, 256]
+        assert div[0] in [11, 23, 180]
 
 
 def test_xilinx_solver():

@@ -49,7 +49,7 @@ class ad9523_1(ad9523_1_bf):
         """
         self.vcxo = vcxo
         self.config = {"r2": self.model.Var(integer=True, lb=1, ub=31, value=1)}
-        self.config["m1"] = self.model.Var(integer=True, lb=3, ub=5)
+        self.config["m1"] = self.model.Var(integer=True, lb=3, ub=5, value=3)
         self.config["n2"] = self.model.sos1(self.n2_available)
 
         # PLL2 equations
@@ -60,8 +60,8 @@ class ad9523_1(ad9523_1_bf):
                 vcxo / self.config["r2"] * self.config["n2"] >= self.vco_min,
             ]
         )
-        # Minimization objective
-        self.model.Obj(self.config["n2"])
+        # Objectives
+        # self.model.Obj(self.config["n2"])
 
     def set_requested_clocks(self, vcxo, out_freqs):
         """ set_requested_clocks: Define necessary clocks to be generated in model

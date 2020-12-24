@@ -109,6 +109,7 @@ def test_ad9144_solver():
     vcxo = 125000000
     sys = adijif.system("ad9144", "hmc7044", "xilinx", vcxo)
     sys.fpga.setup_by_dev_kit_name("zc706")
+    sys.Debug_Solver = 1
     # sys.fpga.force_cpll = 1
 
     sys.converter.sample_clock = 1e9

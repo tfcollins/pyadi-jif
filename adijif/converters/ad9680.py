@@ -44,15 +44,27 @@ class ad9680(ad9680_bf):
         """ Generate list required clocks
             For AD9680 this will contain [converter clock, sysref requirement SOS]
         """
-        possible_sysrefs = []
-        for n in range(1, 20):
-            r = self.multiframe_clock / (n * n)
-            if r == int(r) and r > 1e6:
-                possible_sysrefs.append(r)
-        self.config = {"sysref": self.model.sos1(possible_sysrefs)}
+        # possible_sysrefs = []
+        # for n in range(1, 10):
+        #     r = self.multiframe_clock / (n * n)
+        #     if r == int(r) and r > 1e6:
+        #         possible_sysrefs.append(r)
+        # self.config = {"sysref": self.model.sos1(possible_sysrefs)}
 
-        # Need to pick one of below
-        self.config["sysref"].value = possible_sysrefs[-1]
+        self.config = {}
+        self.config["lmfc_divisor_sysref"] = self.model.Var(
+            integer=True, lb=1, ub=17, value=3  # default value must be odd
+        )
+
+        self.config["lmfc_divisor_sysref_squared"] = self.model.Intermediate(
+            self.config["lmfc_divisor_sysref"] * self.config["lmfc_divisor_sysref"]
+        )
+
+        self.config["sysref"] = self.model.Intermediate(
+            self.multiframe_clock / self.config["lmfc_divisor_sysref_squared"]
+        )
+
+        # Objectives
         # self.model.Obj(self.config["sysref"])  # This breaks many searches
 
         return [self.sample_clock, self.config["sysref"]]

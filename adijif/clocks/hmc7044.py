@@ -38,9 +38,9 @@ class hmc7044(hmc7044_bf):
                 vcxo / self.config["r2"] * self.config["n2"] >= self.vco_min,
             ]
         )
-        # Minimization objective
-        self.model.Obj(self.config["n2"])
-        self.model.Obj(-1 * vcxo / self.config["r2"])
+        # Objectives
+        # self.model.Obj(self.config["n2"])
+        # self.model.Obj(-1 * vcxo / self.config["r2"])
 
     def set_requested_clocks(self, vcxo, out_freqs):
         """ set_requested_clocks: Define necessary clocks to be generated in model
@@ -62,7 +62,11 @@ class hmc7044(hmc7044_bf):
         self.config["out_dividers"] = []
         for out_freq in out_freqs:
             even = self.model.Var(integer=True, lb=1, ub=4094 / 2)
-            odd = self.model.sos1([1, 3, 5])
+
+            # odd = self.model.sos1([1, 3, 5])
+            odd_i = self.model.Var(integer=True, lb=0, ub=2)
+            odd = self.model.Intermediate(1 + odd_i * 2)
+
             eo = self.model.Var(integer=True, lb=0, ub=1)
             od = self.model.Intermediate(eo * odd + (1 - eo) * even * 2)
 
@@ -70,4 +74,6 @@ class hmc7044(hmc7044_bf):
                 [vcxo / self.config["r2"] * self.config["n2"] / od == out_freq]
             )
             self.config["out_dividers"].append(od)
+
+            # Objectives
             # self.model.Obj(-1*eo) # Favor even dividers

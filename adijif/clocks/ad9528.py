@@ -29,8 +29,8 @@ class ad9528(ad9528_bf):
         """ Apply constraints to solver model
         """
         self.config = {"r1": self.model.Var(integer=True, lb=1, ub=31, value=1)}
-        self.config["m1"] = self.model.Var(integer=True, lb=3, ub=5)
-        self.config["n2"] = self.model.Var(integer=True, lb=12, ub=255)
+        self.config["m1"] = self.model.Var(integer=True, lb=3, ub=5, value=3)
+        self.config["n2"] = self.model.Var(integer=True, lb=12, ub=255, value=12)
 
         # PLL2 equations
         self.model.Equations(
@@ -43,7 +43,7 @@ class ad9528(ad9528_bf):
             ]
         )
         # Minimization objective
-        self.model.Obj(self.config["n2"] * self.config["m1"])
+        # self.model.Obj(self.config["n2"] * self.config["m1"])
 
     def set_requested_clocks(self, vcxo, out_freqs):
         """ set_requested_clocks: Define necessary clocks to be generated in model
