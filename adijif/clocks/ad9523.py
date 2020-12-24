@@ -29,7 +29,13 @@ class ad9523_1(ad9523_1_bf):
     """ VCXO dividers """
     r2_available = range(1, 32)
 
+    _clk_names = -1
+
     def get_config(self):
+
+        if not self._clk_names:
+            raise Exception("set_requested_clocks must be called before get_config")
+
         config = {
             "m1": self.config["m1"].value[0],
             "n2": self.config["n2"].value[0],
@@ -39,9 +45,15 @@ class ad9523_1(ad9523_1_bf):
         }
 
         clk = self.vcxo / config["r2"] * config["n2"] / config["m1"]
-        for div in self.config["out_dividers"]:
-            config["output_clocks"].append(clk / div.value[0])
+        # for div in self.config["out_dividers"]:
+        #     config["output_clocks"].append(clk / div.value[0])
 
+        output_cfg = {}
+        for i, div in enumerate(self.config["out_dividers"]):
+            rate = clk / div.value[0]
+            output_cfg[self._clk_names[i]] = {"rate": rate, "divider": div.value[0]}
+
+        config["output_clocks"] = output_cfg
         return config
 
     def _setup_solver_constraints(self, vcxo):
@@ -63,7 +75,7 @@ class ad9523_1(ad9523_1_bf):
         # Objectives
         # self.model.Obj(self.config["n2"])
 
-    def set_requested_clocks(self, vcxo, out_freqs):
+    def set_requested_clocks(self, vcxo, out_freqs, clk_names):
         """ set_requested_clocks: Define necessary clocks to be generated in model
 
             Parameters:
@@ -72,6 +84,11 @@ class ad9523_1(ad9523_1_bf):
                 out_freqs:
                     list of required clocks to be output
         """
+
+        if len(clk_names) != len(out_freqs):
+            raise Exception("clk_names is not the same size as out_freqs")
+        self._clk_names = clk_names
+
         # Setup clock chip internal constraints
         if self.use_vcxo_double:
             vcxo *= 2

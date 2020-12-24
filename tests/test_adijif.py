@@ -69,8 +69,9 @@ def test_adc_clk_solver():
     sys.converter.F = 1
 
     cnv_clocks = sys.converter.get_required_clocks()
+    names = ["a", "b"]
 
-    sys.clock.set_requested_clocks(vcxo, cnv_clocks)
+    sys.clock.set_requested_clocks(vcxo, cnv_clocks, names)
 
     sys.model.options.SOLVER = 1  # APOPT solver
     sys.model.solve(disp=False)
@@ -101,7 +102,8 @@ def test_fpga_solver():
     sys.fpga.setup_by_dev_kit_name("zc706")
     required_clocks = sys.fpga.get_required_clocks(cnv_config)
 
-    sys.clock.set_requested_clocks(vcxo, required_clocks)
+    names = ["a"]
+    sys.clock.set_requested_clocks(vcxo, required_clocks, names)
 
     sys.model.options.SOLVER = 1  # APOPT solver
     sys.model.solve(disp=True)
@@ -138,7 +140,8 @@ def test_sys_solver():
     fpga_dev_clock = sys.fpga.get_required_clocks(sys.converter)
 
     # Collect all requirements
-    sys.clock.set_requested_clocks(vcxo, fpga_dev_clock + cnv_clocks)
+    names = ["a", "b", "c"]
+    sys.clock.set_requested_clocks(vcxo, fpga_dev_clock + cnv_clocks, names)
 
     sys.model.options.SOLVER = 1
 

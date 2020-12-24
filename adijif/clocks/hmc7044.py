@@ -22,9 +22,34 @@ class hmc7044(hmc7044_bf):
 
     use_vcxo_double = True
 
+    _clk_names = -1
+
+    def get_config(self):
+
+        if not self._clk_names:
+            raise Exception("set_requested_clocks must be called before get_config")
+
+        config = {
+            "r2": self.config["r2"].value[0],
+            "n2": self.config["n2"].value[0],
+            "out_dividers": [x.value[0] for x in self.config["out_dividers"]],
+            "output_clocks": [],
+        }
+
+        clk = self.vcxo / config["r2"] * config["n2"]
+
+        output_cfg = {}
+        for i, div in enumerate(self.config["out_dividers"]):
+            rate = clk / div.value[0]
+            output_cfg[self._clk_names[i]] = {"rate": rate, "divider": div.value[0]}
+
+        config["output_clocks"] = output_cfg
+        return config
+
     def _setup_solver_constraints(self, vcxo):
         """ Apply constraints to solver model
         """
+        self.vcxo = vcxo
         self.config = {"r2": self.model.Var(integer=True, lb=1, ub=4095, value=1)}
         self.config["n2"] = self.model.Var(
             integer=True, lb=8, ub=4095
@@ -42,7 +67,7 @@ class hmc7044(hmc7044_bf):
         # self.model.Obj(self.config["n2"])
         # self.model.Obj(-1 * vcxo / self.config["r2"])
 
-    def set_requested_clocks(self, vcxo, out_freqs):
+    def set_requested_clocks(self, vcxo, out_freqs, clk_names):
         """ set_requested_clocks: Define necessary clocks to be generated in model
 
             Parameters:
@@ -51,6 +76,9 @@ class hmc7044(hmc7044_bf):
                 out_freqs:
                     list of required clocks to be output
         """
+        if len(clk_names) != len(out_freqs):
+            raise Exception("clk_names is not the same size as out_freqs")
+        self._clk_names = clk_names
 
         # Setup clock chip internal constraints
         if self.use_vcxo_double:

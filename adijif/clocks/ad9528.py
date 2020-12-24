@@ -25,9 +25,35 @@ class ad9528(ad9528_bf):
     """ VCXO dividers """
     r1_available = range(1, 32)
 
+    _clk_names = -1
+
+    def get_config(self):
+
+        if not self._clk_names:
+            raise Exception("set_requested_clocks must be called before get_config")
+
+        config = {
+            "r1": self.config["r1"].value[0],
+            "n2": self.config["n2"].value[0],
+            "m1": self.config["m1"].value[0],
+            "out_dividers": [x.value[0] for x in self.config["out_dividers"]],
+            "output_clocks": [],
+        }
+
+        clk = self.vcxo / config["r1"] * config["n2"]
+
+        output_cfg = {}
+        for i, div in enumerate(self.config["out_dividers"]):
+            rate = clk / div.value[0]
+            output_cfg[self._clk_names[i]] = {"rate": rate, "divider": div.value[0]}
+
+        config["output_clocks"] = output_cfg
+        return config
+
     def _setup_solver_constraints(self, vcxo):
         """ Apply constraints to solver model
         """
+        self.vcxo = vcxo
         self.config = {"r1": self.model.Var(integer=True, lb=1, ub=31, value=1)}
         self.config["m1"] = self.model.Var(integer=True, lb=3, ub=5, value=3)
         self.config["n2"] = self.model.Var(integer=True, lb=12, ub=255, value=12)
@@ -45,7 +71,7 @@ class ad9528(ad9528_bf):
         # Minimization objective
         # self.model.Obj(self.config["n2"] * self.config["m1"])
 
-    def set_requested_clocks(self, vcxo, out_freqs):
+    def set_requested_clocks(self, vcxo, out_freqs, clk_names):
         """ set_requested_clocks: Define necessary clocks to be generated in model
 
             Parameters:
@@ -54,6 +80,10 @@ class ad9528(ad9528_bf):
                 out_freqs:
                     list of required clocks to be output
         """
+        if len(clk_names) != len(out_freqs):
+            raise Exception("clk_names is not the same size as out_freqs")
+        self._clk_names = clk_names
+
         # Setup clock chip internal constraints
         if self.use_vcxo_double:
             vcxo *= 2

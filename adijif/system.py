@@ -64,6 +64,18 @@ class system:
         #     "minlp_maximum_iterations 1000",  # minlp iterations with integer solution
         # ]
 
+    def _get_configs(self, clk_names):
+        # cfg = {}
+        cfg = {"fpga": self.fpga.get_config()}
+        cfg["clock"] = self.clock.get_config()
+
+        cfg["converter"] = []
+        c = self.converter if isinstance(self.converter, list) else [self.converter]
+        for conv in c:
+            cfg["converter"].append(conv.name)
+
+        return cfg
+
     def _filter_sysref(self, cnv_clocks, clock_names, convs):
         cnv_clocks_filters = []
         clock_names_filters = []
@@ -114,11 +126,9 @@ class system:
                 cnv_clocks += clk
                 clock_names += names
             # Filter out multiple sysrefs
-            print(clock_names)
             cnv_clocks_filters, clock_names_filters = self._filter_sysref(
                 cnv_clocks, clock_names, convs
             )
-            print(clock_names_filters)
 
         if self.enable_fpga_clocks:
             self.fpga.setup_by_dev_kit_name("zc706")
@@ -132,26 +142,22 @@ class system:
             fpga_dev_clock = []
 
         # Collect all requirements
-        self.clock.set_requested_clocks(self.vcxo, cnv_clocks_filters + fpga_dev_clock)
         all_clock_names = clock_names_filters + fpga_clock_names
-        print("Requested clocks:", cnv_clocks_filters + fpga_dev_clock)
-        print("Clock names:", all_clock_names)
-
-        self.model.solver_options = self.solver_options
-        # Get close with non-integer solution
-        # try:
-        # self.model.options.SOLVER=3
-        # self.model.solve(disp=False) # Solve
-        # except:
-        #     pass
+        self.clock.set_requested_clocks(
+            self.vcxo, cnv_clocks_filters + fpga_dev_clock, all_clock_names
+        )
+        # print("Requested clocks:", cnv_clocks_filters + fpga_dev_clock)
+        # print("Clock names:", all_clock_names)
 
         # Set up solver
+        self.model.solver_options = self.solver_options
         self.model.options.SOLVER = 1  # APOPT solver
         # self.model.options.SOLVER = 3  # 1 APOPT, 2 BPOPT, 3 IPOPT
         # self.model.options.IMODE = 5   # simultaneous estimation
         self.model.solve(disp=self.Debug_Solver, debug=True)
 
-        return all_clock_names
+        # Organize data
+        return self._get_configs(all_clock_names)
 
     def determine_clocks(self):
         """ Defined clocking requirements and search over all possible dividers

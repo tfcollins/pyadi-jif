@@ -1,3 +1,4 @@
+import gekko
 from adijif.fpgas.xilinx_bf import xilinx_bf
 
 
@@ -212,7 +213,11 @@ class xilinx(xilinx_bf):
         out = []
         for config in self.configs:
             pll_config = {}
-            if config["qpll_0_cpll_1"].value[0]:
+            if isinstance(config["qpll_0_cpll_1"], gekko.gk_variable.GKVariable):
+                pll = config["qpll_0_cpll_1"].value[0]
+            else:
+                pll = config["qpll_0_cpll_1"].value
+            if pll > 0:
                 pll_config["type"] = "cpll"
                 pll_config["m"] = config["m_cpll"].value[0]
                 pll_config["d"] = config["d_cpll"].value[0]
