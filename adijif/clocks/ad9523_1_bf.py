@@ -3,16 +3,16 @@ from adijif.clocks.clock import clock
 
 
 class ad9523_1_bf(clock):
-    """ Brute force methods for calculating clocks
+    """Brute force methods for calculating clocks
 
-        These are currently meant for debug to compare against
-        the solver solutions
+    These are currently meant for debug to compare against
+    the solver solutions
     """
 
     def list_possible_references(self, divider_set):
-        """ list_possible_references: Based on config list possible
-            references that can be generated based on VCO and output
-            dividers
+        """list_possible_references: Based on config list possible
+        references that can be generated based on VCO and output
+        dividers
         """
         # Check input
         ref = {
@@ -48,7 +48,7 @@ class ad9523_1_bf(clock):
                     continue
                 vco = pfb * n2
                 if vco > self.vco_min and vco < self.vco_max:
-                    for m1 in self.m12_available:
+                    for m1 in self.m1_available:
                         # print("vco",vco,mod,m1)
                         if (vco / m1) % mod == 0:
                             # See if we can use only m1 and not both m1+m2
@@ -66,7 +66,7 @@ class ad9523_1_bf(clock):
                             else:
                                 # Try to use m2 as well to meet required out clocks
                                 f1 = np.in1d(rods, self.d_available)
-                                for m2 in self.m12_available:
+                                for m2 in self.m1_available:
                                     rods2 = (vco / m2) / required_output_rates
                                     f2 = np.in1d(rods2, self.d_available)
                                     if np.logical_or(f1, f2).all():

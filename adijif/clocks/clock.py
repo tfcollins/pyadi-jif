@@ -2,8 +2,9 @@ from abc import ABCMeta, abstractmethod
 
 from gekko import GEKKO
 
+from adijif.gekko_trans import gekko_translation
 
-class clock(metaclass=ABCMeta):
+class clock(gekko_translation, metaclass=ABCMeta):
     @property
     @abstractmethod
     def find_dividers(self):
