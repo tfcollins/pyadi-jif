@@ -10,9 +10,9 @@ class ad9144(ad9144_bf):
 
     available_jesd_modes = ["jesd204b"]
     K_possible = [4, 8, 12, 16, 20, 24, 28, 32]
-    L_possible = [1, 2, 4]
-    M_possible = [1, 2, 4, 8]
-    N_possible = [*range(7, 16)]
+    L_possible = [1, 2, 4, 8]
+    M_possible = [1, 2, 4, 4]
+    N_possible = [*range(7, 16 + 1)]
     Np_possible = [8, 16]
     F_possible = [1, 2, 4, 8, 16]
     CS_possible = [0, 1, 2, 3]
@@ -42,9 +42,9 @@ class ad9144(ad9144_bf):
     max_input_clock = 4e9
 
     def get_required_clock_names(self):
-        """ Get list of strings of names of requested clocks
-            This list of names is for the clocks defined by
-            get_required_clocks
+        """Get list of strings of names of requested clocks
+        This list of names is for the clocks defined by
+        get_required_clocks
         """
         clk = "ad9144_dac_clock" if self.use_direct_clocking else "ad9144_pll_ref"
         return [clk, "ad9144_sysref"]
@@ -94,8 +94,8 @@ class ad9144(ad9144_bf):
         return self.config["ref_clk"]
 
     def get_required_clocks(self):
-        """ Generate list required clocks
-            For AD9144 this will contain [converter clock, sysref requirement SOS]
+        """Generate list required clocks
+        For AD9144 this will contain [converter clock, sysref requirement SOS]
         """
         # possible_sysrefs = []
         # for n in range(1, 20):

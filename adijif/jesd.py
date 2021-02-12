@@ -93,6 +93,8 @@ class jesd(metaclass=ABCMeta):
     def K(self, value):
         if int(value) != value:
             raise Exception("K must be an integer")
+        if value not in self.K_possible:
+            raise Exception("K not in range for device")
         self._K = value
 
     @property
@@ -121,6 +123,8 @@ class jesd(metaclass=ABCMeta):
     def L(self, value):
         if int(value) != value:
             raise Exception("L must be an integer")
+        if value not in self.L_possible:
+            raise Exception("L not in range for device")
         self._L = value
 
     """ M: Number of virtual converters """
@@ -137,6 +141,8 @@ class jesd(metaclass=ABCMeta):
     def M(self, value):
         if int(value) != value:
             raise Exception("M must be an integer")
+        if value not in self.M_possible:
+            raise Exception("M not in range for device")
         self._M = value
 
     """ N: Number of non-dummy bits per sample """
@@ -153,6 +159,8 @@ class jesd(metaclass=ABCMeta):
     def N(self, value):
         if int(value) != value:
             raise Exception("N must be an integer")
+        if value not in self.N_possible:
+            raise Exception("N not in range for device")
         self._N = value
 
     """ Np: Number of bits per sample """
@@ -169,6 +177,8 @@ class jesd(metaclass=ABCMeta):
     def Np(self, value):
         if int(value) != value:
             raise Exception("Np must be an integer")
+        if value not in self.Np_possible:
+            raise Exception("Np not in range for device")
         self._Np = value
 
     # DERIVED SCALERS
@@ -188,6 +198,8 @@ class jesd(metaclass=ABCMeta):
     def F(self, value):
         if int(value) != value:
             raise Exception("F must be an integer")
+        if value not in self.F_possible:
+            raise Exception("F not in range for device")
         self._F = value
 
     # CLOCKS
@@ -206,8 +218,7 @@ class jesd(metaclass=ABCMeta):
 
     @property
     def frame_clock(self):
-        """ frame_clock: FC
-        """
+        """frame_clock: FC"""
         return self.sample_clock / self.S
 
     @property

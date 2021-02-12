@@ -15,7 +15,7 @@ class adrv9009(adrv9009_bf):
     K_possible = [*np.arange(20, 256, 4)]
     L_possible = [1, 2, 4]
     M_possible = [1, 2, 4]
-    N_possible = [12, 16, 24]
+    N_possible = [12, 14, 16, 24]
     Np_possible = [12, 16, 24]
     F_possible = [1, 2, 4, 8, 16]
     CS_possible = [0]
@@ -44,16 +44,16 @@ class adrv9009(adrv9009_bf):
     max_input_clock = 1e9
 
     def get_required_clock_names(self):
-        """ Get list of strings of names of requested clocks
-            This list of names is for the clocks defined by
-            get_required_clocks
+        """Get list of strings of names of requested clocks
+        This list of names is for the clocks defined by
+        get_required_clocks
         """
         return ["adrv9009_device_clock", "adrv9009_sysref"]
 
     def get_required_clocks(self):
-        """ Generate list of required clocks
-            For ADRV9009 this will contain:
-            [device clock requirement SOS, sysref requirement SOS]
+        """Generate list of required clocks
+        For ADRV9009 this will contain:
+        [device clock requirement SOS, sysref requirement SOS]
         """
         possible_sysrefs = []
         for n in range(1, 20):
