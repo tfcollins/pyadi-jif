@@ -4,12 +4,26 @@ from adijif.clocks.hmc7044_bf import hmc7044_bf
 
 class hmc7044(hmc7044_bf):
 
-    r2_divider_min = 1
-    r2_divider_max = 4095
+    # Ranges
+    # r2_divider_min = 1
+    # r2_divider_max = 4095
+    r2_available = [*range(1, 4095 + 1)]
+    # n2_divider_min = 8
+    # n2_divider_max = 65535
+    n2_available = [*range(1, 65535 + 1)]
 
-    n2_divider_min = 8
-    n2_divider_max = 65535
+    """ Output dividers """
+    d_available = [1, 3, 5, *np.arange(2, 4095, 2, dtype=int)]
+    # When pulse generation is required (like for sysref) divder range
+    # is limited
+    d_syspulse_available = [*np.arange(32, 4095, 2, dtype=int)]
 
+    # Defaults
+    _d = [1, 3, 5, *np.arange(2, 4095, 2, dtype=int)]
+    _n2 = [*range(1, 65535 + 1)]
+    _r2 = [*range(1, 4095 + 1)]
+
+    # Limits
     """ Internal limits """
     vco_min = 2150e6
     vco_max = 3550e6
@@ -17,12 +31,40 @@ class hmc7044(hmc7044_bf):
     vcxo_min = 10e6
     vcxo_max = 500e6
 
-    """ Output dividers """
-    d_available = [1, 3, 5, *np.arange(2, 4095, 2, dtype=int)]
-
     use_vcxo_double = True
 
+    # State management
     _clk_names = -1
+
+    @property
+    def d(self):
+        """ d: Output dividers """
+        return self._d
+
+    @d.setter
+    def d(self, value):
+        self._check_in_range(value, self.d_available, "d")
+        self._d = value
+
+    @property
+    def n2(self):
+        """ n2: VCO feedback divider """
+        return self._m2
+
+    @n2.setter
+    def n2(self, value):
+        self._check_in_range(value, self.n2_available, "n2")
+        self._m2 = value
+
+    @property
+    def r2(self):
+        """ r2: VCXO input dividers """
+        return self._r2
+
+    @r2.setter
+    def r2(self, value):
+        self._check_in_range(value, self.r2_available, "r2")
+        self._r2 = value
 
     def get_config(self):
 
@@ -47,13 +89,16 @@ class hmc7044(hmc7044_bf):
         return config
 
     def _setup_solver_constraints(self, vcxo):
-        """ Apply constraints to solver model
-        """
+        """Apply constraints to solver model"""
         self.vcxo = vcxo
-        self.config = {"r2": self.model.Var(integer=True, lb=1, ub=4095, value=1)}
-        self.config["n2"] = self.model.Var(
-            integer=True, lb=8, ub=4095
-        )  # FIXME: CHECK UB
+        self.config = {
+            "r2": self._convert_input(self._r2, "r2"),
+            "n2": self._convert_input(self._n2, "n2"),
+        }
+        # self.config = {"r2": self.model.Var(integer=True, lb=1, ub=4095, value=1)}
+        # self.config["n2"] = self.model.Var(
+        #     integer=True, lb=8, ub=4095
+        # )  # FIXME: CHECK UB
 
         # PLL2 equations
         self.model.Equations(
@@ -68,13 +113,13 @@ class hmc7044(hmc7044_bf):
         # self.model.Obj(-1 * vcxo / self.config["r2"])
 
     def set_requested_clocks(self, vcxo, out_freqs, clk_names):
-        """ set_requested_clocks: Define necessary clocks to be generated in model
+        """set_requested_clocks: Define necessary clocks to be generated in model
 
-            Parameters:
-                vcxo:
-                    VCXO frequency in hertz
-                out_freqs:
-                    list of required clocks to be output
+        Parameters:
+            vcxo:
+                VCXO frequency in hertz
+            out_freqs:
+                list of required clocks to be output
         """
         if len(clk_names) != len(out_freqs):
             raise Exception("clk_names is not the same size as out_freqs")

@@ -182,6 +182,9 @@ def test_adrv9009_ad9528_solver_compact():
     # Set FPGA config
     sys.fpga.setup_by_dev_kit_name("zc706")
 
+    # Set clock chip
+    sys.clock.d = [*range(1, 257)]  # Limit output dividers
+
     sys.solve()
 
     clk_config = sys.clock.config

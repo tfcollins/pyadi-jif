@@ -7,27 +7,27 @@ class ad9523_1(ad9523_1_bf):
 
     # Ranges
     m1_available = [3, 4, 5]
-    d_available = np.arange(1, 1024, 1, dtype=int)
+    d_available = [*range(1, 1024)]
     n2_available = [12, 16, 17, 20, 21, 22, 24, 25, 26, *range(28, 255)]
-    a_available = range(0, 4)
-    b_available = range(3, 64)
+    a_available = [*range(0, 4)]
+    b_available = [*range(3, 64)]
     # N = (PxB) + A, P=4, A==[0,1,2,3], B=[3..63]
     # See table 46 of DS for limits
     r2_available = list(range(1, 31 + 1))
 
     # Defaults
     _m1 = [3, 4, 5]
-    _d = np.arange(1, 1024, 1, dtype=int)
+    _d = [*range(1, 1024)]
     _n2 = [12, 16, 17, 20, 21, 22, 24, 25, 26, *range(28, 255)]
     _r2 = list(range(1, 31 + 1))
-
-    # State management
-    _clk_names = -1
 
     # Limits
     vco_min = 2.94e9
     vco_max = 3.1e9
     pfd_max = 259e6
+
+    # State management
+    _clk_names = -1
 
     """ Enable internal VCXO/PLL1 doubler """
     use_vcxo_double = False
@@ -145,7 +145,8 @@ class ad9523_1(ad9523_1_bf):
         # Add requested clocks to output constraints
         self.config["out_dividers"] = []
         for out_freq in out_freqs:
-            od = self.model.Var(integer=True, lb=1, ub=1023, value=1)
+            # od = self.model.Var(integer=True, lb=1, ub=1023, value=1)
+            od = self._convert_input(self._d, "d_" + str(out_freq))
             # od = self.model.sos1([n*n for n in range(1,9)])
             self.model.Equations(
                 [
