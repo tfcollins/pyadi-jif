@@ -17,7 +17,12 @@ nav:
     - Usage Flow: flow.md
     - Supported Parts: parts.md
     - CLI: cli.md
+    - Reference: ref.md
 
 markdown_extensions:
   - pymdownx.highlight
   - pymdownx.superfences
+
+plugins:
+  - search
+  - mkdocstrings
