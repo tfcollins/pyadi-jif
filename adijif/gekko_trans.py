@@ -1,5 +1,5 @@
 import numpy as np
-from gekko import GEKKO
+import gekko
 from abc import ABCMeta, abstractmethod
 
 
@@ -11,6 +11,15 @@ class gekko_translation(metaclass=ABCMeta):
     # def model(self):
     #     raise NotImplementedError
     mode = None
+
+    def _get_val(self, value):
+
+        if type(value) is gekko.gk_variable.GKVariable:
+            return value.value[0]
+        elif type(value) is gekko.gk_operators.GK_Operators:
+            return value.value
+        else:
+            return value
 
     def _check_in_range(self, value, possible, varname):
         if not isinstance(value, list):

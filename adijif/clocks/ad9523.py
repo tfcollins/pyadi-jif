@@ -55,12 +55,12 @@ class ad9523_1(ad9523_1_bf):
     @property
     def n2(self):
         """ n2: VCO feedback divider """
-        return self._m2
+        return self._n2
 
     @n2.setter
     def n2(self, value):
         self._check_in_range(value, self.n2_available, "n2")
-        self._m2 = value
+        self._n2 = value
 
     @property
     def r2(self):
@@ -79,9 +79,9 @@ class ad9523_1(ad9523_1_bf):
             raise Exception("set_requested_clocks must be called before get_config")
 
         config = {
-            "m1": self.config["m1"].value[0],
-            "n2": self.config["n2"].value[0],
-            "r2": self.config["r2"].value[0],
+            "m1": self._get_val(self.config["m1"]),
+            "n2": self._get_val(self.config["n2"]),
+            "r2": self._get_val(self.config["r2"]),
             "out_dividers": [x.value[0] for x in self.config["out_dividers"]],
             "output_clocks": [],
         }

@@ -4,6 +4,7 @@ from gekko import GEKKO
 
 from adijif.gekko_trans import gekko_translation
 
+
 class clock(gekko_translation, metaclass=ABCMeta):
     @property
     @abstractmethod
@@ -14,6 +15,10 @@ class clock(gekko_translation, metaclass=ABCMeta):
     @abstractmethod
     def list_possible_references(self):
         raise NotImplementedError
+
+    def solve(self):
+        self.model.options.SOLVER = 1  # APOPT solver
+        self.model.solve(disp=False)
 
     def __init__(self, model=None):
         if model:
