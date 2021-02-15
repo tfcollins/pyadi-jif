@@ -139,7 +139,9 @@ class Ui_config_pu(object):
         self.comboBox_3.setItemText(1, _translate("config_pu", "Fix"))
         self.comboBox_3.setItemText(2, _translate("config_pu", "Range"))
         self.checkBox.setText(_translate("config_pu", "Minimize Feedback Dividers"))
-        self.checkBox_2.setText(_translate("config_pu", "Allow only even output dividers"))
+        self.checkBox_2.setText(
+            _translate("config_pu", "Allow only even output dividers")
+        )
         self.groupBox_2.setTitle(_translate("config_pu", "References"))
         self.label_6.setText(_translate("config_pu", "VCXO"))
         self.comboBox_4.setItemText(0, _translate("config_pu", "Fix"))

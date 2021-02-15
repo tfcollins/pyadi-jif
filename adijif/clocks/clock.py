@@ -1,8 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
-from gekko import GEKKO
-
 from adijif.gekko_trans import gekko_translation
+from gekko import GEKKO
 
 
 class clock(gekko_translation, metaclass=ABCMeta):

@@ -1,5 +1,5 @@
-from PyQt5.Qt import *
 from config import Ui_config_pu
+from PyQt5.Qt import *
 
 
 class ConfigPopup(Ui_config_pu, QWidget):

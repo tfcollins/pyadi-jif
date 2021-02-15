@@ -1,5 +1,6 @@
-import nox
 import tempfile
+
+import nox
 
 # Default tasks (nox no args)
 nox.options.sessions = "lint", "safety", "tests"

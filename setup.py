@@ -36,7 +36,11 @@ setup(
         "Programming Language :: Python :: 3.8",
     ],
     description="Python interface and configurator for ADI JESD Interface Framework",
-    entry_points={"console_scripts": ["adijif=adijif.cli:main",],},
+    entry_points={
+        "console_scripts": [
+            "adijif=adijif.cli:main",
+        ],
+    },
     install_requires=requirements,
     license="BSD license",
     long_description=readme + "\n\n" + history,

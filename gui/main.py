@@ -7,6 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 
+import resource_rc
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
@@ -144,4 +145,3 @@ class Ui_MainGUI(object):
         self.cb_clock.setItemText(1, _translate("MainGUI", "AD9528"))
         self.cb_clock.setItemText(2, _translate("MainGUI", "HMC7044"))
         self.pushButton_4.setText(_translate("MainGUI", "Configure"))
-import resource_rc

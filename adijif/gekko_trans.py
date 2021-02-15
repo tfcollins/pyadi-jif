@@ -1,6 +1,7 @@
-import numpy as np
-import gekko
 from abc import ABCMeta, abstractmethod
+
+import gekko
+import numpy as np
 
 
 class gekko_translation(metaclass=ABCMeta):

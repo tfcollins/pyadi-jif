@@ -3,13 +3,12 @@
 # parent_dir = os.path.dirname(current_dir)
 # sys.path.insert(0, parent_dir)
 
+from config_popup import ConfigPopup
+from main import Ui_MainGUI
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.Qt import *
-from main import Ui_MainGUI
 
 # import adijif
-
-from config_popup import ConfigPopup
 
 
 def test_config():
