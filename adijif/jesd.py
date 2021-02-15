@@ -4,12 +4,7 @@ from typing import List
 
 
 class jesd(metaclass=ABCMeta):
-    """JESD interface class to manage JESD notations and definitions.
-
-    Attributes:
-        msg (str): Human readable string describing the exception.
-        code (int): Exception error code.
-    """
+    """JESD interface class to manage JESD notations and definitions."""
 
     def __init__(
         self, sample_clock: int, M: int, L: int, Np: int, K: int, S: int

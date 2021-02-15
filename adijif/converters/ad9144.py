@@ -1,7 +1,20 @@
+"""AD9144 high speed DAC clocking model."""
+from typing import Dict, List
+
 from adijif.converters.ad9144_bf import ad9144_bf
 
 
 class ad9144(ad9144_bf):
+    """AD9144 high speed DAC model.
+
+    This model supports both direct clock configurations and on-board
+    generation
+
+    Clocking: AD9144 has directly clocked DAC that have optional input dividers.
+    The sample rate can be determined as follows:
+
+        baseband_sample_rate = (input_clock / input_clock_divider) / datapath_decimation
+    """
 
     name = "AD9144"
 
@@ -33,23 +46,20 @@ class ad9144(ad9144_bf):
 
     config = {}  # type: ignore
 
-    """ Clocking
-        AD9144 has directly clocked DAC that have optional input dividers.
-        The sample rate can be determined as follows:
-
-        baseband_sample_rate = (input_clock / input_clock_divider) / datapath_decimation
-    """
     max_input_clock = 4e9
 
-    def get_required_clock_names(self):
-        """Get list of strings of names of requested clocks
-        This list of names is for the clocks defined by
-        get_required_clocks
+    def get_required_clock_names(self) -> List[str]:
+        """Get list of strings of names of requested clocks.
+
+        This list of names is for the clocks defined by get_required_clocks
+
+        Returns:
+            List[str]: List of strings of clock names in order
         """
         clk = "ad9144_dac_clock" if self.use_direct_clocking else "ad9144_pll_ref"
         return [clk, "ad9144_sysref"]
 
-    def _pll_config(self):
+    def _pll_config(self) -> Dict:
 
         dac_clk = self.datapath_interpolation * self.sample_clock
         self.config["dac_clk"] = self.model.Const(dac_clk)
@@ -93,9 +103,13 @@ class ad9144(ad9144_bf):
 
         return self.config["ref_clk"]
 
-    def get_required_clocks(self):
-        """Generate list required clocks
+    def get_required_clocks(self) -> Dict:
+        """Generate list required clocks.
+
         For AD9144 this will contain [converter clock, sysref requirement SOS]
+
+        Returns:
+            Dict: Dictionary of solver variables, equations, and constants
         """
         # possible_sysrefs = []
         # for n in range(1, 20):
