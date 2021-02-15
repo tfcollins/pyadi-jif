@@ -117,6 +117,18 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
+name = "codecov"
+version = "2.1.11"
+description = "Hosted coverage reports for GitHub, Bitbucket and Gitlab"
+category = "dev"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+
+[package.dependencies]
+coverage = "*"
+requests = ">=2.7.9"
+
+[[package]]
 name = "codespell"
 version = "2.0.0"
 description = "Codespell"
@@ -1097,7 +1109,7 @@ tests = ["pytest", "pytest-cov", "codecov", "scikit-build", "cmake", "ninja", "p
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "f9914e0ab191936671993d74f85b26512f5166f2d60f2d133aeae550e438c03b"
+content-hash = "46e26f3dac3a4a6718db1b0eb06e3381870979bba5faf760edb9b6cb7a347249"
 
 [metadata.files]
 appdirs = [
@@ -1142,6 +1154,11 @@ chardet = [
 click = [
     {file = "click-7.1.2-py2.py3-none-any.whl", hash = "sha256:dacca89f4bfadd5de3d7489b7c8a566eee0d3676333fbb50030263894c38c0dc"},
     {file = "click-7.1.2.tar.gz", hash = "sha256:d2b5255c7c6349bc1bd1e59e08cd12acbbd63ce649f2588755783aa94dfb6b1a"},
+]
+codecov = [
+    {file = "codecov-2.1.11-py2.py3-none-any.whl", hash = "sha256:ba8553a82942ce37d4da92b70ffd6d54cf635fc1793ab0a7dc3fecd6ebfb3df8"},
+    {file = "codecov-2.1.11-py3.8.egg", hash = "sha256:e95901d4350e99fc39c8353efa450050d2446c55bac91d90fcfd2354e19a6aef"},
+    {file = "codecov-2.1.11.tar.gz", hash = "sha256:6cde272454009d27355f9434f4e49f238c0273b216beda8472a65dc4957f473b"},
 ]
 codespell = [
     {file = "codespell-2.0.0-py3-none-any.whl", hash = "sha256:a10b8bbb9f678e4edff7877af1f654fdc9e27c205f952c3ddee2981ad02ec5f2"},
