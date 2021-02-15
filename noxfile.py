@@ -1,13 +1,15 @@
 import tempfile
 
 import nox
+from nox.sessions import Session
 
 # Default tasks (nox no args)
-nox.options.sessions = "lint", "safety", "tests"
+nox.options.sessions = "lint", "mypy", "pytype", "safety", "tests"
 
 locations = "adijif", "tests", "noxfile.py"
 main_python = "3.8"
 multi_python_versions_support = ["3.8", "3.7"]
+package = "adijif"
 
 
 def install_with_constraints(session, *args, **kwargs):
@@ -49,6 +51,38 @@ def lint(session):
     session.run("flake8", *args)
 
 
+@nox.session(python=multi_python_versions_support)
+def mypy(session):
+    args = session.posargs or locations
+    install_with_constraints(session, "mypy")
+    session.run("mypy", *args)
+
+
+@nox.session(python=main_python)
+def pytype(session):
+    """Run the static type checker."""
+    args = session.posargs or ["--disable=import-error", *locations]
+    install_with_constraints(session, "pytype")
+    session.run("pytype", *args)
+
+
+@nox.session(python=multi_python_versions_support)
+def typeguard(session):
+    args = session.posargs
+    session.run("poetry", "install", "--no-dev", external=True)
+    install_with_constraints(session, "pytest", "pytest-mock", "typeguard")
+    session.run("pytest", f"--typeguard-packages={package}", *args)
+
+
+@nox.session(python=multi_python_versions_support)
+def xdoctest(session: Session) -> None:
+    """Run examples with xdoctest."""
+    args = session.posargs or ["all"]
+    session.run("poetry", "install", "--no-dev", external=True)
+    install_with_constraints(session, "xdoctest")
+    session.run("python", "-m", "xdoctest", package, *args)
+
+
 @nox.session(python=main_python)
 def safety(session):
     with tempfile.NamedTemporaryFile() as requirements:
@@ -79,3 +113,12 @@ def tests(session):
         "coverage[toml]",
     )
     session.run("pytest", *args)
+
+
+@nox.session(python=main_python)
+def docs(session: Session) -> None:
+    """Build the documentation."""
+    install_with_constraints(
+        session, "mkdocs", "mkdocs-material", "mkdocstrings", "numpy", "click", "gekko"
+    )
+    session.run("mkdocs", "build", "--verbose", "--strict")
