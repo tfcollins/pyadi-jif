@@ -3,10 +3,10 @@ from adijif.converters.converter import converter
 
 
 class ad9144_bf(converter):
-    """ Brute force methods for calculating clocks
+    """Brute force methods for calculating clocks
 
-        These are currently meant for debug to compare against
-        the solver solutions
+    These are currently meant for debug to compare against
+    the solver solutions
     """
 
     def device_clock_available(self):

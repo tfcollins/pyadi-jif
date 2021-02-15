@@ -1,0 +1,13 @@
+[flake8]
+import-order-style = google
+application-import-names = adijif,tests
+select = B,B9,BLK,C,E,F,I,S,W
+ignore = E203,E501,W503,E722
+exclude = docs
+max-line-length = 80
+per-file-ignores =
+    */__init__.py: F401
+    */system.py: F401,E722
+    */fpgas/xilinx.py: E722
+    */tests/test_bf.py: E722
+    */tests/*:S101

@@ -3,16 +3,16 @@ from adijif.clocks.clock import clock
 
 
 class ad9528_bf(clock):
-    """ Brute force methods for calculating clocks
+    """Brute force methods for calculating clocks
 
-        These are currently meant for debug to compare against
-        the solver solutions
+    These are currently meant for debug to compare against
+    the solver solutions
     """
 
     def list_possible_references(self, divider_set):
-        """ list_possible_references: Based on config list possible
-            references that can be generated based on VCO and output
-            dividers
+        """list_possible_references: Based on config list possible
+        references that can be generated based on VCO and output
+        dividers
         """
         # Check input
         ref = {

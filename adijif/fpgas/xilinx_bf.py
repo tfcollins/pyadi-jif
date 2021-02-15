@@ -2,19 +2,19 @@ from adijif.fpgas.fpga import fpga
 
 
 class xilinx_bf(fpga):
-    """ Brute force methods for calculating clocks
+    """Brute force methods for calculating clocks
 
-        These are currently meant for debug to compare against
-        the solver solutions
+    These are currently meant for debug to compare against
+    the solver solutions
     """
 
     def determine_cpll(self, bit_clock, fpga_ref_clock):
         """
-            Parameters:
-                bit_clock:
-                    Equivalent to lane rate in bits/second
-                fpga_ref_clock:
-                    System reference clock
+        Parameters:
+            bit_clock:
+                Equivalent to lane rate in bits/second
+            fpga_ref_clock:
+                System reference clock
         """
         assert isinstance(bit_clock, int), "bit_clock must be an int"
         assert isinstance(fpga_ref_clock, int), "fpga_ref_clock must be an int"
@@ -51,11 +51,11 @@ class xilinx_bf(fpga):
 
     def determine_qpll(self, bit_clock, fpga_ref_clock):
         """
-            Parameters:
-                bit_clock:
-                    Equivalent to lane rate in bits/second
-                fpga_ref_clock:
-                    System reference clock
+        Parameters:
+            bit_clock:
+                Equivalent to lane rate in bits/second
+            fpga_ref_clock:
+                System reference clock
         """
 
         if self.ref_clock_max < fpga_ref_clock or fpga_ref_clock < self.ref_clock_min:

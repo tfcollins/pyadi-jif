@@ -186,11 +186,11 @@ class xilinx(xilinx_bf):
 
     def determine_pll(self, bit_clock, fpga_ref_clock):
         """
-            Parameters:
-                bit_clock:
-                    Equivalent to lane rate in bits/second
-                fpga_ref_clock:
-                    System reference clock
+        Parameters:
+            bit_clock:
+                Equivalent to lane rate in bits/second
+            fpga_ref_clock:
+                System reference clock
         """
         try:
             info = self.determine_cpll(bit_clock, fpga_ref_clock)
@@ -207,8 +207,8 @@ class xilinx(xilinx_bf):
         return self._clock_names
 
     def get_config(self):
-        """ Helper function for model to extract solved parameters
-            in a readable way
+        """Helper function for model to extract solved parameters
+        in a readable way
         """
         out = []
         for config in self.configs:
@@ -326,11 +326,11 @@ class xilinx(xilinx_bf):
         return config
 
     def get_required_clocks(self, converter):
-        """ get_required_clocks: Get necessary clocks for QPLL/CPLL configuration
+        """get_required_clocks: Get necessary clocks for QPLL/CPLL configuration
 
-            Parameters:
-                converter:
-                    Converter object of converter connected to FPGA
+        Parameters:
+            converter:
+                Converter object of converter connected to FPGA
         """
         if not isinstance(converter, list):
             converter = [converter]

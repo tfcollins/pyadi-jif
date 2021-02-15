@@ -34,15 +34,15 @@ class ad9680(ad9680_bf):
     max_input_clock = 4e9
 
     def get_required_clock_names(self):
-        """ Get list of strings of names of requested clocks
-            This list of names is for the clocks defined by
-            get_required_clocks
+        """Get list of strings of names of requested clocks
+        This list of names is for the clocks defined by
+        get_required_clocks
         """
         return ["ad9680_adc_clock", "ad9680_sysref"]
 
     def get_required_clocks(self):
-        """ Generate list required clocks
-            For AD9680 this will contain [converter clock, sysref requirement SOS]
+        """Generate list required clocks
+        For AD9680 this will contain [converter clock, sysref requirement SOS]
         """
         # possible_sysrefs = []
         # for n in range(1, 10):

@@ -4,10 +4,10 @@ from gekko import GEKKO
 
 
 class system:
-    """ System Manager Class
+    """System Manager Class
 
-        Manage requirements from all system components and feed into clock rate
-        generation algorithms
+    Manage requirements from all system components and feed into clock rate
+    generation algorithms
     """
 
     """ All converters shared a common sysref. This requires that all
@@ -101,8 +101,7 @@ class system:
         return cnv_clocks_filters, clock_names_filters
 
     def solve(self):
-        """ Defined clocking requirements in Solver model and start solvers routine
-        """
+        """Defined clocking requirements in Solver model and start solvers routine"""
 
         if not self.enable_converter_clocks and not self.enable_fpga_clocks:
             raise Exception("Converter and/or FPGA clocks must be enabled")
@@ -160,8 +159,8 @@ class system:
         return self._get_configs(all_clock_names)
 
     def determine_clocks(self):
-        """ Defined clocking requirements and search over all possible dividers
-            for working configuration
+        """Defined clocking requirements and search over all possible dividers
+        for working configuration
         """
 
         # Extract dependent rates from converter
