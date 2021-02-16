@@ -1,9 +1,14 @@
-import numpy as np
+"""AD9523-1 clock chip model."""
+from typing import Dict, List, Union
+
 from adijif.clocks.ad9523_1_bf import ad9523_1_bf
 
 
 class ad9523_1(ad9523_1_bf):
-    """ AD9523-1 Model """
+    """AD9523-1 clock chip model.
+
+    This model currently supports VCXO+PLL2 configurations
+    """
 
     # Ranges
     m1_available = [3, 4, 5]
@@ -33,48 +38,113 @@ class ad9523_1(ad9523_1_bf):
     use_vcxo_double = False
 
     @property
-    def m1(self):
-        """ m1: VCO divider path 1 """
+    def m1(self) -> Union[int, List[int]]:
+        """VCO divider path 1.
+
+        Valid dividers are 3,4,5
+
+        Returns:
+            int: Current allowable dividers
+        """
         return self._m1
 
     @m1.setter
-    def m1(self, value):
+    def m1(self, value: Union[int, List[int]]) -> None:
+        """VCO divider path 1.
+
+        Valid dividers are 3,4,5
+
+        Args:
+            value (int, list[int]): Allowable values for divider
+
+        """
         self._check_in_range(value, self.m1_available, "m1")
         self._m1 = value
 
     @property
-    def d(self):
-        """ d: Output dividers """
+    def d(self) -> Union[int, List[int]]:
+        """Output dividers.
+
+        Valid dividers are 1->1023
+
+        Returns:
+            int: Current allowable dividers
+        """
         return self._d
 
     @d.setter
-    def d(self, value):
+    def d(self, value: Union[int, List[int]]) -> None:
+        """Output dividers.
+
+        Valid dividers are 1->1023
+
+        Args:
+            value (int, list[int]): Allowable values for divider
+
+        """
         self._check_in_range(value, self.d_available, "d")
         self._d = value
 
     @property
-    def n2(self):
-        """ n2: VCO feedback divider """
+    def n2(self) -> Union[int, List[int]]:
+        """n2: VCO feedback divider.
+
+        Valid dividers are 12, 16, 17, 20, 21, 22, 24, 25, 26, 28->255
+
+        Returns:
+            int: Current allowable dividers
+        """
         return self._n2
 
     @n2.setter
-    def n2(self, value):
+    def n2(self, value: Union[int, List[int]]) -> None:
+        """VCO feedback divider.
+
+        Valid dividers are 12, 16, 17, 20, 21, 22, 24, 25, 26, 28->255
+
+        Args:
+            value (int, list[int]): Allowable values for divider
+
+        """
         self._check_in_range(value, self.n2_available, "n2")
         self._n2 = value
 
     @property
-    def r2(self):
-        """ r2: VCXO input dividers """
+    def r2(self) -> Union[int, List[int]]:
+        """VCXO input dividers.
+
+        Valid dividers are 1->31
+
+        Returns:
+            int: Current allowable dividers
+        """
         return self._r2
 
     @r2.setter
-    def r2(self, value):
+    def r2(self, value: Union[int, List[int]]) -> None:
+        """VCXO input dividers.
+
+        Valid dividers are 1->31
+
+        Args:
+            value (int, list[int]): Allowable values for divider
+
+        """
         self._check_in_range(value, self.r2_available, "r2")
         self._r2 = value
 
-    def get_config(self):
-        """ Extract configurations from solver results """
+    def get_config(self) -> Dict:
+        """Extract configurations from solver results.
 
+        Collect internal clock chip configuration and output clock definitions
+        leading to connected devices (converters, FPGAs)
+
+        Returns:
+            Dict: Dictionary of clocking rates and dividers for configuration
+
+        Raises:
+            Exception: If solver is not called first
+        """
         if not self._clk_names:
             raise Exception("set_requested_clocks must be called before get_config")
 
@@ -98,8 +168,12 @@ class ad9523_1(ad9523_1_bf):
         config["output_clocks"] = output_cfg
         return config
 
-    def _setup_solver_constraints(self, vcxo):
-        """Apply constraints to solver model"""
+    def _setup_solver_constraints(self, vcxo: int) -> None:
+        """Apply constraints to solver model.
+
+        Args:
+            vcxo (int): VCXO frequency in hertz
+        """
         self.vcxo = vcxo
         self.config = {
             "r2": self._convert_input(self._r2, "r2"),
@@ -121,16 +195,19 @@ class ad9523_1(ad9523_1_bf):
         # Objectives
         # self.model.Obj(self.config["n2"])
 
-    def set_requested_clocks(self, vcxo, out_freqs, clk_names):
-        """set_requested_clocks: Define necessary clocks to be generated in model
+    def set_requested_clocks(
+        self, vcxo: int, out_freqs: List, clk_names: List[str]
+    ) -> None:
+        """Define necessary clocks to be generated in model.
 
-        Parameters:
-            vcxo:
-                VCXO frequency in hertz
-            out_freqs:
-                list of required clocks to be output
+        Args:
+            vcxo (int): VCXO frequency in hertz
+            out_freqs (List): list of required clocks to be output
+            clk_names (List[str]):  list of strings of clock names
+
+        Raises:
+            Exception: If len(out_freqs) != len(clk_names)
         """
-
         if len(clk_names) != len(out_freqs):
             raise Exception("clk_names is not the same size as out_freqs")
         self._clk_names = clk_names
