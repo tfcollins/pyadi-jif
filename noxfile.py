@@ -101,7 +101,7 @@ def safety(session):
 
 @nox.session(python=multi_python_versions_support)
 def tests(session):
-    args = session.posargs or ["--cov"]
+    args = session.posargs or ["--cov=adijif"]
     session.run("poetry", "install", "--no-dev", external=True)
     install_with_constraints(
         session,
