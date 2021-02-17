@@ -156,7 +156,15 @@ class ad9523_1(ad9523_1_bf):
             "output_clocks": [],
         }
 
-        clk = self.vcxo / config["r2"] * config["n2"] / config["m1"]
+        vcxo = self._get_val(self.vcxo)
+        config["vcxo"] = vcxo
+
+        clk = (
+            vcxo
+            / self._get_val(config["r2"])
+            * self._get_val(config["n2"])
+            / self._get_val(config["m1"])
+        )
         # for div in self.config["out_dividers"]:
         #     config["output_clocks"].append(clk / div.value[0])
 
@@ -174,7 +182,6 @@ class ad9523_1(ad9523_1_bf):
         Args:
             vcxo (int): VCXO frequency in hertz
         """
-        self.vcxo = vcxo
         self.config = {
             "r2": self._convert_input(self._r2, "r2"),
             "m1": self._convert_input(self._m1, "m1"),
@@ -183,6 +190,10 @@ class ad9523_1(ad9523_1_bf):
         # self.config = {"r2": self.model.Var(integer=True, lb=1, ub=31, value=1)}
         # self.config["m1"] = self.model.Var(integer=True, lb=3, ub=5, value=3)
         # self.config["n2"] = self.model.sos1(self.n2_available)
+        if not isinstance(vcxo, int):
+            self.config["vcxo_set"] = vcxo(self.model)
+            vcxo = self.config["vcxo_set"]["range"]
+        self.vcxo = vcxo
 
         # PLL2 equations
         self.model.Equations(
@@ -213,6 +224,8 @@ class ad9523_1(ad9523_1_bf):
         self._clk_names = clk_names
 
         # Setup clock chip internal constraints
+        if self.use_vcxo_double and not isinstance(vcxo, int):
+            raise Exception("VCXO doubler not supported in this mode TBD")
         if self.use_vcxo_double:
             vcxo *= 2
         self._setup_solver_constraints(vcxo)
@@ -227,7 +240,7 @@ class ad9523_1(ad9523_1_bf):
             # od = self.model.sos1([n*n for n in range(1,9)])
             self.model.Equations(
                 [
-                    vcxo
+                    self.vcxo
                     / self.config["r2"]
                     * self.config["n2"]
                     / self.config["m1"]

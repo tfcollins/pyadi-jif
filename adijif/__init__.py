@@ -15,3 +15,5 @@ from adijif.clocks.ad9528 import ad9528
 from adijif.fpgas.xilinx import xilinx
 
 from adijif.system import system
+
+from adijif.types import range

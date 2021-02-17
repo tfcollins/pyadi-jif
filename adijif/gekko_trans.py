@@ -15,7 +15,10 @@ class gekko_translation(metaclass=ABCMeta):
 
     def _get_val(self, value):
 
-        if type(value) is gekko.gk_variable.GKVariable:
+        if type(value) in [
+            gekko.gk_variable.GKVariable,
+            gekko.gk_operators.GK_Intermediate,
+        ]:
             return value.value[0]
         elif type(value) is gekko.gk_operators.GK_Operators:
             return value.value

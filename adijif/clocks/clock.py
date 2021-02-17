@@ -39,7 +39,17 @@ class clock(gekko_translation, metaclass=ABCMeta):
         Call model solver with correct arguments.
         """
         self.model.options.SOLVER = 1  # APOPT solver
-        self.model.solve(disp=False)
+        self.model.solver_options = [
+            "minlp_maximum_iterations 1000",  # minlp iterations with integer solution
+            "minlp_max_iter_with_int_sol 100",  # treat minlp as nlp
+            "minlp_as_nlp 0",  # nlp sub-problem max iterations
+            "nlp_maximum_iterations 500",  # 1 = depth first, 2 = breadth first
+            "minlp_branch_method 1",  # maximum deviation from whole number
+            "minlp_integer_tol 0",  # covergence tolerance (MUST BE 0 TFC)
+            "minlp_gap_tol 0.1",
+        ]
+
+        self.model.solve(disp=True)
 
     def __init__(self, model: GEKKO = None) -> None:
         """Initalize clocking model.
