@@ -1,7 +1,19 @@
+"""AD9680 high speed ADC clocking model."""
+from typing import Dict, List
+
 from adijif.converters.ad9680_bf import ad9680_bf
 
 
 class ad9680(ad9680_bf):
+    """AD9680 high speed ADC model.
+
+    This model supports direct clock configurations
+
+    Clocking: AD9680 has directly clocked ADC that have optional input dividers.
+    The sample rate can be determined as follows:
+
+        baseband_sample_rate = (input_clock / input_clock_divider) / datapath_decimation
+    """
 
     name = "AD9680"
 
@@ -33,16 +45,23 @@ class ad9680(ad9680_bf):
     """
     max_input_clock = 4e9
 
-    def get_required_clock_names(self):
-        """Get list of strings of names of requested clocks
-        This list of names is for the clocks defined by
-        get_required_clocks
+    def get_required_clock_names(self) -> List[str]:
+        """Get list of strings of names of requested clocks.
+
+        This list of names is for the clocks defined by get_required_clocks
+
+        Returns:
+            List[str]: List of strings of clock names in order
         """
         return ["ad9680_adc_clock", "ad9680_sysref"]
 
-    def get_required_clocks(self):
-        """Generate list required clocks
+    def get_required_clocks(self) -> Dict:
+        """Generate list required clocks.
+
         For AD9680 this will contain [converter clock, sysref requirement SOS]
+
+        Returns:
+            Dict: Dictionary of solver variables, equations, and constants
         """
         # possible_sysrefs = []
         # for n in range(1, 10):
