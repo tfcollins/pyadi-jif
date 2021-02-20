@@ -332,12 +332,11 @@ class xilinx(xilinx_bf):
             converter:
                 Converter object of converter connected to FPGA
         """
+        if "_get_converters" in dir(converter):
+            converter = converter._get_converters()  # Handle nested converters
+
         if not isinstance(converter, list):
-            if "_get_converters" in dir(converter):
-                print("Called")
-                converter = converter._get_converters()  # Handle nested converters
-            else:
-                converter = [converter]
+            converter = [converter]
 
         self.config = {
             "fpga_ref": self.model.Var(
