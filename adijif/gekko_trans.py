@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod
 
 import gekko
 import numpy as np
+from docplex.cp.model import *
 
 
 class gekko_translation(metaclass=ABCMeta):
@@ -12,6 +13,21 @@ class gekko_translation(metaclass=ABCMeta):
     # def model(self):
     #     raise NotImplementedError
     mode = None
+
+    solver = "gekko"  # "CPLEX"
+
+    def _add_equation(self, eqs):
+
+        if not isinstance(eqs, list):
+            eqs = [eqs]
+
+        if self.solver == "gekko":
+            self.model.Equations(eqs)
+        elif self.solver == "CPLEX":
+            for eq in eqs:
+                self.model.add_constraint(eq)
+        else:
+            raise Exception(f"Unknown solver {self.solver}")
 
     def _get_val(self, value):
 
@@ -33,10 +49,21 @@ class gekko_translation(metaclass=ABCMeta):
                 raise Exception(f"{v} invalid for {varname}. Only {possible} possible")
 
     def _convert_input(self, val, name):
+        if self.solver == "gekko":
+            return self._convert_input_gekko(val, name)
+        elif self.solver == "CPLEX":
+            return self._convert_input_cplex(val, name)
+        else:
+            raise Exception(f"Unknown solver {self.solver}")
+
+    def _convert_input_gekko(self, val, name):
         if isinstance(val, list) and len(val) > 1:
             return self._convert_list(val, name)
         else:
             return self.model.Const(value=val, name=name + "_Const")
+
+    def _convert_input_cplex(self, val, name):
+        return integer_var(domain=val, name=name)
 
     def _convert_list(self, val, name):
 

@@ -88,7 +88,7 @@ python-versions = ">=3.5"
 name = "certifi"
 version = "2020.12.5"
 description = "Python package for providing Mozilla's CA Bundle."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -104,7 +104,7 @@ python-versions = ">=3.6.1"
 name = "chardet"
 version = "4.0.0"
 description = "Universal encoding detector for Python 2 and 3"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
@@ -174,6 +174,14 @@ toml = {version = "*", optional = true, markers = "extra == \"toml\""}
 toml = ["toml"]
 
 [[package]]
+name = "cplex"
+version = "20.1.0.1"
+description = "A Python interface to the CPLEX Callable Library, Community Edition."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "darglint"
 version = "1.6.0"
 description = "A utility for ensuring Google-style docstrings stay up to date with the source code."
@@ -196,6 +204,18 @@ description = "Distribution utilities"
 category = "main"
 optional = false
 python-versions = "*"
+
+[[package]]
+name = "docplex"
+version = "2.20.204"
+description = "The IBM Decision Optimization CPLEX Modeling for Python"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+requests = "*"
+six = "*"
 
 [[package]]
 name = "dparse"
@@ -425,7 +445,7 @@ license = ["editdistance"]
 name = "idna"
 version = "2.10"
 description = "Internationalized Domain Names in Applications (IDNA)"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
@@ -913,7 +933,7 @@ python-versions = "*"
 name = "requests"
 version = "2.25.1"
 description = "Python HTTP for Humans."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
@@ -1049,7 +1069,7 @@ python-versions = "*"
 name = "urllib3"
 version = "1.26.3"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4"
 
@@ -1109,7 +1129,7 @@ tests = ["pytest", "pytest-cov", "codecov", "scikit-build", "cmake", "ninja", "p
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "46e26f3dac3a4a6718db1b0eb06e3381870979bba5faf760edb9b6cb7a347249"
+content-hash = "4e186c95f795f3beff458e961ca4733629d51318899eafcdb7d4ac705071acab"
 
 [metadata.files]
 appdirs = [
@@ -1223,6 +1243,16 @@ coverage = [
     {file = "coverage-5.4-pp37-none-any.whl", hash = "sha256:cd601187476c6bed26a0398353212684c427e10a903aeafa6da40c63309d438b"},
     {file = "coverage-5.4.tar.gz", hash = "sha256:6d2e262e5e8da6fa56e774fb8e2643417351427604c2b177f8e8c5f75fc928ca"},
 ]
+cplex = [
+    {file = "cplex-20.1.0.1-cp37-cp37m-macosx_10_6_x86_64.whl", hash = "sha256:c10ecedf112d2d97a70f980c0f5662cef2c6d3da57ed60b2796c8862e3402cd8"},
+    {file = "cplex-20.1.0.1-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:b341f3f4414f1a9427476cab4b6f58a241b0dd4fce9d1b1ab5f200f91298eaa6"},
+    {file = "cplex-20.1.0.1-cp37-cp37m-manylinux2014_ppc64le.whl", hash = "sha256:3bbb2fa9dcd10d243d450b0f287302b6df531a14c2e34d5cf4f8a0635abf748d"},
+    {file = "cplex-20.1.0.1-cp37-cp37m-win_amd64.whl", hash = "sha256:4377e5b83315e8c19cc41d354eeffcb6559b3edc1ff7e1e19ffed57b43351a54"},
+    {file = "cplex-20.1.0.1-cp38-cp38-macosx_10_6_x86_64.whl", hash = "sha256:c59c768b77e0b00dfe477c97c58bdb037744dcd9f99b17ce71501ca5bd97d5d8"},
+    {file = "cplex-20.1.0.1-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:93b2ec8316ca46b09a06a2288cc16aeb2e5523746ca927ffc239d1b14d95e233"},
+    {file = "cplex-20.1.0.1-cp38-cp38-manylinux2014_ppc64le.whl", hash = "sha256:0eae70931eb7ab7c229b7d7c3565352f02b0eac0a35425c38b0f83842a0640cb"},
+    {file = "cplex-20.1.0.1-cp38-cp38-win_amd64.whl", hash = "sha256:591b7dcbace5f23388e8c92e29d8c55324737ce5b0506b0bd6761d72e0b55c2a"},
+]
 darglint = [
     {file = "darglint-1.6.0-py3-none-any.whl", hash = "sha256:c80849fd83a06d0bec3c93240360214cf56979691c6d18e2abb293aa404bf443"},
     {file = "darglint-1.6.0.tar.gz", hash = "sha256:9c91a1dd93f6cdbdd626ecea8ae2849fafe6588bb6d6dbbf7066f9ae69fca771"},
@@ -1234,6 +1264,9 @@ decorator = [
 distlib = [
     {file = "distlib-0.3.1-py2.py3-none-any.whl", hash = "sha256:8c09de2c67b3e7deef7184574fc060ab8a793e7adbb183d942c389c8b13c52fb"},
     {file = "distlib-0.3.1.zip", hash = "sha256:edf6116872c863e1aa9d5bb7cb5e05a022c519a4594dc703843343a9ddd9bff1"},
+]
+docplex = [
+    {file = "docplex-2.20.204.tar.gz", hash = "sha256:24d8c3f54b4b1ec306c13b97c9d67e2f9fa93d0d9ea1b92bdba62df6982cd6a0"},
 ]
 dparse = [
     {file = "dparse-0.5.1-py3-none-any.whl", hash = "sha256:e953a25e44ebb60a5c6efc2add4420c177f1d8404509da88da9729202f306994"},

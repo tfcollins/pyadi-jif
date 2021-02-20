@@ -11,6 +11,8 @@ python = "^3.8"
 gekko = "^0.2.8"
 numpy = "^1.20.1"
 virtualenv = "20.4.0"
+cplex = "^20.1.0"
+docplex = "^2.20.204"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.2"

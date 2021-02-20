@@ -3,6 +3,7 @@ from abc import ABCMeta, abstractmethod
 from typing import Dict, List
 
 from gekko import GEKKO
+from docplex.cp.model import CpoModel
 
 from adijif.gekko_trans import gekko_translation
 
@@ -33,7 +34,7 @@ class clock(gekko_translation, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def solve(self) -> None:
+    def _solve_gekko(self) -> None:
         """Local solve method for clock model.
 
         Call model solver with correct arguments.
@@ -51,7 +52,23 @@ class clock(gekko_translation, metaclass=ABCMeta):
 
         self.model.solve(disp=True)
 
-    def __init__(self, model: GEKKO = None) -> None:
+    def _solve_cplex(self):
+        self.solution = self.model.solve()
+        return self.solution
+
+    def solve(self) -> None:
+        """Local solve method for clock model.
+
+        Call model solver with correct arguments.
+        """
+        if self.solver == "gekko":
+            return self._solve_gekko()
+        elif self.solver == "CPLEX":
+            return self._solve_cplex()
+        else:
+            raise Exception(f"Unknown solver {self.solver}")
+
+    def __init__(self, model: GEKKO = None, solver=None) -> None:
         """Initalize clocking model.
 
         When usings the clocking models standalone, typically for
@@ -61,8 +78,22 @@ class clock(gekko_translation, metaclass=ABCMeta):
         Args:
             model (GEKKO): Solver model
         """
-        if model:
-            assert isinstance(model, GEKKO), "Input model must be of type gekko.GEKKO"
+        if solver:
+            self.solver = solver
+        if self.solver == "gekko":
+            if model:
+                assert isinstance(
+                    model, GEKKO
+                ), "Input model must be of type gekko.GEKKO"
+            else:
+                model = GEKKO()
+        elif self.solver == "CPLEX":
+            if model:
+                assert isinstance(
+                    model, CpoModel
+                ), "Input model must be of type docplex.cp.model.CpoModel"
+            else:
+                model = CpoModel()
         else:
-            model = GEKKO()
+            raise Exception(f"Unknown solver {self.solver}")
         self.model = model

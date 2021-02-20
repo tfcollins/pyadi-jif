@@ -6,6 +6,8 @@ from typing import List
 class jesd(metaclass=ABCMeta):
     """JESD interface class to manage JESD notations and definitions."""
 
+    solver = "gekko"  # "CPLEX"
+
     def __init__(
         self, sample_clock: int, M: int, L: int, Np: int, K: int, S: int
     ) -> None:

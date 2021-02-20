@@ -148,30 +148,52 @@ class ad9523_1(ad9523_1_bf):
         if not self._clk_names:
             raise Exception("set_requested_clocks must be called before get_config")
 
-        config = {
-            "m1": self._get_val(self.config["m1"]),
-            "n2": self._get_val(self.config["n2"]),
-            "r2": self._get_val(self.config["r2"]),
-            "out_dividers": [x.value[0] for x in self.config["out_dividers"]],
-            "output_clocks": [],
-        }
+        if self.solver == "CPLEX":
+            config = {
+                "m1": self.solution.get_value(self.config["m1"].get_name()),
+                "n2": self.solution.get_value(self.config["n2"].get_name()),
+                "r2": self.solution.get_value(self.config["r2"].get_name()),
+                "out_dividers": [
+                    self.solution.get_value(x) for x in self.config["out_dividers"]
+                ],
+                "output_clocks": [],
+            }
 
-        vcxo = self._get_val(self.vcxo)
-        config["vcxo"] = vcxo
+            vcxo = self.vcxo
 
-        clk = (
-            vcxo
-            / self._get_val(config["r2"])
-            * self._get_val(config["n2"])
-            / self._get_val(config["m1"])
-        )
-        # for div in self.config["out_dividers"]:
-        #     config["output_clocks"].append(clk / div.value[0])
+            clk = vcxo / config["r2"] * config["n2"] / config["m1"]
+            output_cfg = {}
+            for i, div in enumerate(self.config["out_dividers"]):
+                div = self.solution.get_value(div)
+                rate = clk / div
+                output_cfg[self._clk_names[i]] = {"rate": rate, "divider": div}
+            config["output_clocks"] = output_cfg
+            return config
+        else:
+            config = {
+                "m1": self._get_val(self.config["m1"]),
+                "n2": self._get_val(self.config["n2"]),
+                "r2": self._get_val(self.config["r2"]),
+                "out_dividers": [x.value[0] for x in self.config["out_dividers"]],
+                "output_clocks": [],
+            }
 
-        output_cfg = {}
-        for i, div in enumerate(self.config["out_dividers"]):
-            rate = clk / div.value[0]
-            output_cfg[self._clk_names[i]] = {"rate": rate, "divider": div.value[0]}
+            vcxo = self._get_val(self.vcxo)
+            config["vcxo"] = vcxo
+
+            clk = (
+                vcxo
+                / self._get_val(config["r2"])
+                * self._get_val(config["n2"])
+                / self._get_val(config["m1"])
+            )
+            # for div in self.config["out_dividers"]:
+            #     config["output_clocks"].append(clk / div.value[0])
+
+            output_cfg = {}
+            for i, div in enumerate(self.config["out_dividers"]):
+                rate = clk / div.value[0]
+                output_cfg[self._clk_names[i]] = {"rate": rate, "divider": div.value[0]}
 
         config["output_clocks"] = output_cfg
         return config
@@ -196,7 +218,7 @@ class ad9523_1(ad9523_1_bf):
         self.vcxo = vcxo
 
         # PLL2 equations
-        self.model.Equations(
+        self._add_equation(
             [
                 vcxo / self.config["r2"] <= self.pfd_max,
                 vcxo / self.config["r2"] * self.config["n2"] <= self.vco_max,
@@ -238,7 +260,8 @@ class ad9523_1(ad9523_1_bf):
             # od = self.model.Var(integer=True, lb=1, ub=1023, value=1)
             od = self._convert_input(self._d, "d_" + str(out_freq))
             # od = self.model.sos1([n*n for n in range(1,9)])
-            self.model.Equations(
+
+            self._add_equation(
                 [
                     self.vcxo
                     / self.config["r2"]
