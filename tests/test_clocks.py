@@ -66,6 +66,10 @@ def test_ad9523_1_daq2_cplex_validate():
     assert o["r2"] == 1
     assert o["r2"] in clk.r2_available
 
+    assert o["output_clocks"]["ADC"] == {"divider": 1, "rate": 1000000000.0}
+    assert o["output_clocks"]["FPGA"] == {"divider": 2, "rate": 500000000.0}
+    assert o["output_clocks"]["SYSREF"] == {"divider": 128, "rate": 7812500.0}
+
 
 def test_ad9523_1_daq2_validate_fail():
 
