@@ -155,7 +155,7 @@ def test_sys_solver():
     assert clk_config["m1"][0] == 3
     assert sys.fpga.config["fpga_ref"].value[0] == 100000000
     for div in divs:
-        assert div[0] in [1, 4, 10, 288]
+        assert div[0] in [1, 4, 10, 32, 288]
 
 
 def test_adrv9009_ad9528_solver_compact():
@@ -190,12 +190,12 @@ def test_adrv9009_ad9528_solver_compact():
     clk_config = sys.clock.config
     print(clk_config)
     divs = sys.clock.config["out_dividers"]
-    assert clk_config["r1"][0] == 3
-    assert clk_config["n2"][0] == 17
+    assert clk_config["r1"][0] == 2
+    assert clk_config["n2"][0] == 12
     assert clk_config["m1"][0] == 5
-    assert sys.fpga.config["fpga_ref"].value[0] == 62836363.0  # 98304000
+    assert sys.fpga.config["fpga_ref"].value[0] == 67025454.0  # 98304000
     for div in divs:
-        assert div[0] in [11, 23, 180]
+        assert div[0] in [6, 11, 192]
 
 
 def test_xilinx_solver():

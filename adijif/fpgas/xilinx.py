@@ -242,14 +242,22 @@ class xilinx(xilinx_bf):
     def _setup_quad_tile(self, converter, fpga_ref):
         config = {}
         # QPLL
-        config["m"] = self.model.Var(integer=True, lb=1, ub=4, value=1)
-        config["d"] = self.model.sos1([1, 2, 4, 8, 16])
-        config["n"] = self.model.sos1(self.N)
+        config["m"] = self._convert_input([1, 2, 3, 4])
+        config["d"] = self._convert_input([1, 2, 4, 8, 16], "d")
+        config["n"] = self._convert_input(self.N, "n")
 
-        config["vco"] = self.model.Intermediate(fpga_ref * config["n"] / config["m"])
+        if self.solver == "gekko":
+            config["vco"] = self.model.Intermediate(
+                fpga_ref * config["n"] / config["m"]
+            )
+        elif self.solver == "CPLEX":
+            config["vco"] = fpga_ref * config["n"] / config["m"]
+        else:
+            raise Exception(f"Unknown solver {self.solver}")
 
         # Define QPLL band requirements
-        config["band"] = self.model.Var(integer=True, lb=0, ub=1)
+        config["band"] = self._convert_input([0, 1])
+
         config["vco_max"] = self.model.Intermediate(
             config["band"] * self.vco1_max + (1 - config["band"]) * self.vco0_max
         )
@@ -259,19 +267,19 @@ class xilinx(xilinx_bf):
 
         # Define if we can use GTY (is available) at full rate
         if self.transciever_type != "GTY4":
-            config["qty4_full_rate_divisor"] = self.model.Const(value=1)
+            config["qty4_full_rate_divisor"] = self._convert_input(1)
         else:
-            config["qty4_full_rate_divisor"] = self.model.Var(integer=True, lb=1, ub=2)
+            config["qty4_full_rate_divisor"] = self._convert_input([1, 2])
         config["qty4_full_rate_enabled"] = self.model.Intermediate(
             1 - config["qty4_full_rate_divisor"]
         )
 
         #######################
         # CPLL
-        config["m_cpll"] = self.model.Var(integer=True, lb=1, ub=2, value=1)
-        config["d_cpll"] = self.model.sos1([1, 2, 4, 8])
-        config["n1_cpll"] = self.model.Var(integer=True, lb=4, ub=5, value=5)
-        config["n2_cpll"] = self.model.Var(integer=True, lb=1, ub=5, value=1)
+        config["m_cpll"] = self._convert_input([1, 2])
+        config["d_cpll"] = self._convert_input([1, 2, 4, 8])
+        config["n1_cpll"] = self._convert_input([4, 5])
+        config["n2_cpll"] = self._convert_input([1, 2, 3, 4, 5])
 
         config["vco_cpll"] = self.model.Intermediate(
             fpga_ref * config["n1_cpll"] * config["n2_cpll"] / config["m_cpll"]
@@ -281,13 +289,13 @@ class xilinx(xilinx_bf):
         if self.force_qpll and self.force_cpll:
             raise Exception("Cannot force both CPLL and QPLL")
         if self.force_qpll:
-            config["qpll_0_cpll_1"] = self.model.Const(value=0)
+            config["qpll_0_cpll_1"] = self._convert_input(0)
         elif self.force_cpll:
             if converter.bit_clock > self.vco_max * 2:
                 raise Exception(f"CPLL too slow for lane rate. Max: {2*self.vco_max}")
-            config["qpll_0_cpll_1"] = self.model.Const(value=1)
+            config["qpll_0_cpll_1"] = self._convert_input(1)
         else:
-            config["qpll_0_cpll_1"] = self.model.Var(integer=True, lb=0, ub=1, value=0)
+            config["qpll_0_cpll_1"] = self._convert_input([0, 1])
 
         config["vco_select"] = self.model.Intermediate(
             config["qpll_0_cpll_1"] * config["vco_cpll"]
@@ -315,7 +323,7 @@ class xilinx(xilinx_bf):
 
         # Set all relations
         # QPLL+CPLL
-        self.model.Equations(
+        self._add_equation(
             [
                 config["vco_select"] >= config["vco_min_select"],
                 config["vco_select"] <= config["vco_max_select"],

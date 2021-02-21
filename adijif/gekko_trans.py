@@ -48,7 +48,7 @@ class gekko_translation(metaclass=ABCMeta):
             if v not in possible:
                 raise Exception(f"{v} invalid for {varname}. Only {possible} possible")
 
-    def _convert_input(self, val, name):
+    def _convert_input(self, val, name=None):
         if self.solver == "gekko":
             return self._convert_input_gekko(val, name)
         elif self.solver == "CPLEX":
@@ -60,9 +60,13 @@ class gekko_translation(metaclass=ABCMeta):
         if isinstance(val, list) and len(val) > 1:
             return self._convert_list(val, name)
         else:
-            return self.model.Const(value=val, name=name + "_Const")
+            if name:
+                name + "_Const"
+            return self.model.Const(value=val, name=name)
 
     def _convert_input_cplex(self, val, name):
+        if isinstance(val, list) and val.sort() == [0, 1]:
+            return binary_var(name=name)
         return integer_var(domain=val, name=name)
 
     def _convert_list(self, val, name):
@@ -77,12 +81,14 @@ class gekko_translation(metaclass=ABCMeta):
 
         if np.abs(delta) == 1:  # Easy mode
             print(np.min(val), np.max(val))
+            if name:
+                name + "_Var"
             return self.model.Var(
                 integer=True,
                 lb=np.min(val),
                 ub=np.max(val),
                 value=np.min(val),
-                name=name + "_Var",
+                name=name,
             )
 
         else:

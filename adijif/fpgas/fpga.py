@@ -3,8 +3,10 @@ from abc import ABCMeta, abstractmethod
 from gekko import GEKKO
 from docplex.cp.model import CpoModel
 
+from adijif.gekko_trans import gekko_translation
 
-class fpga(metaclass=ABCMeta):
+
+class fpga(gekko_translation, metaclass=ABCMeta):
 
     solver = "gekko"  # "CPLEX"
 
