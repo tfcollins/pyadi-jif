@@ -34,7 +34,7 @@ class fpga(gekko_translation, metaclass=ABCMeta):
                     model, GEKKO
                 ), "Input model must be of type gekko.GEKKO"
             else:
-                model = GEKKO()
+                model = GEKKO(remote=False)
         elif self.solver == "CPLEX":
             assert isinstance(
                 model, CpoModel

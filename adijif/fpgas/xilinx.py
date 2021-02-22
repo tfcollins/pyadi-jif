@@ -224,21 +224,14 @@ class xilinx(xilinx_bf):
             if self.solver == "gekko":
                 if pll > 0:
                     pll_config["type"] = "cpll"
-                    pll_config["m"] = config["m_cpll"].value[0]
-                    pll_config["d"] = config["d_cpll"].value[0]
-                    pll_config["n1"] = config["n1_cpll"].value[0]
-                    pll_config["n2"] = config["n2_cpll"].value[0]
-                    pll_config["vco"] = config["vco_cpll"].value[0]
+                    for k in ["m", "d", "n1", "n2", "vco"]:
+                        pll_config[k] = self._get_val(config[k + "_cpll"])
+
                 else:
                     pll_config["type"] = "qpll"
-                    pll_config["m"] = config["m"].value[0]
-                    pll_config["d"] = config["d"].value[0]
-                    pll_config["n"] = config["n"].value[0]
-                    pll_config["vco"] = config["vco"].value[0]
-                    pll_config["band"] = config["band"].value[0]
-                    pll_config["qty4_full_rate_enabled"] = config[
-                        "qty4_full_rate_enabled"
-                    ].value[0]
+                    for k in ["m", "d", "n", "vco", "band", "qty4_full_rate_enabled"]:
+                        pll_config[k] = self._get_val(config[k])
+
             elif self.solver == "CPLEX":
                 if pll > 0:
                     pll_config["type"] = "cpll"
