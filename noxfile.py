@@ -107,9 +107,12 @@ def tests(session):
         session,
         "pytest",
         "pytest-cov",
+        "pytest-xdist",
         "pytest-mock",
         "gekko",
         "numpy",
+        "cplex",
+        "docplex",
         "coverage[toml]",
     )
     session.run("pytest", *args)
