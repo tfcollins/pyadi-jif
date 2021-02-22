@@ -116,7 +116,7 @@ class hmc7044(hmc7044_bf):
         self._check_in_range(value, self.r2_available, "r2")
         self._r2 = value
 
-    def get_config(self) -> Dict:
+    def get_config(self, solution=None) -> Dict:
         """Extract configurations from solver results.
 
         Collect internal clock chip configuration and output clock definitions

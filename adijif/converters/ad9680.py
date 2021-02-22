@@ -1,5 +1,6 @@
 """AD9680 high speed ADC clocking model."""
 from typing import Dict, List
+from docplex.cp.model import *
 
 from adijif.converters.ad9680_bf import ad9680_bf
 
@@ -71,17 +72,30 @@ class ad9680(ad9680_bf):
         # self.config = {"sysref": self.model.sos1(possible_sysrefs)}
 
         self.config = {}
-        self.config["lmfc_divisor_sysref"] = self.model.Var(
-            integer=True, lb=1, ub=17, value=3  # default value must be odd
-        )
+        if self.solver == "gekko":
+            self.config["lmfc_divisor_sysref"] = self.model.Var(
+                integer=True, lb=1, ub=17, value=3  # default value must be odd
+            )
+        else:
+            self.config["lmfc_divisor_sysref"] = self._convert_input([*range(1, 18)])
 
-        self.config["lmfc_divisor_sysref_squared"] = self.model.Intermediate(
-            self.config["lmfc_divisor_sysref"] * self.config["lmfc_divisor_sysref"]
-        )
+        if self.solver == "gekko":
+            self.config["lmfc_divisor_sysref_squared"] = self.model.Intermediate(
+                self.config["lmfc_divisor_sysref"] * self.config["lmfc_divisor_sysref"]
+            )
+        elif self.solver == "CPLEX":
+            self.config["lmfc_divisor_sysref_squared"] = (
+                self.config["lmfc_divisor_sysref"] * self.config["lmfc_divisor_sysref"]
+            )
 
-        self.config["sysref"] = self.model.Intermediate(
-            self.multiframe_clock / self.config["lmfc_divisor_sysref_squared"]
-        )
+        if self.solver == "gekko":
+            self.config["sysref"] = self.model.Intermediate(
+                self.multiframe_clock / self.config["lmfc_divisor_sysref_squared"]
+            )
+        elif self.solver == "CPLEX":
+            self.config["sysref"] = (
+                self.multiframe_clock / self.config["lmfc_divisor_sysref_squared"]
+            )
 
         # Objectives
         # self.model.Obj(self.config["sysref"])  # This breaks many searches

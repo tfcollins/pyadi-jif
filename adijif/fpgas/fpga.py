@@ -25,7 +25,9 @@ class fpga(gekko_translation, metaclass=ABCMeta):
     def get_config(self):
         raise NotImplementedError
 
-    def __init__(self, model=None):
+    def __init__(self, model=None, solver=None):
+        if solver:
+            self.solver = solver
         if self.solver == "gekko":
             if model:
                 assert isinstance(

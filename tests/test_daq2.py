@@ -1,5 +1,6 @@
 import adijif
 import pytest
+import pprint
 
 
 def print_sys(sys):
@@ -68,6 +69,36 @@ def test_fpga_cpll_solver():
         sys.solve()
 
     # print_sys(sys)
+
+
+def test_fpga_cpll_cplex_solver():
+
+    vcxo = 125000000
+    sys = adijif.system("ad9680", "ad9523_1", "xilinx", vcxo, solver="CPLEX")
+    sys.fpga.setup_by_dev_kit_name("zc706")
+    sys.fpga.force_cpll = 1
+
+    sys.converter.sample_clock = 1e9 / 2
+    sys.converter.datapath_decimation = 1
+    sys.converter.L = 4
+    sys.converter.M = 2
+    sys.converter.N = 14
+    sys.converter.Np = 16
+    sys.converter.K = 32
+    sys.converter.F = 1
+
+    if 0:
+        # cnv_config = type("AD9680", (), {})()
+        # cnv_config.bit_clock = 10e9/2
+        required_clocks = sys.fpga.get_required_clocks(sys.converter)
+        sys.clock.set_requested_clocks(vcxo, [required_clocks])
+
+        sys.model.options.SOLVER = 1  # APOPT solver
+        sys.model.solve(disp=False)
+    else:
+        o = sys.solve()
+
+    print(o)
 
 
 @pytest.mark.parametrize(

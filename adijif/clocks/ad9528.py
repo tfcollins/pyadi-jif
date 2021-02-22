@@ -134,7 +134,7 @@ class ad9528(ad9528_bf):
         self._check_in_range(value, self.r1_available, "r1")
         self._r1 = value
 
-    def get_config(self) -> Dict:
+    def get_config(self, solution=None) -> Dict:
         """Extract configurations from solver results.
 
         Collect internal clock chip configuration and output clock definitions

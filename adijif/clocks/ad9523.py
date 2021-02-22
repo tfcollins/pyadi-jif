@@ -133,7 +133,7 @@ class ad9523_1(ad9523_1_bf):
         self._check_in_range(value, self.r2_available, "r2")
         self._r2 = value
 
-    def get_config(self) -> Dict:
+    def get_config(self, solution=None) -> Dict:
         """Extract configurations from solver results.
 
         Collect internal clock chip configuration and output clock definitions
@@ -149,22 +149,25 @@ class ad9523_1(ad9523_1_bf):
             raise Exception("set_requested_clocks must be called before get_config")
 
         if self.solver == "CPLEX":
+            if not solution:
+                solution = self.solution
             config = {
-                "m1": self.solution.get_value(self.config["m1"].get_name()),
-                "n2": self.solution.get_value(self.config["n2"].get_name()),
-                "r2": self.solution.get_value(self.config["r2"].get_name()),
+                "m1": solution.get_value(self.config["m1"].get_name()),
+                "n2": solution.get_value(self.config["n2"].get_name()),
+                "r2": solution.get_value(self.config["r2"].get_name()),
                 "out_dividers": [
-                    self.solution.get_value(x) for x in self.config["out_dividers"]
+                    solution.get_value(x) for x in self.config["out_dividers"]
                 ],
                 "output_clocks": [],
             }
 
+            ## FIXME: VCXO is function sometimes
             vcxo = self.vcxo
 
             clk = vcxo / config["r2"] * config["n2"] / config["m1"]
             output_cfg = {}
             for i, div in enumerate(self.config["out_dividers"]):
-                div = self.solution.get_value(div)
+                div = solution.get_value(div)
                 rate = clk / div
                 output_cfg[self._clk_names[i]] = {"rate": rate, "divider": div}
             config["output_clocks"] = output_cfg

@@ -1,6 +1,7 @@
 import adijif  # pylint: disable=unused-import
 import numpy as np
 from gekko import GEKKO
+from docplex.cp.model import CpoModel
 
 
 class system:
@@ -19,21 +20,34 @@ class system:
     enable_fpga_clocks = True
 
     Debug_Solver = False
+    solver = "gekko"
+    solution = None
 
-    def __init__(self, conv, clk, fpga, vcxo):
+    def __init__(self, conv, clk, fpga, vcxo, solver=None):
 
-        self.model = GEKKO(remote=False)
+        if solver:
+            self.solver = solver
+        if self.solver == "gekko":
+            model = GEKKO(remote=False)
+        elif self.solver == "CPLEX":
+            model = CpoModel()
+        else:
+            raise Exception(f"Unknown solver {self.solver}")
+
+        self.model = model
         self.vcxo = vcxo
         # FIXME: Do checks
 
         if isinstance(conv, list):
             self.converter = []
             for c in conv:
-                self.converter.append(eval(f"adijif.{c}(self.model)"))
+                self.converter.append(
+                    eval(f"adijif.{c}(self.model,solver=self.solver)")
+                )
         else:
-            self.converter = eval(f"adijif.{conv}(self.model)")
-        self.clock = eval(f"adijif.{clk}(self.model)")
-        self.fpga = eval(f"adijif.{fpga}(self.model)")
+            self.converter = eval(f"adijif.{conv}(self.model,solver=self.solver)")
+        self.clock = eval(f"adijif.{clk}(self.model,solver=self.solver)")
+        self.fpga = eval(f"adijif.{fpga}(self.model,solver=self.solver)")
         self.vcxo = vcxo
 
         # TODO: Add these constraints to solver options
@@ -66,8 +80,9 @@ class system:
 
     def _get_configs(self, clk_names):
         # cfg = {}
-        cfg = {"fpga": self.fpga.get_config()}
-        cfg["clock"] = self.clock.get_config()
+
+        cfg = {"fpga": self.fpga.get_config(self.solution)}
+        cfg["clock"] = self.clock.get_config(self.solution)
 
         cfg["converter"] = []
         c = self.converter if isinstance(self.converter, list) else [self.converter]
@@ -99,6 +114,18 @@ class system:
             cnv_clocks_filters = cnv_clocks
             clock_names_filters = clock_names
         return cnv_clocks_filters, clock_names_filters
+
+    def _solve_gekko(self):
+        # Set up solver
+        self.model.solver_options = self.solver_options
+        self.model.options.SOLVER = 1  # APOPT solver
+        # self.model.options.SOLVER = 3  # 1 APOPT, 2 BPOPT, 3 IPOPT
+        # self.model.options.IMODE = 5   # simultaneous estimation
+        self.model.solve(disp=self.Debug_Solver, debug=True)
+
+    def _solve_cplex(self):
+        # Set up solver
+        self.solution = self.model.solve()
 
     def solve(self):
         """Defined clocking requirements in Solver model and start solvers routine"""
@@ -149,11 +176,12 @@ class system:
         # print("Clock names:", all_clock_names)
 
         # Set up solver
-        self.model.solver_options = self.solver_options
-        self.model.options.SOLVER = 1  # APOPT solver
-        # self.model.options.SOLVER = 3  # 1 APOPT, 2 BPOPT, 3 IPOPT
-        # self.model.options.IMODE = 5   # simultaneous estimation
-        self.model.solve(disp=self.Debug_Solver, debug=True)
+        if self.solver == "gekko":
+            self._solve_gekko()
+        elif self.solver == "CPLEX":
+            self._solve_cplex()
+        else:
+            raise Exception(f"Unknown solver {self.solver}")
 
         # Organize data
         return self._get_configs(all_clock_names)

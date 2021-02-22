@@ -50,6 +50,7 @@ class gekko_translation(metaclass=ABCMeta):
 
     def _convert_input(self, val, name=None):
         if self.solver == "gekko":
+            name = None
             return self._convert_input_gekko(val, name)
         elif self.solver == "CPLEX":
             return self._convert_input_cplex(val, name)
