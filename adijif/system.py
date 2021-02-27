@@ -1,7 +1,8 @@
-import adijif  # pylint: disable=unused-import
 import numpy as np
-from gekko import GEKKO
 from docplex.cp.model import CpoModel
+from gekko import GEKKO
+
+import adijif  # pylint: disable=unused-import
 
 
 class system:

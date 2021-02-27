@@ -28,10 +28,11 @@ def install_with_constraints(session, *args, **kwargs):
 
 
 @nox.session(python=main_python)
-def black(session):
+def format(session):
     args = session.posargs or locations
-    install_with_constraints(session, "black")
+    install_with_constraints(session, "black", "isort")
     session.run("black", *args)
+    session.run("isort", *args)
 
 
 @nox.session(python=multi_python_versions_support)
@@ -45,7 +46,7 @@ def lint(session):
         "flake8-bandit",
         "flake8-black",
         "flake8-docstrings",
-        "flake8-isort",
+        # "flake8-isort",
         "flake8-bugbear",
         "flake8-import-order",
     )

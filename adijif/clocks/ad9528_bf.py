@@ -1,5 +1,6 @@
 # flake8: noqa
 import numpy as np
+
 from adijif.clocks.clock import clock
 
 
