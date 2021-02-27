@@ -109,7 +109,7 @@ class ad9144(ad9144_bf):
         For AD9144 this will contain [converter clock, sysref requirement SOS]
 
         Returns:
-            list[dict]: List of dictionaries of solver variables, equations, and constants
+            list[dict]: List of dictionaries of solver components
         """
         # possible_sysrefs = []
         # for n in range(1, 20):

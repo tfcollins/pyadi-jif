@@ -1,6 +1,5 @@
 """AD9680 high speed ADC clocking model."""
 from typing import Dict, List
-from docplex.cp.model import *
 
 from adijif.converters.ad9680_bf import ad9680_bf
 

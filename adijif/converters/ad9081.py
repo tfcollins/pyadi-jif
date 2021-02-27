@@ -1,11 +1,11 @@
 """AD9081 high speed MxFE clocking model."""
 from abc import ABCMeta, abstractmethod
-from typing import Dict, List
+from typing import Dict, List, Union
 
+from docplex.cp.model import CpoModel
 from gekko import GEKKO
 
 from adijif.converters.converter import converter
-
 
 # class ad9081_tx(converter):
 #     pass
@@ -21,19 +21,20 @@ class ad9081_core(metaclass=ABCMeta):
     This model supports both direct clock configurations and on-board
     generation
 
-    Clocking: AD9081 can internally generate or leverage external clocks. The high speed clock
-    within the system is referred to as the DAC clock and the ADC clock will be a divided down
-    version of the clock:
+    Clocking: AD9081 can internally generate or leverage external clocks. The
+    high speed clock within the system is referred to as the DAC clock and
+    the ADC clock will be a divided down version of the clock:
         adc_clock  == dac_clock / L, where L = 1,2,3,4
 
 
-    For internal generation, the DAC clock is generated through an integer PLL through the
-    following relation:
+    For internal generation, the DAC clock is generated through an integer PLL
+    through the following relation:
         dac_clock == ((m_vco * n_vco) / R * ref_clock) / D
 
     For external clocks, the clock must be provided at the DAC clock rate
 
-    Once we have the DAC clock the data rates can be directly evaluated into each JESD framer:
+    Once we have the DAC clock the data rates can be directly evaluated into
+    each JESD framer:
 
     rx_baseband_sample_rate = (dac_clock / L) / datapath_decimation
     tx_baseband_sample_rate = dac_clock / datapath_interpolation
@@ -49,7 +50,7 @@ class ad9081_core(metaclass=ABCMeta):
     use_direct_clocking = True
 
     l_possible = [1, 2, 3, 4]
-    l = 1
+    l = 1  # pylint:  disable=E741
     m_vco_possible = [5, 7, 8, 11]  # 8 is nominal
     m_vco = 8
     n_vco_possible = [*range(2, 50 + 1)]
@@ -107,7 +108,7 @@ class ad9081_core(metaclass=ABCMeta):
     @property
     @abstractmethod
     def _converter_clock_config(self) -> Dict:
-        """Define source clocking relation based on ADC, DAC, or both
+        """Define source clocking relation based on ADC, DAC, or both.
 
         Raises:
             NotImplementedError: Method not implemented
@@ -154,8 +155,10 @@ class ad9081_core(metaclass=ABCMeta):
 
         Returns:
             Dict: Dictionary of solver variables, equations, and constants
-        """
 
+        Raises:
+            Exception: If direct clocking is used. Not yet implemented
+        """
         # SYSREF
         self.config = {}
         self.config["lmfc_divisor_sysref"] = self.model.Var(
@@ -181,9 +184,16 @@ class ad9081_core(metaclass=ABCMeta):
 
 
 class ad9081_rx(ad9081_core, converter):
+    """AD9081 Receive model."""
+
     _model_type = "adc"
 
-    def _converter_clock_config(self):
+    def _converter_clock_config(self) -> None:
+        """RX specific configuration of internall PLL config.
+
+        This method will update the config struct to include
+        the RX clocking constraints
+        """
         adc_clk = self.datapath_decimation * self.sample_clock
         self.config["l"] = self.model.Var(integer=True, lb=1, ub=4, value=1)
         self.config["adc_clk"] = self.model.Const(adc_clk)
@@ -193,24 +203,41 @@ class ad9081_rx(ad9081_core, converter):
 
 
 class ad9081_tx(ad9081_core, converter):
+    """AD9081 Transmit model."""
+
     _model_type = "dac"
 
-    def _converter_clock_config(self):
+    def _converter_clock_config(self) -> None:
+        """TX specific configuration of internall PLL config.
+
+        This method will update the config struct to include
+        the TX clocking constraints
+        """
         dac_clk = self.datapath_interpolation * self.sample_clock
         self.config["dac_clk"] = self.model.Const(dac_clk)
         self.config["converter_clk"] = self.model.Intermediate(self.config["dac_clk"])
 
 
 class ad9081(ad9081_core):
-    def __init__(self, model=None):
+    """AD9081 combined transmit and receive model."""
+
+    def __init__(self, model: Union[GEKKO, CpoModel] = None) -> None:
+        """Initialize AD9081 clocking model for TX and RX.
+
+        This is a common class used to handle TX and RX constraints
+        together.
+
+        Args:
+            model (GEKKO,CpoModel): Solver model
+        """
         self.adc = ad9081_rx(model)
         self.dac = ad9081_tx(model)
         self.model = model
 
-    def _get_converters(self):
+    def _get_converters(self) -> Union[ad9081_rx, ad9081_tx]:
         return [self.adc, self.dac]
 
-    def get_required_clock_names(self):
+    def get_required_clock_names(self) -> List[str]:
         """Get list of strings of names of requested clocks.
 
         This list of names is for the clocks defined by get_required_clocks
@@ -221,7 +248,7 @@ class ad9081(ad9081_core):
         clk = "ad9081_dac_clock" if self.adc.use_direct_clocking else "ad9081_pll_ref"
         return [clk, "ad9081_adc_sysref", "ad9081_dac_sysref"]
 
-    def _converter_clock_config(self):
+    def _converter_clock_config(self) -> None:
         adc_clk = self.adc.datapath_decimation * self.adc.sample_clock
         dac_clk = self.dac.datapath_interpolation * self.dac.sample_clock
         l = dac_clk / adc_clk
@@ -241,8 +268,10 @@ class ad9081(ad9081_core):
 
         Returns:
             Dict: Dictionary of solver variables, equations, and constants
-        """
 
+        Raises:
+            Exception: If direct clocking is used. Not yet implemented
+        """
         # SYSREF
         self.config = {}
         self.config["adc_lmfc_divisor_sysref"] = self.model.Var(
