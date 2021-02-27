@@ -1,14 +1,22 @@
-""" Common class for all JIF components. """
+"""Common class for all JIF components."""
 from typing import Union
-from gekko import GEKKO
+
 from docplex.cp.model import CpoModel
+from gekko import GEKKO
 
 
 class core:
+    """Common class for all JIF components.
+
+    This is the central point for all classes in module
+
+    """
 
     solver = "gekko"  # "CPLEX"
 
-    def __init__(self, model: Union[GEKKO, CpoModel] = None, solver=None) -> None:
+    def __init__(
+        self, model: Union[GEKKO, CpoModel] = None, solver: str = None
+    ) -> None:
         """Initalize clocking model.
 
         When usings the clocking models standalone, typically for
@@ -18,6 +26,9 @@ class core:
         Args:
             model (GEKKO,CpoModel): Solver model
             solver (str): Solver name (gekko or cplex)
+
+        Raises:
+            Exception: If solver is not valid
         """
         if solver:
             self.solver = solver
