@@ -1,24 +1,43 @@
+"""FPGA parent metaclass to maintain consistency for all FPGA classes."""
 from abc import ABCMeta, abstractmethod
 
-from gekko import GEKKO
-from docplex.cp.model import CpoModel
-
-from adijif.gekko_trans import gekko_translation
 from adijif.common import core
+from adijif.gekko_trans import gekko_translation
 
 
 class fpga(core, gekko_translation, metaclass=ABCMeta):
+    """Parent metaclass for all FPGA classes."""
+
     @property
     @abstractmethod
-    def determine_cpll(self):
+    def determine_cpll(self) -> None:
+        """Try to use CPLL for clocking.
+
+        This method is only used in brute-force classes
+
+        Raises:
+            NotImplementedError: Method not implemented
+        """
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def determine_qpll(self):
+    def determine_qpll(self) -> None:
+        """Try to use QPLL for clocking.
+
+        This method is only used in brute-force classes
+
+        Raises:
+            NotImplementedError: Method not implemented
+        """
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def get_config(self):
+    def get_config(self) -> None:
+        """Extract clocking configuration from solutions.
+
+        Raises:
+            NotImplementedError: Method not implemented
+        """
         raise NotImplementedError

@@ -1,9 +1,25 @@
+"""Xilinx FPGA clocking model."""
+from typing import Dict, List, Union
+
 import gekko
-from docplex.cp.model import *
+from docplex.cp.expression import CpoIntVar
+from docplex.cp.model import integer_var
+from docplex.cp.solution import CpoSolveResult
+from gekko.gk_operators import GK_Intermediate, GK_Operators
+from gekko.gk_variable import GKVariable
+
+from adijif.converters.converter import converter as conv
 from adijif.fpgas.xilinx_bf import xilinx_bf
 
 
 class xilinx(xilinx_bf):
+    """Xilinx FPGA clocking model.
+
+    This model captures different limitations of the Xilinx
+    PLLs and interfaces used for JESD.
+
+    Currently only Zynq 7000 devices have been fully tested.
+    """
 
     hdl_core_version = 1.0
 
@@ -67,7 +83,15 @@ class xilinx(xilinx_bf):
     _clock_names = -1
 
     @property
-    def ref_clock_max(self):
+    def ref_clock_max(self) -> int:
+        """Get maximum reference clock for config.
+
+        Returns:
+            int: Rate in samples per second.
+
+        Raises:
+            Exception: Unsupported transceiver type configured.
+        """
         # https://www.xilinx.com/support/documentation/data_sheets/ds191-XC7Z030-XC7Z045-data-sheet.pdf
         if self.transciever_type == "GTX2":
             if self.speed_grade == "-3E":
@@ -81,7 +105,15 @@ class xilinx(xilinx_bf):
             # raise Exception(f"Unknown transceiver type {self.transciever_type}")
 
     @property
-    def ref_clock_min(self):
+    def ref_clock_min(self) -> int:
+        """Get minimum reference clock for config.
+
+        Returns:
+            int: Rate in samples per second.
+
+        Raises:
+            Exception: Unsupported transceiver type configured.
+        """
         # https://www.xilinx.com/support/documentation/data_sheets/ds191-XC7Z030-XC7Z045-data-sheet.pdf
         if self.transciever_type == "GTX2":
             return 60000000
@@ -93,7 +125,15 @@ class xilinx(xilinx_bf):
 
     # CPLL
     @property
-    def vco_min(self):
+    def vco_min(self) -> int:
+        """Get minimum VCO rate for config.
+
+        Returns:
+            int: Rate in samples per second.
+
+        Raises:
+            Exception: Unsupported transceiver type configured.
+        """
         if self.transciever_type == "GTX2":
             return 1600000000
         elif self.transciever_type in ["GTH3", "GTH4", "GTY4"]:
@@ -102,7 +142,15 @@ class xilinx(xilinx_bf):
             raise Exception(f"Unknown transceiver type {self.transciever_type}")
 
     @property
-    def vco_max(self):
+    def vco_max(self) -> int:
+        """Get maximum VCO rate for config.
+
+        Returns:
+            int: Rate in samples per second.
+
+        Raises:
+            Exception: Unsupported transceiver type configured.
+        """
         if self.transciever_type == "GTX2":
             return 3300000000
         elif self.transciever_type in ["GTH3", "GTH4", "GTY4"]:
@@ -118,7 +166,17 @@ class xilinx(xilinx_bf):
 
     # QPLL
     @property
-    def vco0_min(self):
+    def vco0_min(self) -> int:
+        """Get minimum VCO0 rate for config.
+
+        This is applicable for QPLLs only.
+
+        Returns:
+            int: Rate in samples per second.
+
+        Raises:
+            Exception: Unsupported transceiver type configured.
+        """
         if self.transciever_type == "GTX2":
             return 5930000000
         elif self.transciever_type in ["GTH3", "GTH4", "GTY4"]:
@@ -130,7 +188,17 @@ class xilinx(xilinx_bf):
             raise Exception(f"Unknown transceiver type {self.transciever_type}")
 
     @property
-    def vco0_max(self):
+    def vco0_max(self) -> int:
+        """Get maximum VCO0 rate for config.
+
+        This is applicable for QPLLs only.
+
+        Returns:
+            int: Rate in samples per second.
+
+        Raises:
+            Exception: Unsupported transceiver type configured.
+        """
         if self.transciever_type == "GTX2":
             if (
                 self.hdl_core_version > 2
@@ -148,7 +216,17 @@ class xilinx(xilinx_bf):
             raise Exception(f"Unknown transceiver type {self.transciever_type}")
 
     @property
-    def vco1_min(self):
+    def vco1_min(self) -> int:
+        """Get minimum VCO1 rate for config.
+
+        This is applicable for QPLLs only.
+
+        Returns:
+            int: Rate in samples per second.
+
+        Raises:
+            Exception: Unsupported transceiver type configured.
+        """
         if self.transciever_type == "GTX2":
             return 9800000000
         elif self.transciever_type in ["GTH3", "GTH4", "GTY4"]:
@@ -157,7 +235,17 @@ class xilinx(xilinx_bf):
             raise Exception(f"Unknown transceiver type {self.transciever_type}")
 
     @property
-    def vco1_max(self):
+    def vco1_max(self) -> int:
+        """Get maximum VCO1 rate for config.
+
+        This is applicable for QPLLs only.
+
+        Returns:
+            int: Rate in samples per second.
+
+        Raises:
+            Exception: Unsupported transceiver type configured.
+        """
         if self.transciever_type == "GTX2":
             if self.hdl_core_version > 2 and self.speed_grade == -2:
                 return 10312500000
@@ -168,15 +256,32 @@ class xilinx(xilinx_bf):
             raise Exception(f"Unknown transceiver type {self.transciever_type}")
 
     @property
-    def N(self):
+    def N(self) -> List[int]:
+        """Get available feedback divider settings.
+
+        This is applicable for QPLLs only.
+
+        Returns:
+            list[int]: List of divider integers.
+
+        Raises:
+            Exception: Unsupported transceiver type configured.
+        """
         if self.transciever_type == "GTX2":
             return [16, 20, 32, 40, 64, 66, 80, 100]
         else:
             raise Exception(f"Unknown transceiver type {self.transciever_type}")
 
-    def setup_by_dev_kit_name(self, name):
-        """ Configure object based on board name. Ex: zc706, zcu102 """
+    def setup_by_dev_kit_name(self, name: str) -> None:
+        """Configure object based on board name. Ex: zc706, zcu102.
 
+        Args:
+            name (str): Name of dev kit. Ex: zc706, zcu102
+
+        Raises:
+            Exception: Unsupported board requested.
+
+        """
         if name.lower() == "zc706":
             self.transciever_type = "GTX2"
             self.fpga_family = "Zynq"
@@ -185,21 +290,39 @@ class xilinx(xilinx_bf):
         else:
             raise Exception(f"No boardname found in library for {name}")
 
-    def determine_pll(self, bit_clock, fpga_ref_clock):
-        """
-        Parameters:
-            bit_clock:
-                Equivalent to lane rate in bits/second
-            fpga_ref_clock:
-                System reference clock
+    def determine_pll(self, bit_clock: int, fpga_ref_clock: int) -> Dict:
+        """Determin if configuration is possible with CPLL or QPLL.
+
+        CPLL is checked first and will check QPLL if that case is
+        invalid.
+
+        This is only used for brute-force implementations.
+
+        Args:
+            bit_clock (int): Equivalent to lane rate in bits/second
+            fpga_ref_clock (int): System reference clock
+
+        Returns:
+            Dict: Dictionary of PLL configuration
         """
         try:
             info = self.determine_cpll(bit_clock, fpga_ref_clock)
-        except:
+        except BaseException:
             info = self.determine_qpll(bit_clock, fpga_ref_clock)
         return info
 
-    def get_required_clock_names(self):
+    def get_required_clock_names(self) -> List[str]:
+        """Get list of strings of names of requested clocks.
+
+        This list of names is for the clocks defined by get_required_clocks
+
+        Returns:
+            List[str]: List of strings of clock names in order
+
+        Raises:
+            Exception: Clock have not been enumerated aka get_required_clocks not
+                not called yet.
+        """
         if not self._clock_names:
             raise Exception(
                 "get_required_clocks must be run to generated"
@@ -207,9 +330,19 @@ class xilinx(xilinx_bf):
             )
         return self._clock_names
 
-    def get_config(self, solution=None):
-        """Helper function for model to extract solved parameters
-        in a readable way
+    def get_config(self, solution: CpoSolveResult = None) -> Dict:
+        """Extract configurations from solver results.
+
+        Collect internal FPGA configuration and output clock definitions.
+
+        Args:
+            solution (CpoSolveResult): CPlex solution. Only needed for CPlex solver
+
+        Returns:
+            Dict: Dictionary of clocking rates and dividers for configuration
+
+        Raises:
+            Exception: Unsupported solver
         """
         out = []
         for config in self.configs:
@@ -270,7 +403,24 @@ class xilinx(xilinx_bf):
             out = out[0]
         return out
 
-    def _setup_quad_tile(self, converter, fpga_ref):
+    def _setup_quad_tile(
+        self,
+        converter: conv,
+        fpga_ref: Union[int, GKVariable, GK_Intermediate, GK_Operators, CpoIntVar],
+    ) -> Dict:
+        """Configure FPGA {Q/C}PLL tile.
+
+        Args:
+            converter (conv): Converter object(s) connected to FPGA
+            fpga_ref (int,GKVariable, GK_Intermediate, GK_Operators, CpoIntVar):
+                Converter object(s) connected to FPGA
+
+        Returns:
+            Dict: Dictionary of clocking rates and dividers for configuration
+
+        Raises:
+            Exception: Unsupported solver
+        """
         config = {}
         # QPLL
         config["m"] = self._convert_input([1, 2, 3, 4], "m")
@@ -415,12 +565,17 @@ class xilinx(xilinx_bf):
         )
         return config
 
-    def get_required_clocks(self, converter):
-        """get_required_clocks: Get necessary clocks for QPLL/CPLL configuration
+    def get_required_clocks(self, converter: conv) -> Dict:
+        """Get necessary clocks for QPLL/CPLL configuration.
 
-        Parameters:
-            converter:
-                Converter object of converter connected to FPGA
+        Args:
+            converter (conv): Converter object of converter connected to FPGA
+
+        Returns:
+            Dict: Dictionary of solver variables and constraints
+
+        Raises:
+            Exception: If solver is not valid
         """
         if "_get_converters" in dir(converter):
             converter = converter._get_converters()  # Handle nested converters
