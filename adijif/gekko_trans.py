@@ -1,12 +1,16 @@
-from abc import ABCMeta, abstractmethod
+"""Translation methods for solvers and module."""
+from abc import ABCMeta
+from typing import List, Union
 
-import gekko
 import numpy as np
-from docplex.cp.model import *
+from docplex.cp.expression import CpoExpr
+from docplex.cp.model import binary_var, integer_var
+from gekko.gk_operators import GK_Intermediate, GK_Operators
+from gekko.gk_variable import GKVariable
 
 
 class gekko_translation(metaclass=ABCMeta):
-    """ Gekko translation function """
+    """Collection of utility functions to translate to and from solver types."""
 
     # @property
     # @abstractmethod
@@ -16,8 +20,18 @@ class gekko_translation(metaclass=ABCMeta):
 
     solver = "gekko"  # "CPLEX"
 
-    def _add_equation(self, eqs):
+    def _add_equation(
+        self, eqs: List[Union[GKVariable, GK_Intermediate, GK_Operators, CpoExpr]]
+    ) -> None:
+        """Add equation or relation to solver.
 
+        Args:
+            eqs (List[Union[GKVariable, GK_Intermediate, GK_Operators, CpoExpr]]):
+                List of equations or CPLEX constraints to add to solver.
+
+        Raises:
+            Exception: Unknown solver selected
+        """
         if not isinstance(eqs, list):
             eqs = [eqs]
 
@@ -29,26 +43,66 @@ class gekko_translation(metaclass=ABCMeta):
         else:
             raise Exception(f"Unknown solver {self.solver}")
 
-    def _get_val(self, value):
+    def _get_val(
+        self, value: Union[GKVariable, GK_Intermediate, GK_Operators]
+    ) -> Union[int, float]:
+        """Extract value from solver types.
 
+        Args:
+            value (GKVariable, GK_Intermediate, GK_Operators): Solver variable
+
+        Returns:
+            int/float: Extracted value
+        """
         if type(value) in [
-            gekko.gk_variable.GKVariable,
-            gekko.gk_operators.GK_Intermediate,
+            GKVariable,
+            GK_Intermediate,
         ]:
             return value.value[0]
-        elif type(value) is gekko.gk_operators.GK_Operators:
+        elif type(value) is GK_Operators:
             return value.value
         else:
             return value
 
-    def _check_in_range(self, value, possible, varname):
+    def _check_in_range(
+        self,
+        value: Union[int, str, List[int], List[str]],
+        possible: Union[List[int], List[str]],
+        varname: str,
+    ) -> None:
+        """Check if desired value in list.
+
+        Args:
+            value (int, str, List[int], List[str]): Desired input value
+            possible (List[int], List[str]): Possible valid options
+            varname (str): Name of variable
+
+        Raises:
+            Exception: Value not indexable from list or possible
+
+        """
         if not isinstance(value, list):
             value = [value]
         for v in value:
             if v not in possible:
                 raise Exception(f"{v} invalid for {varname}. Only {possible} possible")
 
-    def _convert_input(self, val, name=None):
+    def _convert_input(
+        self, val: Union[int, List[int], float, List[float]], name: str = None
+    ) -> Union[CpoExpr, GKVariable, GK_Operators]:
+        """Convert input to solver variables.
+
+        Args:
+            val (int, List[int], float, List[float]): Values or list of
+                values to convert to solver variables.
+            name (str): Name of variable
+
+        Returns:
+            CpoExpr, GKVariable, GK_Operators: Solver variables
+
+        Raises:
+            Exception: Unknown solver selected
+        """
         if self.solver == "gekko":
             name = None
             return self._convert_input_gekko(val, name)
@@ -57,28 +111,66 @@ class gekko_translation(metaclass=ABCMeta):
         else:
             raise Exception(f"Unknown solver {self.solver}")
 
-    def _convert_input_gekko(self, val, name):
+    def _convert_input_gekko(
+        self, val: Union[int, List[int], float, List[float]], name: str
+    ) -> Union[GKVariable, GK_Operators]:
+        """Convert input to GEKKO solver variables.
+
+        Args:
+            val (int, List[int], float, List[float]): Values or list of
+                values to convert to solver variables.
+            name (str): Name of variable
+
+        Returns:
+            GKVariable, GK_Operators: Solver variables
+        """
         if isinstance(val, list) and len(val) > 1:
             return self._convert_list(val, name)
-        else:
-            if name:
-                name + "_Const"
-            return self.model.Const(value=val, name=name)
+        if name:
+            name + "_Const"
+        return self.model.Const(value=val, name=name)
 
-    def _convert_input_cplex(self, val, name):
+    def _convert_input_cplex(
+        self, val: Union[int, List[int], float, List[float]], name: str
+    ) -> CpoExpr:
+        """Convert input to CPLEX solver variables.
+
+        Args:
+            val (int, List[int], float, List[float]): Values or list of
+                values to convert to solver variables.
+            name (str): Name of variable
+
+        Returns:
+            CpoExpr: Solver variables
+        """
         if isinstance(val, list) and val.sort() == [0, 1]:
             return binary_var(name=name)
         return integer_var(domain=val, name=name)
 
-    def _convert_list(self, val, name):
+    def _convert_list(
+        self, val: Union[List[int], List[float]], name: str
+    ) -> GK_Operators:
+        """Convert input list to GEKKO solver variables.
 
+        Args:
+            val (List[int], List[float]): List of values to convert
+                to solver variables.
+            name (str): Name of variable
+
+        Returns:
+            GK_Operators: Solver variables
+
+        Raises:
+            Exception: Unsupported case
+        """
         # Check if contiguous by simply stride
         delta = val[0] - val[1]
         for i in range(len(val) - 1):
             if val[i] - val[i + 1] is not delta:
                 # Must use SOS2
                 print(val[i] - val[i + 1], delta)
-                return self._convert_list2sos(val, name)
+                # return self._convert_list2sos(val, name)
+                return self.model.sos1(val)
 
         if np.abs(delta) == 1:  # Easy mode
             print(np.min(val), np.max(val))
@@ -96,7 +188,8 @@ class gekko_translation(metaclass=ABCMeta):
             # SOS practical in small cases
             if len(val) < 6:
                 print("SOS pract")
-                return self._convert_list2sos(val, name)
+                # Need to still handle name
+                return self.model.sos1(val)
             # Since stride is not zero the best is to use a scale
             # factor and intermediate for best solving performance
 
@@ -107,24 +200,17 @@ class gekko_translation(metaclass=ABCMeta):
 
             raise Exception("NOT COMPLETE")
 
-            val = np.array(val)
-            l = len(val)
-            Array = np.array(range(1, l + 1))
-            for B in range(0, l):
-                for C in range(1, l):
-                    for D in range(0, l):
-                        if val == (Array + B) * C + D:
-                            break
-            array = self.model.Var(
-                integer=True, lb=1, ub=4, value=1, name=name + "_Var"
-            )
+            # val = np.array(val)
+            # vlen = len(val)
+            # Array = np.array(range(1, vlen + 1))
+            # for B in range(0, vlen):
+            #     for C in range(1, vlen):
+            #         for D in range(0, vlen):
+            #             if val == (Array + B) * C + D:
+            #                 break
+            # array = self.model.Var(
+            #     integer=True, lb=1, ub=4, value=1, name=name + "_Var"
+            # )
 
-    def _convert_list2sos(self, val, name):
-        print("SOS")
-        sos = self.model.sos1(val)
-        # sos.NAME = name + "_SOS1"
-        return sos
-
-    def _convert_back(self, value):
-        print(type(value))
-        return value
+    # def _convert_back(self, value):
+    #     return value
