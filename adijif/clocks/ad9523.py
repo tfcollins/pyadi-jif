@@ -1,6 +1,8 @@
 """AD9523-1 clock chip model."""
 from typing import Dict, List, Union
 
+from docplex.cp.solution import CpoSolveResult
+
 from adijif.clocks.ad9523_1_bf import ad9523_1_bf
 
 
@@ -133,11 +135,14 @@ class ad9523_1(ad9523_1_bf):
         self._check_in_range(value, self.r2_available, "r2")
         self._r2 = value
 
-    def get_config(self, solution=None) -> Dict:
+    def get_config(self, solution: CpoSolveResult = None) -> Dict:
         """Extract configurations from solver results.
 
         Collect internal clock chip configuration and output clock definitions
         leading to connected devices (converters, FPGAs)
+
+        Args:
+            solution (CpoSolveResult): CPlex solution. Only needed for CPlex solver
 
         Returns:
             Dict: Dictionary of clocking rates and dividers for configuration
@@ -161,7 +166,7 @@ class ad9523_1(ad9523_1_bf):
                 "output_clocks": [],
             }
 
-            ## FIXME: VCXO is function sometimes
+            # FIXME: VCXO is function sometimes
             vcxo = self.vcxo
 
             clk = vcxo / config["r2"] * config["n2"] / config["m1"]

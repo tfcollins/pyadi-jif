@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+# flake8: noqa
 """Tests for `adijif` package."""
 
 import adijif

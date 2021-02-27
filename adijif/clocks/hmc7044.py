@@ -1,7 +1,7 @@
 """HMC7044 clock chip model."""
 from typing import Dict, List, Union
 
-import numpy as np
+from docplex.cp.solution import CpoSolveResult
 
 from adijif.clocks.hmc7044_bf import hmc7044_bf
 
@@ -21,13 +21,13 @@ class hmc7044(hmc7044_bf):
     n2_available = [*range(1, 65535 + 1)]
 
     """ Output dividers """
-    d_available = [1, 3, 5, *np.arange(2, 4095, 2, dtype=int)]
+    d_available = [1, 3, 5, *range(2, 4095, 2)]
     # When pulse generation is required (like for sysref) divder range
     # is limited
-    d_syspulse_available = [*np.arange(32, 4095, 2, dtype=int)]
+    d_syspulse_available = [*range(32, 4095, 2)]
 
     # Defaults
-    _d = [1, 3, 5, *np.arange(2, 4095, 2, dtype=int)]
+    _d = [1, 3, 5, *range(2, 4095, 2)]
     _n2 = [*range(1, 65535 + 1)]
     _r2 = [*range(1, 4095 + 1)]
 
@@ -116,11 +116,14 @@ class hmc7044(hmc7044_bf):
         self._check_in_range(value, self.r2_available, "r2")
         self._r2 = value
 
-    def get_config(self, solution=None) -> Dict:
+    def get_config(self, solution: CpoSolveResult = None) -> Dict:
         """Extract configurations from solver results.
 
         Collect internal clock chip configuration and output clock definitions
         leading to connected devices (converters, FPGAs)
+
+        Args:
+            solution (CpoSolveResult): CPlex solution. Only needed for CPlex solver
 
         Returns:
             Dict: Dictionary of clocking rates and dividers for configuration

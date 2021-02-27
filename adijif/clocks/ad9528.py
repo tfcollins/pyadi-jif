@@ -1,6 +1,8 @@
 """AD9528 clock chip model."""
 from typing import Dict, List, Union
 
+from docplex.cp.solution import CpoSolveResult
+
 from adijif.clocks.ad9528_bf import ad9528_bf
 
 
@@ -134,11 +136,14 @@ class ad9528(ad9528_bf):
         self._check_in_range(value, self.r1_available, "r1")
         self._r1 = value
 
-    def get_config(self, solution=None) -> Dict:
+    def get_config(self, solution: CpoSolveResult = None) -> Dict:
         """Extract configurations from solver results.
 
         Collect internal clock chip configuration and output clock definitions
         leading to connected devices (converters, FPGAs)
+
+        Args:
+            solution (CpoSolveResult): CPlex solution. Only needed for CPlex solver
 
         Returns:
             Dict: Dictionary of clocking rates and dividers for configuration

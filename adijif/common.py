@@ -38,24 +38,3 @@ class core:
         else:
             raise Exception(f"Unknown solver {self.solver}")
         self.model = model
-
-    def __init__(self, model=None, solver=None):
-        if solver:
-            self.solver = solver
-        if self.solver == "gekko":
-            if model:
-                assert isinstance(
-                    model, GEKKO
-                ), "Input model must be of type gekko.GEKKO"
-            else:
-                model = GEKKO(remote=False)
-        elif self.solver == "CPLEX":
-            if model:
-                assert isinstance(
-                    model, CpoModel
-                ), "Input model must be of type docplex.cp.model.CpoModel"
-            else:
-                model = CpoModel()
-        else:
-            raise Exception(f"Unknown solver {self.solver}")
-        self.model = model

@@ -1,12 +1,11 @@
 """Clock parent metaclass to maintain consistency for all clock chip."""
 from abc import ABCMeta, abstractmethod
-from typing import Dict, List
+from typing import Dict, List, Union
 
-from gekko import GEKKO
-from docplex.cp.model import CpoModel
+from docplex.cp.solution import CpoSolveResult
 
-from adijif.gekko_trans import gekko_translation
 from adijif.common import core
+from adijif.gekko_trans import gekko_translation
 
 
 class clock(core, gekko_translation, metaclass=ABCMeta):
@@ -53,14 +52,21 @@ class clock(core, gekko_translation, metaclass=ABCMeta):
 
         self.model.solve(disp=True)
 
-    def _solve_cplex(self):
+    def _solve_cplex(self) -> CpoSolveResult:
         self.solution = self.model.solve()
         return self.solution
 
-    def solve(self) -> None:
+    def solve(self) -> Union[None, CpoSolveResult]:
         """Local solve method for clock model.
 
         Call model solver with correct arguments.
+
+        Returns:
+            [None,CpoSolveResult]: When cplex solver is used CpoSolveResult is returned
+
+        Raises:
+            Exception: If solver is not valid
+
         """
         if self.solver == "gekko":
             return self._solve_gekko()
