@@ -6,9 +6,10 @@ from gekko import GEKKO
 from docplex.cp.model import CpoModel
 
 from adijif.gekko_trans import gekko_translation
+from adijif.common import core
 
 
-class clock(gekko_translation, metaclass=ABCMeta):
+class clock(core, gekko_translation, metaclass=ABCMeta):
     """Parent metaclass for all clock chip classes."""
 
     @property
@@ -67,33 +68,3 @@ class clock(gekko_translation, metaclass=ABCMeta):
             return self._solve_cplex()
         else:
             raise Exception(f"Unknown solver {self.solver}")
-
-    def __init__(self, model: GEKKO = None, solver=None) -> None:
-        """Initalize clocking model.
-
-        When usings the clocking models standalone, typically for
-        validation flows, a solver model is created internally.
-        For system level work, a shared model is passed.
-
-        Args:
-            model (GEKKO): Solver model
-        """
-        if solver:
-            self.solver = solver
-        if self.solver == "gekko":
-            if model:
-                assert isinstance(
-                    model, GEKKO
-                ), "Input model must be of type gekko.GEKKO"
-            else:
-                model = GEKKO(remote=False)
-        elif self.solver == "CPLEX":
-            if model:
-                assert isinstance(
-                    model, CpoModel
-                ), "Input model must be of type docplex.cp.model.CpoModel"
-            else:
-                model = CpoModel()
-        else:
-            raise Exception(f"Unknown solver {self.solver}")
-        self.model = model

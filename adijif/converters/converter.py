@@ -5,9 +5,10 @@ from gekko import GEKKO
 from docplex.cp.model import CpoModel
 
 from adijif.gekko_trans import gekko_translation
+from adijif.common import core
 
 
-class converter(jesd, gekko_translation, metaclass=ABCMeta):
+class converter(core, jesd, gekko_translation, metaclass=ABCMeta):
     @property
     @abstractmethod
     def name(self):
@@ -78,27 +79,6 @@ class converter(jesd, gekko_translation, metaclass=ABCMeta):
 
     def __str__(self):
         return f"{self.name} data converter model"
-
-    def __init__(self, model=None, solver=None):
-        if solver:
-            self.solver = solver
-        if self.solver == "gekko":
-            if model:
-                assert isinstance(
-                    model, GEKKO
-                ), "Input model must be of type gekko.GEKKO"
-            else:
-                model = GEKKO(remote=False)
-        elif self.solver == "CPLEX":
-            if model:
-                assert isinstance(
-                    model, CpoModel
-                ), "Input model must be of type docplex.cp.model.CpoModel"
-            else:
-                model = CpoModel()
-        else:
-            raise Exception(f"Unknown solver {self.solver}")
-        self.model = model
 
     # available_jesd_modes = ["jesd204b"]
     # K_possible = [4, 8, 12, 16, 20, 24, 28, 32]
