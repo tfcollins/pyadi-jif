@@ -2,8 +2,9 @@
 # flake8: noqa
 """Tests for `adijif` package."""
 
-import adijif
 import pytest
+
+import adijif
 
 # from adijif import adijif
 # from adijif import cli

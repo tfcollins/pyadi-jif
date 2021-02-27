@@ -1,7 +1,9 @@
 # flake8: noqa
-import adijif
-import pytest
 import pprint
+
+import pytest
+
+import adijif
 
 
 def print_sys(sys):

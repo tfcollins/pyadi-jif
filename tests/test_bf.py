@@ -2,9 +2,10 @@
 
 """Tests for `adijif` package."""
 
-import adijif
 import numpy as np
 import pytest
+
+import adijif
 
 # from adijif import adijif
 # from adijif import cli

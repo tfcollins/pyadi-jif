@@ -1,7 +1,7 @@
 # flake8: noqa
-import adijif
-
 import pytest
+
+import adijif
 
 
 def test_ad9081_rx_solver():

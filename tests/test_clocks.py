@@ -1,8 +1,10 @@
 # flake8: noqa
-import adijif
+import pprint
+
 import pytest
 from gekko import GEKKO
-import pprint
+
+import adijif
 
 
 def test_ad9523_1_daq2_validate():
