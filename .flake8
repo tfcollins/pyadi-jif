@@ -13,3 +13,4 @@ per-file-ignores =
     */tests/test_bf.py: E722
     */tests/*:S101,ANN
     noxfile.py:ANN
+    */converters/adrv9009.py: B950

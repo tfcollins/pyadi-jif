@@ -103,13 +103,13 @@ class ad9144(ad9144_bf):
 
         return self.config["ref_clk"]
 
-    def get_required_clocks(self) -> Dict:
+    def get_required_clocks(self) -> List[Dict]:
         """Generate list required clocks.
 
         For AD9144 this will contain [converter clock, sysref requirement SOS]
 
         Returns:
-            Dict: Dictionary of solver variables, equations, and constants
+            list[dict]: List of dictionaries of solver variables, equations, and constants
         """
         # possible_sysrefs = []
         # for n in range(1, 20):

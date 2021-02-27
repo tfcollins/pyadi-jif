@@ -1,5 +1,8 @@
-# from adijif.jesd import jesd
+"""ADRV9009 transceiver clocking model."""
+from typing import Dict, List
+
 import numpy as np
+
 from adijif.converters.adrv9009_bf import adrv9009_bf
 
 # References
@@ -7,6 +10,16 @@ from adijif.converters.adrv9009_bf import adrv9009_bf
 
 
 class adrv9009(adrv9009_bf):
+    """ADRV9009 transceiver clocking model.
+
+    This model manage the JESD configuration and input clock constraints.
+    External LO constraints are not modeled.
+
+    Clocking: ADRV9009 uses onboard PLLs to generate the JESD clocks
+
+        Lane Rate = I/Q Sample Rate * M * Np * (10 / 8) / L
+        Lane Rate = sample_clock * M * Np * (10 / 8) / L
+    """
 
     name = "ADRV9009"
 
@@ -35,25 +48,27 @@ class adrv9009(adrv9009_bf):
     device_clock_min = 10e6
     device_clock_max = 1e9
 
-    """ Clocking
-        ADRV9009 uses onboard PLLs to generate the JESD clocks
-
-        Lane Rate = I/Q Sample Rate * M * Np * (10 / 8) / L
-        Lane Rate = sample_clock * M * Np * (10 / 8) / L
-    """
     max_input_clock = 1e9
 
-    def get_required_clock_names(self):
-        """Get list of strings of names of requested clocks
+    def get_required_clock_names(self) -> List[str]:
+        """Get list of strings of names of requested clocks.
+
         This list of names is for the clocks defined by
         get_required_clocks
+
+        Returns:
+            List[str]: List of strings of clock names mapped by get_required_clocks
         """
         return ["adrv9009_device_clock", "adrv9009_sysref"]
 
-    def get_required_clocks(self):
-        """Generate list of required clocks
+    def get_required_clocks(self) -> List[Dict]:
+        """Generate list of required clocks.
+
         For ADRV9009 this will contain:
         [device clock requirement SOS, sysref requirement SOS]
+
+        Returns:
+            list[dict]: List of dictionaries of solver variables, equations, and constants
         """
         possible_sysrefs = []
         for n in range(1, 20):
