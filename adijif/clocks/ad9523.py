@@ -152,6 +152,9 @@ class ad9523_1(ad9523_1_bf):
         """
         if not self._clk_names:
             raise Exception("set_requested_clocks must be called before get_config")
+        for k in ["out_dividers", "m1", "n2", "r2"]:
+            if k not in self.config.keys():
+                raise Exception("Missing key: " + str(k))
 
         if self.solver == "CPLEX":
             if not solution:

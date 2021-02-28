@@ -58,6 +58,8 @@ class clock(core, gekko_translation, metaclass=ABCMeta):
 
     def _solve_cplex(self) -> CpoSolveResult:
         self.solution = self.model.solve()
+        if self.solution.solve_status != "Feasible":
+            raise Exception("Solution Not Found")
         return self.solution
 
     def solve(self) -> Union[None, CpoSolveResult]:
