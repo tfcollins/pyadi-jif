@@ -192,8 +192,8 @@ class ad9523_1(ad9523_1_bf):
             clk = (
                 vcxo  # type: ignore
                 / self._get_val(config["r2"])
-                * self._get_val(config["n2"])
-                / self._get_val(config["m1"])
+                * self._get_val(config["n2"])  # type: ignore
+                / self._get_val(config["m1"])  # type: ignore
             )
             # for div in self.config["out_dividers"]:
             #     config["output_clocks"].append(clk / div.value[0])
