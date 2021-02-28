@@ -1,20 +1,25 @@
+"""System level interface for manage clocks across all devices."""
+from typing import Dict, List, Union
+
 import numpy as np
 from docplex.cp.model import CpoModel
 from gekko import GEKKO
 
-import adijif  # pylint: disable=unused-import
+import adijif  # noqa: F401
+from adijif.converters.converter import converter as convc
+from adijif.types import range as rangec
 
 
 class system:
-    """System Manager Class
+    """System Manager Class.
 
     Manage requirements from all system components and feed into clock rate
     generation algorithms
-    """
 
-    """ All converters shared a common sysref. This requires that all
+    All converters shared a common sysref. This requires that all
         converters have the same multiframe clock (LMFC)
     """
+
     use_common_sysref = False
 
     enable_converter_clocks = True
@@ -24,8 +29,26 @@ class system:
     solver = "gekko"
     solution = None
 
-    def __init__(self, conv, clk, fpga, vcxo, solver=None):
+    def __init__(
+        self,
+        conv: str,
+        clk: str,
+        fpga: str,
+        vcxo: Union[int, rangec],
+        solver: str = None,
+    ) -> None:
+        """Initialize system interface and manage all clocking aspects.
 
+        Args:
+            conv (str): Name of converter class
+            clk (str): Name of Clock chip class
+            fpga (str): Name of FPGA class
+            vcxo (int,rangec): Value of fixed VCXO or range allowed
+            solver (str): Solver name (gekko, cplex)
+
+        Raises:
+            Exception: Unknown solver
+        """
         if solver:
             self.solver = solver
         if self.solver == "gekko":
@@ -79,9 +102,15 @@ class system:
         #     "minlp_maximum_iterations 1000",  # minlp iterations with integer solution
         # ]
 
-    def _get_configs(self, clk_names):
-        # cfg = {}
+    def _get_configs(self, clk_names: List[str]) -> Dict:
+        """Collect extracted configurations from all components in system from solver.
 
+        Args:
+            clk_names (List[str]): List of strings of clock names
+
+        Returns:
+            Dict: Dictionary containing all clocking configurations of all components
+        """
         cfg = {"fpga": self.fpga.get_config(self.solution)}
         cfg["clock"] = self.clock.get_config(self.solution)
 
@@ -92,7 +121,25 @@ class system:
 
         return cfg
 
-    def _filter_sysref(self, cnv_clocks, clock_names, convs):
+    def _filter_sysref(
+        self,
+        cnv_clocks: List,
+        clock_names: List[str],
+        convs: List[convc],
+    ) -> (List, List[str]):
+        """Filter sysref clocks to remove duplicate constraints.
+
+        Args:
+            cnv_clocks (List): List of clock constraints
+            clock_names (List[str]): List of clock names
+            convs (List[convc]): List of converter objects
+
+        Returns:
+            List,List[str]: Touple with list of filter clocks and names
+
+        Raises:
+            Exception: Invalid shared sysref configuration
+        """
         cnv_clocks_filters = []
         clock_names_filters = []
         if len(cnv_clocks) > 2 and self.use_common_sysref:
@@ -116,7 +163,8 @@ class system:
             clock_names_filters = clock_names
         return cnv_clocks_filters, clock_names_filters
 
-    def _solve_gekko(self):
+    def _solve_gekko(self) -> None:
+        """Call gekko solver API."""
         # Set up solver
         self.model.solver_options = self.solver_options
         self.model.options.SOLVER = 1  # APOPT solver
@@ -124,13 +172,21 @@ class system:
         # self.model.options.IMODE = 5   # simultaneous estimation
         self.model.solve(disp=self.Debug_Solver, debug=True)
 
-    def _solve_cplex(self):
+    def _solve_cplex(self) -> None:
+        """Call CPLEX solver API."""
         # Set up solver
         self.solution = self.model.solve()
 
-    def solve(self):
-        """Defined clocking requirements in Solver model and start solvers routine"""
+    def solve(self) -> Dict:
+        """Defined clocking requirements in Solver model and start solvers routine.
 
+        Returns:
+            Dict: Dictionary containing all clocking configuration for all components
+
+        Raises:
+            Exception: FPGA and Converter disabled
+            Exception: Solver invalid
+        """
         if not self.enable_converter_clocks and not self.enable_fpga_clocks:
             raise Exception("Converter and/or FPGA clocks must be enabled")
 
@@ -187,11 +243,15 @@ class system:
         # Organize data
         return self._get_configs(all_clock_names)
 
-    def determine_clocks(self):
-        """Defined clocking requirements and search over all possible dividers
-        for working configuration
-        """
+    def determine_clocks(self) -> List:
+        """Defined clocking requirements and search over all possible dividers.
 
+        Raises:
+            Exception: No valid configurations found
+
+        Returns:
+            List: List of valid configurations for all clocking components
+        """
         # Extract dependent rates from converter
         rates = self.converter.device_clock_available()
 
@@ -214,7 +274,7 @@ class system:
                     try:
                         info = self.fpga.determine_pll(self.converter.bit_clock, ref)
                         break
-                    except:
+                    except BaseException:
                         ref = False
                         continue
 
@@ -234,7 +294,7 @@ class system:
                     sysref_rate = self._determine_sysref(refs)
                     clk_config["sysref_rate"] = sysref_rate
                     complete_clock_configs.append(clk_config)
-                except:  # pylint: disable=bare-except
+                except BaseException:
                     continue
 
             if not complete_clock_configs:
@@ -247,8 +307,20 @@ class system:
 
         return out
 
-    def _determine_sysref(self, refs):
+    def _determine_sysref(
+        self, refs: Union[List[int], List[float]]
+    ) -> Union[int, float]:
+        """Find possible sysrefs based on required clocks and JESD configs.
 
+        Args:
+            refs (List[int],List[float]): List of system device clocks
+
+        Raises:
+            Exception: No valid configurations found
+
+        Returns:
+            int/float: Sysref rate in samples per second
+        """
         lmfc = self.converter.multiframe_clock
         div = self.sysref_min_div
 

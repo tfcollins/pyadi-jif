@@ -16,3 +16,4 @@ per-file-ignores =
     */converters/adrv9009.py: B950
     */converters/ad9081.py: E741
     */fpgas/xilinx.py: B950
+    */system.py: S307
