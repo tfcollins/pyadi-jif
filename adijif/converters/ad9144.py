@@ -1,6 +1,8 @@
 """AD9144 high speed DAC clocking model."""
 from typing import Dict, List
 
+from docplex.cp.model import integer_var  # type: ignore
+
 from adijif.converters.ad9144_bf import ad9144_bf
 
 
@@ -62,35 +64,48 @@ class ad9144(ad9144_bf):
     def _pll_config(self) -> Dict:
 
         dac_clk = self.datapath_interpolation * self.sample_clock
-        self.config["dac_clk"] = self.model.Const(dac_clk)
+        self.config["dac_clk"] = self._convert_input(dac_clk, "dac_clk")
 
-        # self.config["ref_div_factor"] = self.model.sos1([1, 2, 4, 8, 16])
-        self.config["ref_div_factor_i"] = self.model.Var(
-            integer=True, lb=0, ub=4, value=4
-        )
-        self.config["ref_div_factor"] = self.model.Intermediate(
-            2 ** (self.config["ref_div_factor_i"])
-        )
+        if self.solver == "gekko":
 
-        self.config["BCount"] = self.model.Var(integer=True, lb=6, ub=127, value=6)
-        self.config["ref_clk"] = self.model.Var(
-            integer=True, lb=35e6, ub=1e9, value=35e6
-        )
+            # self.config["ref_div_factor"] = self.model.sos1([1, 2, 4, 8, 16])
+            self.config["ref_div_factor_i"] = self.model.Var(
+                integer=True, lb=0, ub=4, value=4
+            )
+            self.config["ref_div_factor"] = self.model.Intermediate(
+                2 ** (self.config["ref_div_factor_i"])
+            )
+
+            self.config["BCount"] = self.model.Var(integer=True, lb=6, ub=127, value=6)
+            self.config["ref_clk"] = self.model.Var(
+                integer=True, lb=35e6, ub=1e9, value=35e6
+            )
+        elif self.solver == "CPLEX":
+            self.config["ref_div_factor"] = self._convert_input(
+                [1, 2, 4, 8, 16], "ref_div_factor"
+            )
+            self.config["BCount"] = self._convert_input([*range(6, 128)], "BCount")
+            self.config["ref_clk"] = integer_var(int(35e6), int(1e9), name="ref_clock")
 
         if dac_clk > 2800e6:
             raise Exception("DAC Clock too fast")
         elif dac_clk >= 1500e6:
-            self.config["lo_div_mode_p2"] = self.model.Const(2 ** (1 + 1))
+            self.config["lo_div_mode_p2"] = self._convert_input(2 ** (1 + 1))
         elif dac_clk >= 720e6:
-            self.config["lo_div_mode_p2"] = self.model.Const(2 ** (2 + 1))
+            self.config["lo_div_mode_p2"] = self._convert_input(2 ** (2 + 1))
         elif dac_clk >= 420e6:
-            self.config["lo_div_mode_p2"] = self.model.Const(2 ** (3 + 1))
+            self.config["lo_div_mode_p2"] = self._convert_input(2 ** (3 + 1))
         else:
             raise Exception("DAC Clock too slow")
 
-        self.config["vco"] = self.model.Intermediate(
-            self.config["dac_clk"] * self.config["lo_div_mode_p2"]
-        )
+        if self.solver == "gekko":
+            self.config["vco"] = self.model.Intermediate(
+                self.config["dac_clk"] * self.config["lo_div_mode_p2"]
+            )
+        elif self.solver == "CPLEX":
+            self.config["vco"] = self.config["dac_clk"] * self.config["lo_div_mode_p2"]
+        else:
+            raise Exception(f"Unknown solver: {self.solver}")
 
         self._add_equation(
             [

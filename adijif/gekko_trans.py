@@ -157,6 +157,14 @@ class gekko_translation(metaclass=ABCMeta):
         """
         if isinstance(val, list) and val.sort() == [0, 1]:
             return binary_var(name=name)
+        # if isinstance(val, (float, int)):
+        #     return constant(val)
+        # return integer_var(domain=(val, val), name=name)
+        if isinstance(val, float):
+            if float(int(val)) == val:
+                val = int(val)
+                return integer_var(domain=(val, val), name=name)
+            # return self.model.continuous_var(domain=(val, val), name=name)
         return integer_var(domain=val, name=name)
 
     def _convert_list(
