@@ -142,10 +142,11 @@ def test_ad9680_all_clk_chips_solver(qpll, cpll, rate, clock_chip, solver):
     # print_sys(sys)
 
 
-def test_ad9144_solver():
+@pytest.mark.parametrize("solver", ["gekko", "CPLEX"])
+def test_ad9144_solver(solver):
 
     vcxo = 125000000
-    sys = adijif.system("ad9144", "hmc7044", "xilinx", vcxo)
+    sys = adijif.system("ad9144", "hmc7044", "xilinx", vcxo, solver=solver)
     sys.fpga.setup_by_dev_kit_name("zc706")
     sys.Debug_Solver = 1
     # sys.fpga.force_cpll = 1
@@ -175,7 +176,7 @@ def test_ad9144_solver():
     else:
         sys.solve()
 
-    print_sys(sys)
+    # print_sys(sys)
 
 
 def test_daq2_split_rates_solver():

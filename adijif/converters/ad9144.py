@@ -92,7 +92,7 @@ class ad9144(ad9144_bf):
             self.config["dac_clk"] * self.config["lo_div_mode_p2"]
         )
 
-        self.model.Equation(
+        self._add_equation(
             [
                 self.config["ref_div_factor"] * self.pfd_min < self.config["ref_clk"],
                 self.config["ref_div_factor"] * self.pfd_max > self.config["ref_clk"],
@@ -119,13 +119,22 @@ class ad9144(ad9144_bf):
         # self.config["sysref"] = self.model.sos1(possible_sysrefs)
 
         self.config = {}
-        self.config["lmfc_divisor_sysref"] = self.model.Var(
-            integer=True, lb=1, ub=20, value=19
-        )
-        self.config["sysref"] = self.model.Intermediate(
-            self.multiframe_clock
-            / (self.config["lmfc_divisor_sysref"] * self.config["lmfc_divisor_sysref"])
-        )
+        if self.solver == "gekko":
+            self.config["lmfc_divisor_sysref"] = self.model.Var(
+                integer=True, lb=1, ub=20, value=19
+            )
+            self.config["sysref"] = self.model.Intermediate(
+                self.multiframe_clock
+                / (
+                    self.config["lmfc_divisor_sysref"]
+                    * self.config["lmfc_divisor_sysref"]
+                )
+            )
+        elif self.solver == "CPLEX":
+            self.config["lmfc_divisor_sysref"] = self._convert_input([*range(1, 20)])
+            self.config["sysref"] = self.multiframe_clock / (
+                self.config["lmfc_divisor_sysref"] * self.config["lmfc_divisor_sysref"]
+            )
 
         if self.use_direct_clocking:
             clk = self.sample_clock * self.datapath_interpolation
