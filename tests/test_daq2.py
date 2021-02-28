@@ -44,10 +44,11 @@ def print_sys(sys):
                 print(c, v)
 
 
-def test_fpga_cpll_solver():
+@pytest.mark.parametrize("solver", ["gekko", "CPLEX"])
+def test_fpga_cpll_solver(solver):
 
     vcxo = 125000000
-    sys = adijif.system("ad9680", "hmc7044", "xilinx", vcxo)
+    sys = adijif.system("ad9680", "hmc7044", "xilinx", vcxo, solver=solver)
     sys.fpga.setup_by_dev_kit_name("zc706")
     sys.fpga.force_cpll = 1
 

@@ -134,10 +134,13 @@ class hmc7044(hmc7044_bf):
         if not self._clk_names:
             raise Exception("set_requested_clocks must be called before get_config")
 
+        if solution:
+            self.solution = solution
+
         config = {
-            "r2": self.config["r2"].value[0],
-            "n2": self.config["n2"].value[0],
-            "out_dividers": [x.value[0] for x in self.config["out_dividers"]],
+            "r2": self._get_val(self.config["r2"]),
+            "n2": self._get_val(self.config["n2"]),
+            "out_dividers": [self._get_val(x) for x in self.config["out_dividers"]],
             "output_clocks": [],
         }
 
@@ -145,8 +148,11 @@ class hmc7044(hmc7044_bf):
 
         output_cfg = {}
         for i, div in enumerate(self.config["out_dividers"]):
-            rate = clk / div.value[0]
-            output_cfg[self._clk_names[i]] = {"rate": rate, "divider": div.value[0]}
+            rate = clk / self._get_val(div)
+            output_cfg[self._clk_names[i]] = {
+                "rate": rate,
+                "divider": self._get_val(div),
+            }
 
         config["output_clocks"] = output_cfg
         return config
@@ -168,7 +174,7 @@ class hmc7044(hmc7044_bf):
         # )  # FIXME: CHECK UB
 
         # PLL2 equations
-        self.model.Equations(
+        self._add_equation(
             [
                 vcxo / self.config["r2"] <= self.pfd_max,
                 vcxo / self.config["r2"] * self.config["n2"] <= self.vco_max,
@@ -205,16 +211,20 @@ class hmc7044(hmc7044_bf):
         # Add requested clocks to output constraints
         self.config["out_dividers"] = []
         for out_freq in out_freqs:
-            even = self.model.Var(integer=True, lb=1, ub=4094 / 2)
 
-            # odd = self.model.sos1([1, 3, 5])
-            odd_i = self.model.Var(integer=True, lb=0, ub=2)
-            odd = self.model.Intermediate(1 + odd_i * 2)
+            if self.solver == "gekko":
+                even = self.model.Var(integer=True, lb=1, ub=4094 / 2)
 
-            eo = self.model.Var(integer=True, lb=0, ub=1)
-            od = self.model.Intermediate(eo * odd + (1 - eo) * even * 2)
+                # odd = self.model.sos1([1, 3, 5])
+                odd_i = self.model.Var(integer=True, lb=0, ub=2)
+                odd = self.model.Intermediate(1 + odd_i * 2)
 
-            self.model.Equations(
+                eo = self.model.Var(integer=True, lb=0, ub=1)
+                od = self.model.Intermediate(eo * odd + (1 - eo) * even * 2)
+            elif self.solver == "CPLEX":
+                od = self._convert_input(self._d, "d_" + str(out_freq))
+
+            self._add_equation(
                 [vcxo / self.config["r2"] * self.config["n2"] / od == out_freq]
             )
             self.config["out_dividers"].append(od)

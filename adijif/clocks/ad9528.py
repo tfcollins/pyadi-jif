@@ -154,11 +154,14 @@ class ad9528(ad9528_bf):
         if not self._clk_names:
             raise Exception("set_requested_clocks must be called before get_config")
 
+        if solution:
+            self.solution = solution
+
         config = {
-            "r1": self.config["r1"].value[0],
-            "n2": self.config["n2"].value[0],
-            "m1": self.config["m1"].value[0],
-            "out_dividers": [x.value[0] for x in self.config["out_dividers"]],
+            "r1": self._get_val(self.config["r1"]),
+            "n2": self._get_val(self.config["n2"]),
+            "m1": self._get_val(self.config["m1"]),
+            "out_dividers": [self._get_val(x) for x in self.config["out_dividers"]],
             "output_clocks": [],
         }
 
@@ -166,8 +169,11 @@ class ad9528(ad9528_bf):
 
         output_cfg = {}
         for i, div in enumerate(self.config["out_dividers"]):
-            rate = clk / div.value[0]
-            output_cfg[self._clk_names[i]] = {"rate": rate, "divider": div.value[0]}
+            rate = clk / self._get_val(div)
+            output_cfg[self._clk_names[i]] = {
+                "rate": rate,
+                "divider": self._get_val(div),
+            }
 
         config["output_clocks"] = output_cfg
         return config
@@ -189,7 +195,7 @@ class ad9528(ad9528_bf):
         # self.config["n2"] = self.model.Var(integer=True, lb=12, ub=255, value=12)
 
         # PLL2 equations
-        self.model.Equations(
+        self._add_equation(
             [
                 vcxo / self.config["r1"] <= self.pfd_max,
                 vcxo / self.config["r1"] * self.config["m1"] * self.config["n2"]
@@ -229,7 +235,7 @@ class ad9528(ad9528_bf):
             # od = self.model.Var(integer=True, lb=1, ub=256, value=1)
             od = self._convert_input(self._d, "d_" + str(out_freq))
             # od = self.model.sos1([n*n for n in range(1,9)])
-            self.model.Equations(
+            self._add_equation(
                 [vcxo / self.config["r1"] * self.config["n2"] / od == out_freq]
             )
             self.config["out_dividers"].append(od)

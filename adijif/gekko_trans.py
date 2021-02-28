@@ -5,6 +5,7 @@ from typing import List, Optional, Union
 import numpy as np
 from docplex.cp.expression import CpoExpr  # type: ignore
 from docplex.cp.model import binary_var, integer_var  # type: ignore
+from docplex.cp.solution import CpoSolveResult  # type: ignore
 from gekko import GEKKO  # type: ignore
 from gekko.gk_operators import GK_Intermediate, GK_Operators  # type: ignore
 from gekko.gk_variable import GKVariable  # type: ignore
@@ -18,6 +19,8 @@ class gekko_translation(metaclass=ABCMeta):
     # def model(self):
     #     raise NotImplementedError
     model: Union[GEKKO, CpoExpr] = None
+
+    solution: CpoSolveResult = None
 
     solver = "gekko"  # "CPLEX"
 
@@ -55,15 +58,18 @@ class gekko_translation(metaclass=ABCMeta):
         Returns:
             int/float: Extracted value
         """
-        if type(value) in [
-            GKVariable,
-            GK_Intermediate,
-        ]:
-            return value.value[0]
-        elif type(value) is GK_Operators:
-            return value.value
-        else:
-            return value
+        if self.solver == "gekko":
+            if type(value) in [
+                GKVariable,
+                GK_Intermediate,
+            ]:
+                return value.value[0]
+            elif type(value) is GK_Operators:
+                return value.value
+            else:
+                return value
+        elif self.solver == "CPLEX":
+            return self.solution.get_value(value.get_name())
 
     def _check_in_range(
         self,
