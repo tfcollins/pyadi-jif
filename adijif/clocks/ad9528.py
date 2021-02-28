@@ -1,7 +1,7 @@
 """AD9528 clock chip model."""
 from typing import Dict, List, Union
 
-from docplex.cp.solution import CpoSolveResult
+from docplex.cp.solution import CpoSolveResult  # type: ignore
 
 from adijif.clocks.ad9528_bf import ad9528_bf
 
@@ -25,13 +25,13 @@ class ad9528(ad9528_bf):
     r1_available = [*range(1, 32)]
 
     # State management
-    _clk_names = -1
+    _clk_names: List[str] = []
 
     # Defaults
-    _m1 = [3, 4, 5]
-    _d = [*range(1, 1024)]
-    _n2 = [*range(12, 255)]
-    _r1 = [*range(1, 32)]
+    _m1: Union[List[int], int] = [3, 4, 5]
+    _d: Union[List[int], int] = [*range(1, 1024)]
+    _n2: Union[List[int], int] = [*range(12, 255)]
+    _r1: Union[List[int], int] = [*range(1, 32)]
 
     # Limits
     vco_min = 3450e6

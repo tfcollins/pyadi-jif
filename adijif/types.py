@@ -3,7 +3,7 @@
 from typing import Dict
 
 import numpy as np
-from gekko import GEKKO  # noqa: I100 flake8/isort conflict
+from gekko import GEKKO  # type: ignore # noqa: I100 flake8/isort conflict
 
 
 class range:

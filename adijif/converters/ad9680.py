@@ -1,5 +1,5 @@
 """AD9680 high speed ADC clocking model."""
-from typing import Dict, List
+from typing import List
 
 from adijif.converters.ad9680_bf import ad9680_bf
 
@@ -55,13 +55,13 @@ class ad9680(ad9680_bf):
         """
         return ["ad9680_adc_clock", "ad9680_sysref"]
 
-    def get_required_clocks(self) -> Dict:
+    def get_required_clocks(self) -> List:
         """Generate list required clocks.
 
         For AD9680 this will contain [converter clock, sysref requirement SOS]
 
         Returns:
-            Dict: Dictionary of solver variables, equations, and constants
+            List: List of solver variables, equations, and constants
         """
         # possible_sysrefs = []
         # for n in range(1, 10):

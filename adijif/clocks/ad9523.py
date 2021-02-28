@@ -1,7 +1,7 @@
 """AD9523-1 clock chip model."""
 from typing import Dict, List, Union
 
-from docplex.cp.solution import CpoSolveResult
+from docplex.cp.solution import CpoSolveResult  # type: ignore
 
 from adijif.clocks.ad9523_1_bf import ad9523_1_bf
 
@@ -23,10 +23,10 @@ class ad9523_1(ad9523_1_bf):
     r2_available = list(range(1, 31 + 1))
 
     # Defaults
-    _m1 = [3, 4, 5]
-    _d = [*range(1, 1024)]
-    _n2 = [12, 16, 17, 20, 21, 22, 24, 25, 26, *range(28, 255)]
-    _r2 = list(range(1, 31 + 1))
+    _m1: Union[List[int], int] = [3, 4, 5]
+    _d: Union[List[int], int] = [*range(1, 1024)]
+    _n2: Union[List[int], int] = [12, 16, 17, 20, 21, 22, 24, 25, 26, *range(28, 255)]
+    _r2: Union[List[int], int] = list(range(1, 31 + 1))
 
     # Limits
     vco_min = 2.94e9
@@ -34,7 +34,7 @@ class ad9523_1(ad9523_1_bf):
     pfd_max = 259e6
 
     # State management
-    _clk_names = -1
+    _clk_names: List[str] = []
 
     """ Enable internal VCXO/PLL1 doubler """
     use_vcxo_double = False
@@ -186,11 +186,11 @@ class ad9523_1(ad9523_1_bf):
                 "output_clocks": [],
             }
 
-            vcxo = self._get_val(self.vcxo)
+            vcxo = self._get_val(self.vcxo)  # type: ignore
             config["vcxo"] = vcxo
 
             clk = (
-                vcxo
+                vcxo  # type: ignore
                 / self._get_val(config["r2"])
                 * self._get_val(config["n2"])
                 / self._get_val(config["m1"])

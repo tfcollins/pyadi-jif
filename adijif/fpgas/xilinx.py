@@ -1,12 +1,12 @@
 """Xilinx FPGA clocking model."""
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
-import gekko
-from docplex.cp.expression import CpoIntVar
-from docplex.cp.model import integer_var
-from docplex.cp.solution import CpoSolveResult
-from gekko.gk_operators import GK_Intermediate, GK_Operators
-from gekko.gk_variable import GKVariable
+import gekko  # type: ignore
+from docplex.cp.expression import CpoIntVar  # type: ignore
+from docplex.cp.model import integer_var  # type: ignore
+from docplex.cp.solution import CpoSolveResult  # type: ignore
+from gekko.gk_operators import GK_Intermediate, GK_Operators  # type: ignore
+from gekko.gk_variable import GKVariable  # type: ignore
 
 from adijif.converters.converter import converter as conv
 from adijif.fpgas.xilinx_bf import xilinx_bf
@@ -80,7 +80,7 @@ class xilinx(xilinx_bf):
     """
     request_device_clock = False
 
-    _clock_names = -1
+    _clock_names: Union[List[str]] = []
 
     @property
     def ref_clock_max(self) -> int:
@@ -330,7 +330,9 @@ class xilinx(xilinx_bf):
             )
         return self._clock_names
 
-    def get_config(self, solution: CpoSolveResult = None) -> Dict:
+    def get_config(
+        self, solution: Optional[CpoSolveResult] = None
+    ) -> Union[List[Dict], Dict]:
         """Extract configurations from solver results.
 
         Collect internal FPGA configuration and output clock definitions.
@@ -346,12 +348,12 @@ class xilinx(xilinx_bf):
         """
         out = []
         for config in self.configs:
-            pll_config = {}
+            pll_config: Dict[str, Union[str, int, float]] = {}
             if isinstance(config["qpll_0_cpll_1"], gekko.gk_variable.GKVariable):
                 pll = config["qpll_0_cpll_1"].value[0]
             elif self.solver == "CPLEX":
                 name = config["qpll_0_cpll_1"].get_name()
-                pll = solution.get_value(name)
+                pll = solution.get_value(name)  # type: ignore
             else:
                 pll = config["qpll_0_cpll_1"].value
             if self.solver == "gekko":
@@ -368,31 +370,31 @@ class xilinx(xilinx_bf):
             elif self.solver == "CPLEX":
                 if pll > 0:
                     pll_config["type"] = "cpll"
-                    pll_config["m"] = solution.get_value(config["m_cpll"].get_name())
-                    pll_config["d"] = solution.get_value(config["d_cpll"].get_name())
-                    pll_config["n1"] = solution.get_value(config["n1_cpll"].get_name())
-                    pll_config["n2"] = solution.get_value(config["n2_cpll"].get_name())
+                    pll_config["m"] = solution.get_value(config["m_cpll"].get_name())  # type: ignore
+                    pll_config["d"] = solution.get_value(config["d_cpll"].get_name())  # type: ignore
+                    pll_config["n1"] = solution.get_value(config["n1_cpll"].get_name())  # type: ignore
+                    pll_config["n2"] = solution.get_value(config["n2_cpll"].get_name())  # type: ignore
                     # pll_config["vco"] = solution.get_value(
                     #     config["vco_cpll"].get_name()
                     # )
-                    fpga_ref = solution.get_value(self.config["fpga_ref"].get_name())
+                    fpga_ref = solution.get_value(self.config["fpga_ref"].get_name())  # type: ignore
                     pll_config["vco"] = (
                         fpga_ref * pll_config["n1"] * pll_config["n2"] / pll_config["m"]
                     )
 
                 else:
                     pll_config["type"] = "qpll"
-                    pll_config["m"] = solution.get_value(config["m"].get_name())
-                    pll_config["d"] = solution.get_value(config["d"].get_name())
-                    pll_config["n"] = solution.get_value(config["n"].get_name())
+                    pll_config["m"] = solution.get_value(config["m"].get_name())  # type: ignore
+                    pll_config["d"] = solution.get_value(config["d"].get_name())  # type: ignore
+                    pll_config["n"] = solution.get_value(config["n"].get_name())  # type: ignore
                     # pll_config["vco"] = solution.get_value(config["vco"].get_name())
-                    fpga_ref = solution.get_value(self.config["fpga_ref"].get_name())
+                    fpga_ref = solution.get_value(self.config["fpga_ref"].get_name())  # type: ignore
                     pll_config["vco"] = fpga_ref * pll_config["n"] / pll_config["m"]
-                    pll_config["band"] = solution.get_value(config["band"].get_name())
+                    pll_config["band"] = solution.get_value(config["band"].get_name())  # type: ignore
                     # pll_config["qty4_full_rate_enabled"] = solution.get_value(
                     # config["qty4_full_rate_enabled"].get_name()
                     # )
-                    qty4_full_rate_divisor = solution.get_value(
+                    qty4_full_rate_divisor = solution.get_value(  # type: ignore
                         config["band"].get_name()
                     )
                     pll_config["qty4_full_rate_enabled"] = 1 - qty4_full_rate_divisor
@@ -400,7 +402,7 @@ class xilinx(xilinx_bf):
                 raise Exception("SOMETHING")
             out.append(pll_config)
         if len(out) == 1:
-            out = out[0]
+            out = out[0]  # type: ignore
         return out
 
     def _setup_quad_tile(
@@ -565,14 +567,14 @@ class xilinx(xilinx_bf):
         )
         return config
 
-    def get_required_clocks(self, converter: conv) -> Dict:
+    def get_required_clocks(self, converter: conv) -> List:
         """Get necessary clocks for QPLL/CPLL configuration.
 
         Args:
             converter (conv): Converter object of converter connected to FPGA
 
         Returns:
-            Dict: Dictionary of solver variables and constraints
+            List: List of solver variables and constraints
 
         Raises:
             Exception: If solver is not valid
@@ -581,7 +583,7 @@ class xilinx(xilinx_bf):
             converter = converter._get_converters()  # Handle nested converters
 
         if not isinstance(converter, list):
-            converter = [converter]
+            converter = [converter]  # type: ignore
 
         if self.solver == "gekko":
             self.config = {
@@ -612,7 +614,7 @@ class xilinx(xilinx_bf):
             self.configs = []
             self.dev_clocks = []
             obs = []
-            for cnv in converter:
+            for cnv in converter:  # type: ignore
                 config = self._setup_quad_tile(cnv, self.config["fpga_ref"])
                 # Set optimizations
                 # self.model.Obj(self.config["d"])

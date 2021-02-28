@@ -2,7 +2,7 @@
 import pprint
 
 import pytest
-from gekko import GEKKO
+from gekko import GEKKO  # type: ignore
 
 import adijif
 

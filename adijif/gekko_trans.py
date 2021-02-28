@@ -1,12 +1,13 @@
 """Translation methods for solvers and module."""
 from abc import ABCMeta
-from typing import List, Union
+from typing import List, Optional, Union
 
 import numpy as np
-from docplex.cp.expression import CpoExpr
-from docplex.cp.model import binary_var, integer_var
-from gekko.gk_operators import GK_Intermediate, GK_Operators
-from gekko.gk_variable import GKVariable
+from docplex.cp.expression import CpoExpr  # type: ignore
+from docplex.cp.model import binary_var, integer_var  # type: ignore
+from gekko import GEKKO  # type: ignore
+from gekko.gk_operators import GK_Intermediate, GK_Operators  # type: ignore
+from gekko.gk_variable import GKVariable  # type: ignore
 
 
 class gekko_translation(metaclass=ABCMeta):
@@ -16,7 +17,7 @@ class gekko_translation(metaclass=ABCMeta):
     # @abstractmethod
     # def model(self):
     #     raise NotImplementedError
-    mode = None
+    model: Union[GEKKO, CpoExpr] = None
 
     solver = "gekko"  # "CPLEX"
 
@@ -45,7 +46,7 @@ class gekko_translation(metaclass=ABCMeta):
 
     def _get_val(
         self, value: Union[GKVariable, GK_Intermediate, GK_Operators]
-    ) -> Union[int, float]:
+    ) -> Union[int, float, str]:
         """Extract value from solver types.
 
         Args:
@@ -82,20 +83,20 @@ class gekko_translation(metaclass=ABCMeta):
 
         """
         if not isinstance(value, list):
-            value = [value]
-        for v in value:
+            value = [value]  # type: ignore
+        for v in value:  # type: ignore
             if v not in possible:
                 raise Exception(f"{v} invalid for {varname}. Only {possible} possible")
 
     def _convert_input(
-        self, val: Union[int, List[int], float, List[float]], name: str = None
+        self, val: Union[int, List[int], float, List[float]], name: Optional[str] = None
     ) -> Union[CpoExpr, GKVariable, GK_Operators]:
         """Convert input to solver variables.
 
         Args:
             val (int, List[int], float, List[float]): Values or list of
                 values to convert to solver variables.
-            name (str): Name of variable
+            name (Optional[str]): Name of variable
 
         Returns:
             CpoExpr, GKVariable, GK_Operators: Solver variables
@@ -112,7 +113,7 @@ class gekko_translation(metaclass=ABCMeta):
             raise Exception(f"Unknown solver {self.solver}")
 
     def _convert_input_gekko(
-        self, val: Union[int, List[int], float, List[float]], name: str
+        self, val: Union[int, List[int], float, List[float]], name: Optional[str] = None
     ) -> Union[GKVariable, GK_Operators]:
         """Convert input to GEKKO solver variables.
 
@@ -131,7 +132,7 @@ class gekko_translation(metaclass=ABCMeta):
         return self.model.Const(value=val, name=name)
 
     def _convert_input_cplex(
-        self, val: Union[int, List[int], float, List[float]], name: str
+        self, val: Union[int, List[int], float, List[float]], name: Optional[str] = None
     ) -> CpoExpr:
         """Convert input to CPLEX solver variables.
 
@@ -148,7 +149,7 @@ class gekko_translation(metaclass=ABCMeta):
         return integer_var(domain=val, name=name)
 
     def _convert_list(
-        self, val: Union[List[int], List[float]], name: str
+        self, val: Union[List[int], List[float]], name: Optional[str] = None
     ) -> GK_Operators:
         """Convert input list to GEKKO solver variables.
 

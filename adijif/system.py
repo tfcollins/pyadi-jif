@@ -1,9 +1,9 @@
 """System level interface for manage clocks across all devices."""
-from typing import Dict, List, Union
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
-from docplex.cp.model import CpoModel
-from gekko import GEKKO
+from docplex.cp.model import CpoModel  # type: ignore
+from gekko import GEKKO  # type: ignore
 
 import adijif  # noqa: F401
 from adijif.converters.converter import converter as convc
@@ -62,14 +62,16 @@ class system:
         self.vcxo = vcxo
         # FIXME: Do checks
 
+        self.converter: Union[convc, List[convc]] = []
         if isinstance(conv, list):
-            self.converter = []
             for c in conv:
                 self.converter.append(
                     eval(f"adijif.{c}(self.model,solver=self.solver)")
                 )
         else:
-            self.converter = eval(f"adijif.{conv}(self.model,solver=self.solver)")
+            self.converter: convc = eval(  # type: ignore
+                f"adijif.{conv}(self.model,solver=self.solver)"
+            )
         self.clock = eval(f"adijif.{clk}(self.model,solver=self.solver)")
         self.fpga = eval(f"adijif.{fpga}(self.model,solver=self.solver)")
         self.vcxo = vcxo
@@ -126,7 +128,7 @@ class system:
         cnv_clocks: List,
         clock_names: List[str],
         convs: List[convc],
-    ) -> (List, List[str]):
+    ) -> Tuple[List, List[str]]:
         """Filter sysref clocks to remove duplicate constraints.
 
         Args:
@@ -191,17 +193,17 @@ class system:
             raise Exception("Converter and/or FPGA clocks must be enabled")
 
         cnv_clocks = []
-        cnv_clocks_filters = []
-        clock_names = []
-        clock_names_filters = []
+        cnv_clocks_filters: List[convc] = []
+        clock_names: List[str] = []
+        clock_names_filters: List[str] = []
         if self.enable_converter_clocks:
 
-            convs = (
+            convs: List[convc] = (
                 self.converter if isinstance(self.converter, list) else [self.converter]
             )
             for conv in convs:
-                clk = conv.get_required_clocks()
-                names = conv.get_required_clock_names()
+                clk = conv.get_required_clocks()  # type: ignore
+                names = conv.get_required_clock_names()  # type: ignore
                 if not isinstance(clk, list):
                     clk = [clk]
                 if not isinstance(names, list):
@@ -253,7 +255,7 @@ class system:
             List: List of valid configurations for all clocking components
         """
         # Extract dependent rates from converter
-        rates = self.converter.device_clock_available()
+        rates = self.converter.device_clock_available()  # type: ignore
 
         out = []
         for rate in rates:
@@ -272,7 +274,9 @@ class system:
                 refs = self.clock.list_possible_references(clk_config)
                 for ref in refs:
                     try:
-                        info = self.fpga.determine_pll(self.converter.bit_clock, ref)
+                        info = self.fpga.determine_pll(
+                            self.converter.bit_clock, ref  # type: ignore
+                        )
                         break
                     except BaseException:
                         ref = False
@@ -321,7 +325,7 @@ class system:
         Returns:
             int/float: Sysref rate in samples per second
         """
-        lmfc = self.converter.multiframe_clock
+        lmfc = self.converter.multiframe_clock  # type: ignore
         div = self.sysref_min_div
 
         while div < self.sysref_max_div:

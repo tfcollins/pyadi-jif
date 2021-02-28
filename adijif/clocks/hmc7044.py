@@ -1,7 +1,7 @@
 """HMC7044 clock chip model."""
 from typing import Dict, List, Union
 
-from docplex.cp.solution import CpoSolveResult
+from docplex.cp.solution import CpoSolveResult  # type: ignore
 
 from adijif.clocks.hmc7044_bf import hmc7044_bf
 
@@ -27,9 +27,9 @@ class hmc7044(hmc7044_bf):
     d_syspulse_available = [*range(32, 4095, 2)]
 
     # Defaults
-    _d = [1, 3, 5, *range(2, 4095, 2)]
+    _d: Union[int, List[int]] = [1, 3, 5, *range(2, 4095, 2)]
     _n2 = [*range(1, 65535 + 1)]
-    _r2 = [*range(1, 4095 + 1)]
+    _r2: Union[int, List[int]] = [*range(1, 4095 + 1)]
 
     # Limits
     """ Internal limits """
@@ -42,7 +42,7 @@ class hmc7044(hmc7044_bf):
     use_vcxo_double = True
 
     # State management
-    _clk_names = -1
+    _clk_names: List[str] = []
 
     @property
     def d(self) -> Union[int, List[int]]:

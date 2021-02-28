@@ -2,17 +2,10 @@
 from abc import ABCMeta, abstractmethod
 from typing import Dict, List, Union
 
-from docplex.cp.model import CpoModel
-from gekko import GEKKO
+from docplex.cp.model import CpoModel  # type: ignore
+from gekko import GEKKO  # type: ignore
 
 from adijif.converters.converter import converter
-
-# class ad9081_tx(converter):
-#     pass
-
-
-# class ad9081_rx(converter):
-#     pass
 
 
 class ad9081_core(metaclass=ABCMeta):
@@ -41,8 +34,10 @@ class ad9081_core(metaclass=ABCMeta):
 
     """
 
-    device_clock_available = []
-    device_clock_ranges = []
+    device_clock_available = None
+    device_clock_ranges = None
+
+    model: Union[GEKKO, CpoModel] = None
 
     name = "AD9081"
 
@@ -107,7 +102,7 @@ class ad9081_core(metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def _converter_clock_config(self) -> Dict:
+    def _converter_clock_config(self) -> None:
         """Define source clocking relation based on ADC, DAC, or both.
 
         Raises:
@@ -115,9 +110,9 @@ class ad9081_core(metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def _pll_config(self, dac_adc_both: int) -> Dict:
+    def _pll_config(self) -> Dict:
 
-        self._converter_clock_config()
+        self._converter_clock_config()  # type: ignore
 
         self.config["ref_clk"] = self.model.Var(
             integer=True, lb=1e6, ub=self.max_input_clock, value=self.max_input_clock
@@ -148,13 +143,13 @@ class ad9081_core(metaclass=ABCMeta):
 
         return self.config["ref_clk"]
 
-    def get_required_clocks(self) -> Dict:
+    def get_required_clocks(self) -> List:
         """Generate list required clocks.
 
         For AD9081 this will contain [converter clock, sysref requirement SOS]
 
         Returns:
-            Dict: Dictionary of solver variables, equations, and constants
+            List: List of solver variables, equations, and constants
 
         Raises:
             Exception: If direct clocking is used. Not yet implemented
@@ -165,7 +160,7 @@ class ad9081_core(metaclass=ABCMeta):
             integer=True, lb=1, ub=20, value=19
         )
         self.config["sysref"] = self.model.Intermediate(
-            self.multiframe_clock
+            self.multiframe_clock  # type: ignore
             / (self.config["lmfc_divisor_sysref"] * self.config["lmfc_divisor_sysref"])
         )
 
@@ -174,7 +169,7 @@ class ad9081_core(metaclass=ABCMeta):
             raise Exception("Not implemented yet")
             # adc_clk = self.sample_clock * self.datapath_decimation
         else:
-            clk = self._pll_config(self._model_type)
+            clk = self._pll_config()  # type: ignore
 
         # Objectives
         # self.model.Obj(self.config["sysref"])  # This breaks many searches
@@ -221,6 +216,8 @@ class ad9081_tx(ad9081_core, converter):
 class ad9081(ad9081_core):
     """AD9081 combined transmit and receive model."""
 
+    multiframe_clock = None
+
     def __init__(self, model: Union[GEKKO, CpoModel] = None) -> None:
         """Initialize AD9081 clocking model for TX and RX.
 
@@ -234,7 +231,7 @@ class ad9081(ad9081_core):
         self.dac = ad9081_tx(model)
         self.model = model
 
-    def _get_converters(self) -> Union[ad9081_rx, ad9081_tx]:
+    def _get_converters(self) -> List[Union[ad9081_rx, ad9081_tx]]:
         return [self.adc, self.dac]
 
     def get_required_clock_names(self) -> List[str]:
@@ -261,13 +258,13 @@ class ad9081(ad9081_core):
         self.config["adc_clk"] = self.model.Const(adc_clk)
         self.config["converter_clk"] = self.model.Intermediate(self.config["dac_clk"])
 
-    def get_required_clocks(self) -> Dict:
+    def get_required_clocks(self) -> List:
         """Generate list required clocks.
 
         For AD9081 this will contain [converter clock, sysref requirement SOS]
 
         Returns:
-            Dict: Dictionary of solver variables, equations, and constants
+            List: List of solver variables, equations, and constants
 
         Raises:
             Exception: If direct clocking is used. Not yet implemented
@@ -300,7 +297,7 @@ class ad9081(ad9081_core):
             raise Exception("Not implemented yet")
             # adc_clk = self.sample_clock * self.datapath_decimation
         else:
-            clk = self._pll_config(self._model_type)
+            clk = self._pll_config()
 
         # Objectives
         # self.model.Obj(self.config["sysref"])  # This breaks many searches

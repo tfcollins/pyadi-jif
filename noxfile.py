@@ -56,7 +56,7 @@ def lint(session):
 @nox.session(python=multi_python_versions_support)
 def mypy(session):
     args = session.posargs or locations
-    install_with_constraints(session, "mypy")
+    install_with_constraints(session, "mypy", "numpy", "docplex", "gekko")
     session.run("mypy", *args)
 
 

@@ -1,6 +1,6 @@
 """JESD parameterization definitions and helper functions."""
 from abc import ABCMeta, abstractmethod
-from typing import List
+from typing import List, Union
 
 
 class jesd(metaclass=ABCMeta):
@@ -8,9 +8,7 @@ class jesd(metaclass=ABCMeta):
 
     solver = "gekko"  # "CPLEX"
 
-    def __init__(
-        self, sample_clock: int, M: int, L: int, Np: int, K: int, S: int
-    ) -> None:
+    def __init__(self, sample_clock: int, M: int, L: int, Np: int, K: int) -> None:
         """Initialize JESD device through link parameterization.
 
         Args:
@@ -19,7 +17,6 @@ class jesd(metaclass=ABCMeta):
             L (int): Number of lanes
             Np (int): Number of bits per sample
             K (int): Frames per multiframe
-            S (int): Samples per converter per frame
 
         """
         self.sample_clock = sample_clock
@@ -27,7 +24,7 @@ class jesd(metaclass=ABCMeta):
         self.L = L
         self.M = M
         self.Np = Np
-        self.S = S
+        # self.S = S
 
     @property
     @abstractmethod
@@ -57,34 +54,34 @@ class jesd(metaclass=ABCMeta):
     _encoding = "8b10b"
 
     @property
-    def encoding(self) -> List[str]:
+    def encoding(self) -> str:
         """Get JESD FEC encoding.
 
         Current options are: "8b10b", "64b66b"
 
         Returns:
-            List[str]: List of string of supported encodings.
+            str: String of supported encodings.
         """
         return self._encoding
 
     @encoding.setter
-    def encoding(self, value: List[str]) -> None:
+    def encoding(self, value: str) -> None:
         """Set JESD FEC encoding.
 
         Current options are: "8b10b", "64b66b"
 
         Args:
-            value (str): List of strings of desired encoding to use
+            value (str): String of desired encoding to use
 
         Raises:
             Exception: If encoding selected that is not supported
         """
         if self._check_encoding(value):
-            raise Exception("Must be {}".format(",".join(self.allowed_encodings)))
+            raise Exception("JESD encoding not possible due to available modes")
         self._encoding = value
 
     @property
-    def encoding_d(self) -> int:
+    def encoding_d(self) -> Union[int, float]:
         """Get JESD FEC encoding denominator.
 
         Current options are: 10 or 66
@@ -95,7 +92,7 @@ class jesd(metaclass=ABCMeta):
         return self.encodings_d[self._encoding]
 
     @property
-    def encoding_n(self) -> int:
+    def encoding_n(self) -> Union[int, float]:
         """Get JESD FEC encoding numerator.
 
         Current options are: 8 or 64
@@ -113,6 +110,77 @@ class jesd(metaclass=ABCMeta):
         return encode in allowed_encodings
 
     # SCALERS
+    @property
+    @abstractmethod
+    def K_possible(self) -> List[int]:
+        """Allowable K settings for device.
+
+        Must be a list ints
+
+        Raises:
+            NotImplementedError: If child classes do not implement method/property
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def L_possible(self) -> List[int]:
+        """Allowable L settings for device.
+
+        Must be a list ints
+
+        Raises:
+            NotImplementedError: If child classes do not implement method/property
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def M_possible(self) -> List[int]:
+        """Allowable M settings for device.
+
+        Must be a list ints
+
+        Raises:
+            NotImplementedError: If child classes do not implement method/property
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def N_possible(self) -> List[int]:
+        """Allowable N settings for device.
+
+        Must be a list ints
+
+        Raises:
+            NotImplementedError: If child classes do not implement method/property
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def Np_possible(self) -> List[int]:
+        """Allowable Np settings for device.
+
+        Must be a list ints
+
+        Raises:
+            NotImplementedError: If child classes do not implement method/property
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def F_possible(self) -> List[int]:
+        """Allowable F settings for device.
+
+        Must be a list ints
+
+        Raises:
+            NotImplementedError: If child classes do not implement method/property
+        """
+        raise NotImplementedError
 
     """ bits
         Usually:
@@ -122,7 +190,7 @@ class jesd(metaclass=ABCMeta):
     _data_path_width = 32
 
     @property
-    def data_path_width(self) -> int:
+    def data_path_width(self) -> Union[int, float]:
         """Get JESD data path width in bits.
 
         Current options are: 32 (204B) and 64 (204C)
@@ -153,11 +221,11 @@ class jesd(metaclass=ABCMeta):
     """
     K_min = 4
     K_max = 32
-    K_possible = [4, 8, 12, 16, 20, 24, 28, 32]
+    # K_possible = [4, 8, 12, 16, 20, 24, 28, 32]
     _K = 4
 
     @property
-    def K(self) -> int:
+    def K(self) -> Union[int, float]:
         """Get Frames per multiframe.
 
         17/F <= K <= 32, is generally a multiple of 2
@@ -184,7 +252,7 @@ class jesd(metaclass=ABCMeta):
         self._K = value
 
     @property
-    def D(self) -> int:
+    def D(self) -> Union[int, float]:
         """FIXME."""
         return self._data_path_width * self.encoding_d / self.encoding_n
 
@@ -192,7 +260,7 @@ class jesd(metaclass=ABCMeta):
     # _S = 1
 
     @property
-    def S(self) -> int:
+    def S(self) -> Union[int, float]:
         """Get Samples per converter per frame.
 
         S == F/(M*Np) * encoding_p * L
@@ -206,11 +274,11 @@ class jesd(metaclass=ABCMeta):
     """ L: Lanes per link """
     L_min = 1
     L_max = 8
-    L_possible = [1, 2, 4, 8]
+    # L_possible = [1, 2, 4, 8]
     _L = 1
 
     @property
-    def L(self) -> int:
+    def L(self) -> Union[int, float]:
         """Get lanes per link.
 
         Generally a multiple of 2
@@ -239,11 +307,11 @@ class jesd(metaclass=ABCMeta):
     """ M: Number of virtual converters """
     M_min = 1
     M_max = 8
-    M_possible = [1, 2, 4, 8, 16, 32]
+    # M_possible = [1, 2, 4, 8, 16, 32]
     _M = 1
 
     @property
-    def M(self) -> int:
+    def M(self) -> Union[int, float]:
         """Get number of virtual converters.
 
         Generally a power of 2
@@ -272,11 +340,11 @@ class jesd(metaclass=ABCMeta):
     """ N: Number of non-dummy bits per sample """
     N_min = 12
     N_max = 16
-    N_possible = [12, 14, 16]
+    # N_possible = [12, 14, 16]
     _N = 12
 
     @property
-    def N(self) -> int:
+    def N(self) -> Union[int, float]:
         """Get number of non-dummy bits per sample.
 
         Generally a multiple of 2
@@ -305,11 +373,11 @@ class jesd(metaclass=ABCMeta):
     """ Np: Number of bits per sample """
     Np_min = 12
     Np_max = 16
-    Np_possible = [12, 14, 16]
+    # Np_possible = [12, 14, 16]
     _Np = 16
 
     @property
-    def Np(self) -> int:
+    def Np(self) -> Union[int, float]:
         """Get number of bits per sample.
 
         Generally a multiple of 2
@@ -341,11 +409,11 @@ class jesd(metaclass=ABCMeta):
     """
     F_min = 1
     F_max = 16
-    F_possible = [1, 2, 4, 8, 16]
+    # F_possible = [1, 2, 4, 8, 16]
     _F = 1
 
     @property
-    def F(self) -> int:
+    def F(self) -> Union[int, float]:
         """Get octets per frame per link.
 
         Generally a power of 2
@@ -377,7 +445,7 @@ class jesd(metaclass=ABCMeta):
     _sample_clock = 122.88e6
 
     @property
-    def sample_clock(self) -> int:
+    def sample_clock(self) -> Union[int, float]:
         """Data rate after decimation stages in Samples/second.
 
         Returns:
@@ -395,7 +463,7 @@ class jesd(metaclass=ABCMeta):
         self._sample_clock = value
 
     @property
-    def frame_clock(self) -> int:
+    def frame_clock(self) -> Union[int, float]:
         """frame_clock in frames per second.
 
         frame_clock == sample_clock / S
@@ -406,7 +474,7 @@ class jesd(metaclass=ABCMeta):
         return self.sample_clock / self.S
 
     @property
-    def multiframe_clock(self) -> int:
+    def multiframe_clock(self) -> Union[int, float]:
         """multiframe_clock: aka LMFC in frames per multiframe.
 
         multiframe_clock == frame_clock / K
@@ -417,7 +485,7 @@ class jesd(metaclass=ABCMeta):
         return self.frame_clock / self.K
 
     @property
-    def bit_clock(self) -> int:
+    def bit_clock(self) -> Union[int, float]:
         """bit_clock: aka line rate aka lane rate.
 
         bit_clock == (M * S * Np * encoding_d/encoding_n * frame_clock) / L
@@ -435,7 +503,7 @@ class jesd(metaclass=ABCMeta):
         ) / self.L
 
     @property
-    def device_clock(self) -> int:
+    def device_clock(self) -> Union[int, float]:
         """device_clock is the lane rate over D.
 
         device_clock == bit_clock / D

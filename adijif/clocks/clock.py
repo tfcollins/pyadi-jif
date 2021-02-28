@@ -2,7 +2,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import Dict, List, Union
 
-from docplex.cp.solution import CpoSolveResult
+from docplex.cp.solution import CpoSolveResult  # type: ignore
 
 from adijif.common import core
 from adijif.gekko_trans import gekko_translation
@@ -34,10 +34,13 @@ class clock(core, gekko_translation, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def _solve_gekko(self) -> None:
+    def _solve_gekko(self) -> bool:
         """Local solve method for clock model.
 
         Call model solver with correct arguments.
+
+        Returns:
+            bool: Always False
         """
         self.model.options.SOLVER = 1  # APOPT solver
         self.model.solver_options = [
@@ -51,6 +54,7 @@ class clock(core, gekko_translation, metaclass=ABCMeta):
         ]
 
         self.model.solve(disp=True)
+        return False
 
     def _solve_cplex(self) -> CpoSolveResult:
         self.solution = self.model.solve()

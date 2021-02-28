@@ -1,5 +1,6 @@
 """FPGA parent metaclass to maintain consistency for all FPGA classes."""
 from abc import ABCMeta, abstractmethod
+from typing import Dict, List, Union
 
 from adijif.common import core
 from adijif.gekko_trans import gekko_translation
@@ -34,7 +35,7 @@ class fpga(core, gekko_translation, metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def get_config(self) -> None:
+    def get_config(self) -> Union[List[Dict], Dict]:
         """Extract clocking configuration from solutions.
 
         Raises:

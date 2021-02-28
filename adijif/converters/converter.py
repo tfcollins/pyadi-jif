@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
+from typing import List
 
 from adijif.common import core
 from adijif.gekko_trans import gekko_translation
@@ -18,7 +19,7 @@ class converter(core, jesd, gekko_translation, metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def name(self) -> None:
+    def name(self) -> str:
         """Name of supported by device.
 
         Must be a string
@@ -30,94 +31,10 @@ class converter(core, jesd, gekko_translation, metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def direct_clocking(self) -> None:
+    def direct_clocking(self) -> bool:
         """Utilize direct clocking or internal PLLs.
 
         Must be a boolean and handle either mode
-
-        Raises:
-            NotImplementedError: If child classes do not implement method/property
-        """
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def available_jesd_modes(self) -> None:
-        """Available JESD modes supported by device.
-
-        Must be a list of strings
-
-        Raises:
-            NotImplementedError: If child classes do not implement method/property
-        """
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def K_possible(self) -> None:
-        """Allowable K settings for device.
-
-        Must be a list ints
-
-        Raises:
-            NotImplementedError: If child classes do not implement method/property
-        """
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def L_possible(self) -> None:
-        """Allowable L settings for device.
-
-        Must be a list ints
-
-        Raises:
-            NotImplementedError: If child classes do not implement method/property
-        """
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def M_possible(self) -> None:
-        """Allowable M settings for device.
-
-        Must be a list ints
-
-        Raises:
-            NotImplementedError: If child classes do not implement method/property
-        """
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def N_possible(self) -> None:
-        """Allowable N settings for device.
-
-        Must be a list ints
-
-        Raises:
-            NotImplementedError: If child classes do not implement method/property
-        """
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def Np_possible(self) -> None:
-        """Allowable Np settings for device.
-
-        Must be a list ints
-
-        Raises:
-            NotImplementedError: If child classes do not implement method/property
-        """
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def F_possible(self) -> None:
-        """Allowable F settings for device.
-
-        Must be a list ints
 
         Raises:
             NotImplementedError: If child classes do not implement method/property
@@ -150,7 +67,7 @@ class converter(core, jesd, gekko_translation, metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def get_required_clocks(self) -> None:
+    def get_required_clocks(self) -> List:
         """Get list of strings of names of requested clocks.
 
         This list of names is for the clocks defined by get_required_clocks
@@ -162,10 +79,10 @@ class converter(core, jesd, gekko_translation, metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def get_required_clock_names(self) -> None:
-        """Generate list of required clocks.
+    def get_required_clock_names(self) -> List[str]:
+        """Generate list of required clock names.
 
-        This is a list of ints or may contain solver variables
+        This is a list of strings
 
         Raises:
             NotImplementedError: If child classes do not implement method/property

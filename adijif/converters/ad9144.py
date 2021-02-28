@@ -103,13 +103,13 @@ class ad9144(ad9144_bf):
 
         return self.config["ref_clk"]
 
-    def get_required_clocks(self) -> List[Dict]:
+    def get_required_clocks(self) -> List:
         """Generate list required clocks.
 
         For AD9144 this will contain [converter clock, sysref requirement SOS]
 
         Returns:
-            list[dict]: List of dictionaries of solver components
+            List: List of dictionaries of solver components
         """
         # possible_sysrefs = []
         # for n in range(1, 20):
@@ -137,7 +137,7 @@ class ad9144(ad9144_bf):
             # BCount = floor( dac_clk/(2 * ref_clk/ref_div ) )
             # 5 <= BCount <= 127
             # ref_div = 2^ref_div_mode = 1,2,4,8,16
-            clk = self._pll_config()
+            clk = self._pll_config()  # type: ignore
 
         # Objectives
         # self.model.Obj(self.config["sysref"])  # This breaks many searches
