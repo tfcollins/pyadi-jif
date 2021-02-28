@@ -57,6 +57,9 @@ class gekko_translation(metaclass=ABCMeta):
 
         Returns:
             int/float: Extracted value
+
+        Raises:
+            Exception: Unknown solver selected
         """
         if self.solver == "gekko":
             if type(value) in [
@@ -70,6 +73,8 @@ class gekko_translation(metaclass=ABCMeta):
                 return value
         elif self.solver == "CPLEX":
             return self.solution.get_value(value.get_name())
+        else:
+            raise Exception(f"Unknown solver {self.solver}")
 
     def _check_in_range(
         self,

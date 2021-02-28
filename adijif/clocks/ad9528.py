@@ -157,7 +157,7 @@ class ad9528(ad9528_bf):
         if solution:
             self.solution = solution
 
-        config = {
+        config: Dict = {
             "r1": self._get_val(self.config["r1"]),
             "n2": self._get_val(self.config["n2"]),
             "m1": self._get_val(self.config["m1"]),

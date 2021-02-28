@@ -105,15 +105,16 @@ def test_fpga_cpll_cplex_solver():
     print(o)
 
 
+@pytest.mark.parametrize("solver", ["gekko", "CPLEX"])
 @pytest.mark.parametrize(
     "qpll, cpll, rate", [(0, 0, 1e9), (0, 1, 1e9 / 2), (1, 0, 1e9 / 2)]
 )
 @pytest.mark.parametrize("clock_chip", ["ad9523_1", "hmc7044", "ad9528"])
-def test_ad9680_all_clk_chips_solver(qpll, cpll, rate, clock_chip):
+def test_ad9680_all_clk_chips_solver(qpll, cpll, rate, clock_chip, solver):
 
     vcxo = 125000000
 
-    sys = adijif.system("ad9680", clock_chip, "xilinx", vcxo)
+    sys = adijif.system("ad9680", clock_chip, "xilinx", vcxo, solver=solver)
 
     # Get Converter clocking requirements
     sys.converter.sample_clock = rate
@@ -129,14 +130,16 @@ def test_ad9680_all_clk_chips_solver(qpll, cpll, rate, clock_chip):
     sys.fpga.force_cpll = cpll
     sys.fpga.force_qpll = qpll
 
-    sys.solve()
+    o = sys.solve()
 
     if qpll:
-        sys.fpga.configs[0]["qpll_0_cpll_1"] == 0
+        assert o["fpga"]["type"] == "qpll"
+        # assert sys.fpga.configs[0]["qpll_0_cpll_1"] == 0
     elif cpll:
-        sys.fpga.configs[0]["qpll_0_cpll_1"] == 1
+        assert o["fpga"]["type"] == "cpll"
+        # assert sys.fpga.configs[0]["qpll_0_cpll_1"] == 1
 
-    print_sys(sys)
+    # print_sys(sys)
 
 
 def test_ad9144_solver():

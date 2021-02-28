@@ -157,7 +157,7 @@ class ad9523_1(ad9523_1_bf):
                 raise Exception("Missing key: " + str(k))
 
         if self.solver == "CPLEX":
-            if not solution:
+            if not solution:  # type: ignore
                 solution = self.solution
             config = {
                 "m1": solution.get_value(self.config["m1"].get_name()),

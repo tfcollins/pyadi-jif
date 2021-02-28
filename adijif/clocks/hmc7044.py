@@ -137,7 +137,7 @@ class hmc7044(hmc7044_bf):
         if solution:
             self.solution = solution
 
-        config = {
+        config: Dict = {
             "r2": self._get_val(self.config["r2"]),
             "n2": self._get_val(self.config["n2"]),
             "out_dividers": [self._get_val(x) for x in self.config["out_dividers"]],
