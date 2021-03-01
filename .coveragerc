@@ -2,3 +2,4 @@
 omit =
     */tests/*
     */pytest_libiio/__init__.py
+    *_bf.py
