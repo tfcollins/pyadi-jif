@@ -5,6 +5,8 @@ site_author: Travis F. Collins
 #theme: readthedocs
 theme:
   name: material
+  # logo: imgs/cpu-fill.svg
+  logo: imgs/cpu.svg
 
 repo_url: https://github.com/tfcollins/pyadi-jif
 
