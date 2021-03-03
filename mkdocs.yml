@@ -17,6 +17,9 @@ nav:
     - Home: index.md
     - Definitions: defs.md
     - Usage Flow: flow.md
+    - Data Converters: converters.md
+    - Clock Chips: clocks.md
+    - FPGAs: fpgas.md
     - Supported Parts: parts.md
     - CLI: cli.md
     - Reference: ref.md
