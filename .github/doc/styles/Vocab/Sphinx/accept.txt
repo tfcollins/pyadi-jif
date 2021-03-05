@@ -1,4 +1,7 @@
 adijif
+204B
+JESD204B
+JESD204C
 libiio
 pypi
 conda
