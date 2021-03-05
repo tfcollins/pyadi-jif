@@ -7,6 +7,9 @@ theme:
   name: material
   # logo: imgs/cpu-fill.svg
   logo: imgs/cpu.svg
+  # palette:
+  #   scheme: slate
+  #   primary: deep orange
 
 repo_url: https://github.com/tfcollins/pyadi-jif
 
@@ -25,9 +28,16 @@ nav:
     - Reference: ref.md
 
 markdown_extensions:
-  - pymdownx.highlight
-  - pymdownx.superfences
-
+  # - pymdownx.highlight
+  # - pymdownx.superfences
+  - pymdownx.superfences:
+      # make exceptions to highlighting of code:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:mermaid2.fence_mermaid
+          
 plugins:
   - search
   - mkdocstrings
+  - mermaid2

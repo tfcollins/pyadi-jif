@@ -102,7 +102,7 @@ pprint.pprint(config)
           'vco': 10000000000.0}}
 ```
 
-The output in this case contains information for all three componets. Listing divider settings, certain enabled modes, and clock rates. The ADC is directly clocked so it requires no configuration.
+The output in this case contains information for all three components. Listing divider settings, certain enabled modes, and clock rates. The ADC is directly clocked so it requires no configuration.
 
 Alternatively, the output dividers **d** could be limited to power of two:
 

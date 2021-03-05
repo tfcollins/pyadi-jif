@@ -1,6 +1,6 @@
 # pyadi-jif: Python interface for ADI JESD Interface Framework
 
-This projects tries to simplify JESD configuration exploration and validation for ADI JESD based converters and clock chips with differnet FPGA vendors.
+This project tries to simplify JESD configuration exploration and validation for ADI JESD based converters and clock chips with different FPGA vendors.
 
 ![Screenshot](imgs/jesd_basic.png)
 

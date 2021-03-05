@@ -1,3 +1,17 @@
+adijif
 libiio
 pypi
 conda
+ADC
+DAC
+ADCs
+DACs
+JESD
+ADI
+SYSREF
+sysref
+LMFC
+AD-FMCDAQ2-EBZ
+AD9523-1
+AD9528
+HMC7044
