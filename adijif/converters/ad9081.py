@@ -2,13 +2,14 @@
 from abc import ABCMeta, abstractmethod
 from typing import Dict, List, Union
 
-from docplex.cp.model import CpoModel  # type: ignore
+from docplex.cp.model import CpoModel, integer_var  # type: ignore
 from gekko import GEKKO  # type: ignore
 
 from adijif.converters.converter import converter
+from adijif.gekko_trans import gekko_translation
 
 
-class ad9081_core(metaclass=ABCMeta):
+class ad9081_core(gekko_translation, metaclass=ABCMeta):
     """AD9081 high speed MxFE model.
 
     This model supports both direct clock configurations and on-board
@@ -114,22 +115,43 @@ class ad9081_core(metaclass=ABCMeta):
 
         self._converter_clock_config()  # type: ignore
 
-        self.config["ref_clk"] = self.model.Var(
-            integer=True, lb=1e6, ub=self.max_input_clock, value=self.max_input_clock
-        )
-        self.config["m_vco"] = self.model.sos1([5, 7, 8, 11])
-        self.config["n_vco"] = self.model.Var(integer=True, lb=2, ub=50, value=2)
-        self.config["r"] = self.model.Var(integer=True, lb=1, ub=4, value=1)
-        self.config["d"] = self.model.Var(integer=True, lb=1, ub=4, value=1)
+        if self.solver == "gekko":
+            self.config["ref_clk"] = self.model.Var(
+                integer=True,
+                lb=1e6,
+                ub=self.max_input_clock,
+                value=self.max_input_clock,
+            )
+        elif self.solver == "CPLEX":
+            self.config["ref_clk"] = integer_var(
+                int(1e6), int(self.max_input_clock), "ref_clk"
+            )
+        else:
+            raise Exception("Unknown solver")
 
-        self.config["vco"] = self.model.Intermediate(
-            self.config["ref_clk"]
-            * self.config["m_vco"]
-            * self.config["n_vco"]
-            / self.config["r"],
-        )
+        self.config["m_vco"] = self._convert_input([5, 7, 8, 11], "m_vco")
+        self.config["n_vco"] = self._convert_input([*range(2, 51)], "n_vco")
+        self.config["r"] = self._convert_input([1, 2, 3, 4], "r")
+        self.config["d"] = self._convert_input([1, 2, 3, 4], "d")
 
-        self.model.Equation(
+        if self.solver == "gekko":
+            self.config["vco"] = self.model.Intermediate(
+                self.config["ref_clk"]
+                * self.config["m_vco"]
+                * self.config["n_vco"]
+                / self.config["r"],
+            )
+        elif self.solver == "CPLEX":
+            self.config["vco"] = (
+                self.config["ref_clk"]
+                * self.config["m_vco"]
+                * self.config["n_vco"]
+                / self.config["r"]
+            )
+        else:
+            raise Exception("Unknown solver: %s" % self.solver)
+
+        self._add_equation(
             [
                 self.config["converter_clk"] * self.config["d"] * self.config["r"]
                 == self.config["ref_clk"] * self.config["m_vco"] * self.config["n_vco"],
@@ -156,13 +178,22 @@ class ad9081_core(metaclass=ABCMeta):
         """
         # SYSREF
         self.config = {}
-        self.config["lmfc_divisor_sysref"] = self.model.Var(
-            integer=True, lb=1, ub=20, value=19
+        self.config["lmfc_divisor_sysref"] = self._convert_input(
+            [*range(1, 21)], "lmfc_divisor_sysref"
         )
-        self.config["sysref"] = self.model.Intermediate(
-            self.multiframe_clock  # type: ignore
-            / (self.config["lmfc_divisor_sysref"] * self.config["lmfc_divisor_sysref"])
-        )
+
+        if self.solver == "gekko":
+            self.config["sysref"] = self.model.Intermediate(
+                self.multiframe_clock  # type: ignore
+                / (
+                    self.config["lmfc_divisor_sysref"]
+                    * self.config["lmfc_divisor_sysref"]
+                )
+            )
+        elif self.solver == "CPLEX":
+            self.config["sysref"] = self.multiframe_clock / (
+                self.config["lmfc_divisor_sysref"] * self.config["lmfc_divisor_sysref"]
+            )
 
         # Device Clocking
         if self.use_direct_clocking:
@@ -190,11 +221,17 @@ class ad9081_rx(ad9081_core, converter):
         the RX clocking constraints
         """
         adc_clk = self.datapath_decimation * self.sample_clock
-        self.config["l"] = self.model.Var(integer=True, lb=1, ub=4, value=1)
-        self.config["adc_clk"] = self.model.Const(adc_clk)
-        self.config["converter_clk"] = self.model.Intermediate(
-            self.config["adc_clk"] * self.config["l"]
-        )
+        self.config["l"] = self._convert_input([1, 2, 3, 4], "l")
+        self.config["adc_clk"] = self._convert_input(adc_clk)
+
+        if self.solver == "gekko":
+            self.config["converter_clk"] = self.model.Intermediate(
+                self.config["adc_clk"] * self.config["l"]
+            )
+        elif self.solver == "CPLEX":
+            self.config["converter_clk"] = self.config["adc_clk"] * self.config["l"]
+        else:
+            raise Exception(f"Unknown solver")
 
 
 class ad9081_tx(ad9081_core, converter):
@@ -209,8 +246,15 @@ class ad9081_tx(ad9081_core, converter):
         the TX clocking constraints
         """
         dac_clk = self.datapath_interpolation * self.sample_clock
-        self.config["dac_clk"] = self.model.Const(dac_clk)
-        self.config["converter_clk"] = self.model.Intermediate(self.config["dac_clk"])
+        self.config["dac_clk"] = self._convert_input(dac_clk)
+        if self.solver == "gekko":
+            self.config["converter_clk"] = self.model.Intermediate(
+                self.config["dac_clk"]
+            )
+        elif self.solver == "CPLEX":
+            self.config["converter_clk"] = self.config["dac_clk"]
+        else:
+            raise Exception(f"Unknown solver {self.solver}")
 
 
 class ad9081(ad9081_core):
@@ -218,7 +262,9 @@ class ad9081(ad9081_core):
 
     multiframe_clock = None
 
-    def __init__(self, model: Union[GEKKO, CpoModel] = None) -> None:
+    def __init__(
+        self, model: Union[GEKKO, CpoModel] = None, solver: str = None
+    ) -> None:
         """Initialize AD9081 clocking model for TX and RX.
 
         This is a common class used to handle TX and RX constraints
@@ -227,9 +273,10 @@ class ad9081(ad9081_core):
         Args:
             model (GEKKO,CpoModel): Solver model
         """
-        self.adc = ad9081_rx(model)
-        self.dac = ad9081_tx(model)
+        self.adc = ad9081_rx(model, solver=solver)
+        self.dac = ad9081_tx(model, solver=solver)
         self.model = model
+        self.solver = solver
 
     def _get_converters(self) -> List[Union[ad9081_rx, ad9081_tx]]:
         return [self.adc, self.dac]
@@ -251,12 +298,20 @@ class ad9081(ad9081_core):
         l = dac_clk / adc_clk
         if l not in self.adc.l_possible:
             raise Exception(
-                f"ADC clock must be DAC clock/L where L={self.adc.l_possible}"
+                f"ADC clock must be DAC clock/L where L={self.adc.l_possible}."
+                + f" Got {l}"
             )
 
-        self.config["dac_clk"] = self.model.Const(dac_clk)
-        self.config["adc_clk"] = self.model.Const(adc_clk)
-        self.config["converter_clk"] = self.model.Intermediate(self.config["dac_clk"])
+        self.config["dac_clk"] = self._convert_input(dac_clk)
+        self.config["adc_clk"] = self._convert_input(adc_clk)
+        if self.solver == "gekko":
+            self.config["converter_clk"] = self.model.Intermediate(
+                self.config["dac_clk"]
+            )
+        elif self.solver == "CPLEX":
+            self.config["converter_clk"] = self.config["dac_clk"]
+        else:
+            raise Exception(f"Unknown solver")
 
     def get_required_clocks(self) -> List:
         """Generate list required clocks.
@@ -271,26 +326,35 @@ class ad9081(ad9081_core):
         """
         # SYSREF
         self.config = {}
-        self.config["adc_lmfc_divisor_sysref"] = self.model.Var(
-            integer=True, lb=1, ub=20, value=19
-        )
-        self.config["dac_lmfc_divisor_sysref"] = self.model.Var(
-            integer=True, lb=1, ub=20, value=19
-        )
-        self.config["sysref_adc"] = self.model.Intermediate(
-            self.adc.multiframe_clock
-            / (
+        self.config["adc_lmfc_divisor_sysref"] = self._convert_input([*range(1, 21)])
+        self.config["dac_lmfc_divisor_sysref"] = self._convert_input([*range(1, 21)])
+
+        if self.solver == "gekko":
+            self.config["sysref_adc"] = self.model.Intermediate(
+                self.adc.multiframe_clock
+                / (
+                    self.config["adc_lmfc_divisor_sysref"]
+                    * self.config["adc_lmfc_divisor_sysref"]
+                )
+            )
+            self.config["sysref_dac"] = self.model.Intermediate(
+                self.dac.multiframe_clock
+                / (
+                    self.config["dac_lmfc_divisor_sysref"]
+                    * self.config["dac_lmfc_divisor_sysref"]
+                )
+            )
+        elif self.solver == "CPLEX":
+            self.config["sysref_adc"] = self.adc.multiframe_clock / (
                 self.config["adc_lmfc_divisor_sysref"]
                 * self.config["adc_lmfc_divisor_sysref"]
             )
-        )
-        self.config["sysref_dac"] = self.model.Intermediate(
-            self.dac.multiframe_clock
-            / (
+            self.config["sysref_dac"] = self.dac.multiframe_clock / (
                 self.config["dac_lmfc_divisor_sysref"]
                 * self.config["dac_lmfc_divisor_sysref"]
             )
-        )
+        else:
+            raise Exception(f"Unknown solver {self.solver}")
 
         # Device Clocking
         if self.use_direct_clocking:
