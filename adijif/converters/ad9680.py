@@ -71,30 +71,16 @@ class ad9680(ad9680_bf):
         # self.config = {"sysref": self.model.sos1(possible_sysrefs)}
 
         self.config = {}
-        if self.solver == "gekko":
-            self.config["lmfc_divisor_sysref"] = self.model.Var(
-                integer=True, lb=1, ub=17, value=3  # default value must be odd
-            )
-        else:
-            self.config["lmfc_divisor_sysref"] = self._convert_input([*range(1, 18)])
+        self.config["lmfc_divisor_sysref"] = self._convert_input(
+            [*range(1, 18)], default=3
+        )
 
-        if self.solver == "gekko":
-            self.config["lmfc_divisor_sysref_squared"] = self.model.Intermediate(
-                self.config["lmfc_divisor_sysref"] * self.config["lmfc_divisor_sysref"]
-            )
-        elif self.solver == "CPLEX":
-            self.config["lmfc_divisor_sysref_squared"] = (
-                self.config["lmfc_divisor_sysref"] * self.config["lmfc_divisor_sysref"]
-            )
-
-        if self.solver == "gekko":
-            self.config["sysref"] = self.model.Intermediate(
-                self.multiframe_clock / self.config["lmfc_divisor_sysref_squared"]
-            )
-        elif self.solver == "CPLEX":
-            self.config["sysref"] = (
-                self.multiframe_clock / self.config["lmfc_divisor_sysref_squared"]
-            )
+        self.config["lmfc_divisor_sysref_squared"] = self._add_intermediate(
+            self.config["lmfc_divisor_sysref"] * self.config["lmfc_divisor_sysref"]
+        )
+        self.config["sysref"] = self._add_intermediate(
+            self.multiframe_clock / self.config["lmfc_divisor_sysref_squared"]
+        )
 
         # Objectives
         # self.model.Obj(self.config["sysref"])  # This breaks many searches

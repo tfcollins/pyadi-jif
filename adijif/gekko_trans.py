@@ -24,6 +24,14 @@ class gekko_translation(metaclass=ABCMeta):
 
     solver = "gekko"  # "CPLEX"
 
+    def _add_intermediate(self, eqs):
+        if self.solver == "gekko":
+            return self.model.Intermediate(eqs)
+        elif self.solver == "CPLEX":
+            return eqs
+        else:
+            raise Exception(f"Unknown solver: {self.solver}")
+
     def _add_equation(
         self, eqs: List[Union[GKVariable, GK_Intermediate, GK_Operators, CpoExpr]]
     ) -> None:
@@ -100,7 +108,10 @@ class gekko_translation(metaclass=ABCMeta):
                 raise Exception(f"{v} invalid for {varname}. Only {possible} possible")
 
     def _convert_input(
-        self, val: Union[int, List[int], float, List[float]], name: Optional[str] = None
+        self,
+        val: Union[int, List[int], float, List[float]],
+        name: Optional[str] = None,
+        default: Union[int, float] = None,
     ) -> Union[CpoExpr, GKVariable, GK_Operators]:
         """Convert input to solver variables.
 
@@ -117,14 +128,17 @@ class gekko_translation(metaclass=ABCMeta):
         """
         if self.solver == "gekko":
             name = None
-            return self._convert_input_gekko(val, name)
+            return self._convert_input_gekko(val, name, default)
         elif self.solver == "CPLEX":
             return self._convert_input_cplex(val, name)
         else:
             raise Exception(f"Unknown solver {self.solver}")
 
     def _convert_input_gekko(
-        self, val: Union[int, List[int], float, List[float]], name: Optional[str] = None
+        self,
+        val: Union[int, List[int], float, List[float]],
+        name: Optional[str] = None,
+        default: Optional[Union[int, float]] = None,
     ) -> Union[GKVariable, GK_Operators]:
         """Convert input to GEKKO solver variables.
 
@@ -137,7 +151,7 @@ class gekko_translation(metaclass=ABCMeta):
             GKVariable, GK_Operators: Solver variables
         """
         if isinstance(val, list) and len(val) > 1:
-            return self._convert_list(val, name)
+            return self._convert_list(val, name, default)
         if name:
             name + "_Const"
         return self.model.Const(value=val, name=name)
@@ -168,7 +182,10 @@ class gekko_translation(metaclass=ABCMeta):
         return integer_var(domain=val, name=name)
 
     def _convert_list(
-        self, val: Union[List[int], List[float]], name: Optional[str] = None
+        self,
+        val: Union[List[int], List[float]],
+        name: Optional[str] = None,
+        default: Optional[Union[int, float]] = None,
     ) -> GK_Operators:
         """Convert input list to GEKKO solver variables.
 
@@ -194,13 +211,15 @@ class gekko_translation(metaclass=ABCMeta):
 
         if np.abs(delta) == 1:  # Easy mode
             print(np.min(val), np.max(val))
+            if not default:
+                default = np.min(val)
             if name:
                 name + "_Var"
             return self.model.Var(
                 integer=True,
                 lb=np.min(val),
                 ub=np.max(val),
-                value=np.min(val),
+                value=default,
                 name=name,
             )
 
