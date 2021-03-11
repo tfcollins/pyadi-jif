@@ -37,6 +37,33 @@ print(cnv.bit_clock, cnv.multiframe_clock, cnv.device_clock)
 
 ### Nested converters
 
-For devices with both ADCs and DACs like transceivers or mixed-signal front-ends, nested models are used that model both ADC and DAC paths together. This is important since they can share a common device clock or reference clock but have different JESD link configurations. [AD9081](https://www.analog.com/en/products/ad9081.html)) is an example of a part that is has such an implementation. AD9081 also has RX or TX only models.
+For devices with both ADCs and DACs like transceivers or mixed-signal front-ends, nested models are used that model both ADC and DAC paths together. This is important since they can share a common device clock or reference clock but have different JESD link configurations. [AD9081](https://www.analog.com/en/products/ad9081.html)) is an example of a part that has such an implementation. AD9081 also has RX or TX only models.
 
-When using a nested converter model there are sub-properties **adc** and **dac** which handle the individual configurations. When the solver is called the cross configurations are validated first then possible clocking configurations are explored.
+When using a nested converter model there are sub-properties **adc** and **dac** which handle the individual configurations. When the solver is called the cross configurations are validated first then possible clocking configurations are explored. Below is an example of this type of converter model in use:
+
+```python
+# Set up system model with nested AD9081 model
+sys = adijif.system("ad9081", "hmc7044", "xilinx", 125000000)
+sys.fpga.setup_by_dev_kit_name("zc706")
+# Use built in PLLs
+sys.converter.dac.use_direct_clocking = False
+sys.converter.adc.use_direct_clocking = False
+# Set DAC clocking requirements
+sys.converter.dac.sample_clock = 250e6
+sys.converter.dac.datapath_interpolation = 48
+sys.converter.dac.L = 4
+sys.converter.dac.M = 8
+sys.converter.dac.N = 16
+sys.converter.dac.Np = 16
+sys.converter.dac.K = 32
+sys.converter.dac.F = 4
+# Set ADC clocking requirements
+sys.converter.adc.sample_clock = 250e6
+sys.converter.adc.datapath_decimation = 16
+sys.converter.adc.L = 4
+sys.converter.adc.M = 8
+sys.converter.adc.N = 16
+sys.converter.adc.Np = 16
+sys.converter.adc.K = 32
+sys.converter.adc.F = 4
+```
