@@ -45,6 +45,7 @@ typeguard = "^2.10.0"
 xdoctest = "^0.15.4"
 codecov = "^2.1.11"
 pytest-xdist = "^2.2.1"
+commitizen = "^2.16.0"
 
 [tool.coverage.paths]
 source = ["adijif"]
