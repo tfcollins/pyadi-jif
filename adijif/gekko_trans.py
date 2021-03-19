@@ -119,6 +119,7 @@ class gekko_translation(metaclass=ABCMeta):
             val (int, List[int], float, List[float]): Values or list of
                 values to convert to solver variables.
             name (Optional[str]): Name of variable
+            default (Optional[int, float]): Default/initial value
 
         Returns:
             CpoExpr, GKVariable, GK_Operators: Solver variables
@@ -146,6 +147,7 @@ class gekko_translation(metaclass=ABCMeta):
             val (int, List[int], float, List[float]): Values or list of
                 values to convert to solver variables.
             name (str): Name of variable
+            default (Optional[int, float]): Default/initial value
 
         Returns:
             GKVariable, GK_Operators: Solver variables
@@ -193,6 +195,7 @@ class gekko_translation(metaclass=ABCMeta):
             val (List[int], List[float]): List of values to convert
                 to solver variables.
             name (str): Name of variable
+            default (Optional[int, float]): Default/initial value
 
         Returns:
             GK_Operators: Solver variables

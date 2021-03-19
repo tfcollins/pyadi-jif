@@ -1,8 +1,10 @@
 """ADI JIF utility types and functions."""
 
-from typing import Dict
+from typing import Dict, Union
 
 import numpy as np
+from docplex.cp.model import CpoModel  # type: ignore
+from docplex.cp.model import integer_var  # type: ignore
 from gekko import GEKKO  # type: ignore # noqa: I100 flake8/isort conflict
 
 
@@ -37,17 +39,25 @@ class range:
         self.step = step
         self.name = name
 
-    def __call__(self, model: GEKKO) -> Dict:
+    def __call__(self, model: Union[GEKKO, CpoModel]) -> Dict:
         """Generate range for parameter solver.
 
         Args:
-            model (GEKKO): Model of JESD system or part to solve
+            model (GEKKO, CpoModel): Model of JESD system or part to solve
 
         Returns:
             Dict: Dictionary of solver variable(s) for model
         """
-        assert isinstance(model, GEKKO), "range must be called with input type model"
+        assert isinstance(
+            model, (GEKKO, CpoModel)
+        ), "range must be called with input type model"
+
         config = {}
+        if isinstance(model, CpoModel):
+            o_array = np.arange(self.start, self.stop, self.step)
+            config["range"] = integer_var(domain=o_array, name=self.name + "_Var")
+            return config
+
         if self.step == 1:
             config["range"] = model.Var(
                 integer=True,

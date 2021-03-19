@@ -1,6 +1,7 @@
 """AD9523-1 clock chip model."""
 from typing import Dict, List, Union
 
+from docplex.cp.expression import CpoIntVar  # type: ignore
 from docplex.cp.solution import CpoSolveResult  # type: ignore
 
 from adijif.clocks.ad9523_1_bf import ad9523_1_bf
@@ -169,8 +170,11 @@ class ad9523_1(ad9523_1_bf):
                 "output_clocks": [],
             }
 
-            # FIXME: VCXO is function sometimes
-            vcxo = self.vcxo
+            if isinstance(self.vcxo, CpoIntVar):
+                config["vcxo"] = solution.get_value(self.vcxo.get_name())
+                vcxo = config["vcxo"]
+            else:
+                vcxo = self.vcxo
 
             clk = vcxo / config["r2"] * config["n2"] / config["m1"]
             output_cfg = {}

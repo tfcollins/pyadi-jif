@@ -133,12 +133,13 @@ def test_ad9523_1_daq2_validate_fail_cplex():
         # assert o["n2"] == n2
 
 
-def test_ad9523_1_daq2_variable_vcxo_validate():
+@pytest.mark.parametrize("solver", ["gekko", "CPLEX"])
+def test_ad9523_1_daq2_variable_vcxo_validate(solver):
 
     vcxo = adijif.types.range(100000000, 126000000, 1000000, "vcxo")
     n2 = 24
 
-    clk = adijif.ad9523_1()
+    clk = adijif.ad9523_1(solver=solver)
 
     # Check config valid
     clk.n2 = n2
@@ -153,7 +154,7 @@ def test_ad9523_1_daq2_variable_vcxo_validate():
 
     o = clk.get_config()
 
-    # print(o)
+    print(o)
 
     assert sorted(o["out_dividers"]) == [1, 2, 128]
     assert o["m1"] == 3
