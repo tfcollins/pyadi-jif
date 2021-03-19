@@ -3,7 +3,7 @@ from abc import ABCMeta
 from typing import List, Optional, Union
 
 import numpy as np
-from docplex.cp.expression import CpoExpr  # type: ignore
+from docplex.cp.expression import CpoExpr, CpoFunctionCall  # type: ignore
 from docplex.cp.model import binary_var, integer_var  # type: ignore
 from docplex.cp.solution import CpoSolveResult  # type: ignore
 from gekko import GEKKO  # type: ignore
@@ -24,7 +24,20 @@ class gekko_translation(metaclass=ABCMeta):
 
     solver = "gekko"  # "CPLEX"
 
-    def _add_intermediate(self, eqs):
+    def _add_intermediate(
+        self, eqs: Union[GK_Operators, CpoFunctionCall]
+    ) -> Union[GK_Intermediate, CpoFunctionCall]:
+        """Add intermediate/simplified equation.
+
+        Args:
+            eqs (GK_Operators, CpoFunctionCall): Equation
+
+        Returns:
+            GK_Intermediate/CpoFunctionCall: Converted equation for solver
+
+        Raises:
+            Exception: Unknown solver selected
+        """
         if self.solver == "gekko":
             return self.model.Intermediate(eqs)
         elif self.solver == "CPLEX":
