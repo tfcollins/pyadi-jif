@@ -221,12 +221,12 @@ class gekko_translation(metaclass=ABCMeta):
         for i in range(len(val) - 1):
             if val[i] - val[i + 1] is not delta:
                 # Must use SOS2
-                print(val[i] - val[i + 1], delta)
+                # print(val[i] - val[i + 1], delta)
                 # return self._convert_list2sos(val, name)
                 return self.model.sos1(val)
 
         if np.abs(delta) == 1:  # Easy mode
-            print(np.min(val), np.max(val))
+            # print(np.min(val), np.max(val))
             if not default:
                 default = np.min(val)
             if name:

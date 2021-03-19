@@ -177,7 +177,8 @@ class system:
     def _solve_cplex(self) -> None:
         """Call CPLEX solver API."""
         # Set up solver
-        self.solution = self.model.solve()
+        ll = "Quiet" if self.Debug_Solver else "Normal"
+        self.solution = self.model.solve(LogVerbosity=ll)
 
     def solve(self) -> Dict:
         """Defined clocking requirements in Solver model and start solvers routine.

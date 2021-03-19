@@ -53,11 +53,11 @@ class clock(core, gekko_translation, metaclass=ABCMeta):
             "minlp_gap_tol 0.1",
         ]
 
-        self.model.solve(disp=True)
+        self.model.solve(disp=False)
         return False
 
     def _solve_cplex(self) -> CpoSolveResult:
-        self.solution = self.model.solve()
+        self.solution = self.model.solve(LogVerbosity="Quiet")
         if self.solution.solve_status != "Feasible":
             raise Exception("Solution Not Found")
         return self.solution
