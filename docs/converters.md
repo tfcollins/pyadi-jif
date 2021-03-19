@@ -4,7 +4,6 @@ Four types of data converters are supported: ADCs, DACs, transceivers, and ADC/D
 
 ### Clocking architectures
 
-sys.converter.use_direct_clocking = False
 **pyadi-jif** supports both direct clocking and on-board PLL generation for different converters. Assuming the desired parts support those features. Usually an external clock generation source, like a PLL, is used to have better phase noise performance. However, routing faster clocks can be challenging above 10 GHz. If a part does support both options (like the [AD9081](https://www.analog.com/en/products/ad9081.html)) the internal solver will not look across both options. One mode must be selected before the solver is called. If both options are available the internal PLL will be used by default. This is set through the property __use_direct_clocking__.
 
 ```python
@@ -15,7 +14,7 @@ sys.converter.use_direct_clocking = False
 
 ### Configuring converters
 
-Currently converter objects cannot be used outside of the system class when leveraging solvers. Standalone they could be used to evaluate basic JESD parameters and clocks, but you cannt solve for internal dividers standalone. Here is an example below of examining different effective rates based on the JESD config:
+Currently converter objects cannot be used outside of the system class when leveraging solvers. Standalone they could be used to evaluate basic JESD parameters and clocks, but you cannot solve for internal dividers standalone. Here is an example below of examining different effective rates based on the JESD configuration:
 
 ```python
 cnv = adijif.ad9690()
