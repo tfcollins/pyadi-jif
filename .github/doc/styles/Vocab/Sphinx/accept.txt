@@ -6,9 +6,9 @@ libiio
 pypi
 conda
 ADC
-**adc**
+adc
 DAC
-**dac**
+dac
 ADCs
 DACs
 JESD
