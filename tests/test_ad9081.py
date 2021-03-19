@@ -1,4 +1,6 @@
 # flake8: noqa
+import pprint
+
 import pytest
 
 import adijif
@@ -94,10 +96,13 @@ def test_ad9081_rxtx_solver():
     # sys.converter.S = 1
 
     # sys._try_fpga_configs()
-    sys.solve()
+    o = sys.solve()
 
     print(sys.solution)
     print(dir(sys.solution))
     sys.solution.print_solution()
 
-    assert sys.fpga.configs[0]["qpll_0_cpll_1"].value[0] == 0  # QPLL
+    pprint.pprint(o)
+
+    assert o["fpga"][0]["type"] == "qpll"
+    assert o["fpga"][1]["type"] == "qpll"
