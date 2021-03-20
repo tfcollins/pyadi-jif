@@ -6,10 +6,9 @@ from docplex.cp.model import CpoModel, integer_var  # type: ignore
 from gekko import GEKKO  # type: ignore
 
 from adijif.converters.converter import converter
-from adijif.gekko_trans import gekko_translation
 
 
-class ad9081_core(gekko_translation, metaclass=ABCMeta):
+class ad9081_core(converter, metaclass=ABCMeta):
     """AD9081 high speed MxFE model.
 
     This model supports both direct clock configurations and on-board
@@ -209,7 +208,7 @@ class ad9081_core(gekko_translation, metaclass=ABCMeta):
         return [clk, self.config["sysref"]]
 
 
-class ad9081_rx(ad9081_core, converter):
+class ad9081_rx(ad9081_core):
     """AD9081 Receive model."""
 
     _model_type = "adc"
@@ -237,7 +236,7 @@ class ad9081_rx(ad9081_core, converter):
             raise Exception(f"Unknown solver {self.solver}")
 
 
-class ad9081_tx(ad9081_core, converter):
+class ad9081_tx(ad9081_core):
     """AD9081 Transmit model."""
 
     _model_type = "dac"
@@ -266,8 +265,6 @@ class ad9081_tx(ad9081_core, converter):
 class ad9081(ad9081_core):
     """AD9081 combined transmit and receive model."""
 
-    multiframe_clock = None
-
     def __init__(
         self, model: Union[GEKKO, CpoModel] = None, solver: str = None
     ) -> None:
@@ -280,12 +277,13 @@ class ad9081(ad9081_core):
             model (GEKKO,CpoModel): Solver model
             solver (str): Solver name (gekko or CPLEX)
         """
-        self.adc = ad9081_rx(model, solver=solver)
-        self.dac = ad9081_tx(model, solver=solver)
+        if solver:
+            self.solver = solver
+        self.adc = ad9081_rx(model, solver=self.solver)
+        self.dac = ad9081_tx(model, solver=self.solver)
         self.model = model
-        self.solver = solver
 
-    def _get_converters(self) -> List[Union[ad9081_rx, ad9081_tx]]:
+    def _get_converters(self) -> List[Union[converter, converter]]:
         return [self.adc, self.dac]
 
     def get_required_clock_names(self) -> List[str]:
