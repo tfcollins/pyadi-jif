@@ -580,7 +580,9 @@ class xilinx(xilinx_bf):
             Exception: If solver is not valid
         """
         if "_get_converters" in dir(converter):
-            converter = converter._get_converters()  # Handle nested converters
+            converter = (
+                converter._get_converters()  # type: ignore
+            )  # Handle nested converters
 
         if not isinstance(converter, list):
             converter = [converter]  # type: ignore

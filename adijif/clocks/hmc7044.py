@@ -28,7 +28,7 @@ class hmc7044(hmc7044_bf):
 
     # Defaults
     _d: Union[int, List[int]] = [1, 3, 5, *range(2, 4095, 2)]
-    _n2 = [*range(1, 65535 + 1)]
+    _n2: Union[int, List[int]] = [*range(1, 65535 + 1)]
     _r2: Union[int, List[int]] = [*range(1, 4095 + 1)]
 
     # Limits

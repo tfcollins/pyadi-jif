@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from typing import List
+from typing import List, Union
 
 from adijif.common import core
 from adijif.gekko_trans import gekko_translation
@@ -89,7 +89,7 @@ class converter(core, jesd, gekko_translation, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def _get_converters(self) -> converter:
+    def _get_converters(self) -> Union[converter, List[converter]]:
         return self
 
     def __str__(self) -> str:
