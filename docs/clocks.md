@@ -6,7 +6,11 @@ Clock chip models are the central components of the **pyadi-jif** library and go
 
 In traditional systems clock chips work as frequency generation systems with multiple PLLs. One PLL, typically called PLL1, is used for synchronization and jitter cleanup. The second PLL, typically called PLL2, is used for frequency generation from a VCXO or PLL1 and will be divided down to provide different output frequencies. The current clock chip models only model PLL2 with a VCXO source.
 
-![Clock PLL](imgs/clock_pll.png)
+<!-- ![Clock PLL](imgs/clock_pll.png) -->
+<p align="center">
+  <img width="600" src="/draw/clock.svg">
+</p>
+
 
 ## Standalone usage
 
