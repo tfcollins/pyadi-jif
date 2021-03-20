@@ -12,12 +12,14 @@ sys = adijif.system("ad9081_rx", "hmc7044", "xilinx", vcxo)
 sys.converter.use_direct_clocking = False
 ```
 
+![AD9081 PLL](imgs/ad9081_pll.png)
+
 ### Configuring converters
 
 Currently converter objects cannot be used outside of the system class when leveraging solvers. Standalone they could be used to evaluate basic JESD parameters and clocks, but you cannot solve for internal dividers standalone. Here is an example below of examining different effective rates based on the JESD configuration:
 
 ```python
-cnv = adijif.ad9690()
+cnv = adijif.ad9680()
 cnv.sample_clock = 1e9
 cnv.datapath_decimation = 1
 cnv.L = 4

@@ -26,17 +26,27 @@ nav:
     - Supported Parts: parts.md
     - CLI: cli.md
     - Reference: ref.md
+    - Clocks Ref: devs/clocks.md
+    - Converters Ref: devs/converters.md
+    - JESD Ref: devs/jesd.md
 
 markdown_extensions:
   # - pymdownx.highlight
   # - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
   - pymdownx.superfences:
       # make exceptions to highlighting of code:
       custom_fences:
         - name: mermaid
           class: mermaid
           format: !!python/name:mermaid2.fence_mermaid
-          
+
+extra_javascript:
+  - javascripts/config.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
 plugins:
   - search
   - mkdocstrings
