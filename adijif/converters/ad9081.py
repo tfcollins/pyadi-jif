@@ -219,6 +219,9 @@ class ad9081_rx(ad9081_core, converter):
 
         This method will update the config struct to include
         the RX clocking constraints
+
+        Raises:
+            Exception: If solver is not valid
         """
         adc_clk = self.datapath_decimation * self.sample_clock
         self.config["l"] = self._convert_input([1, 2, 3, 4], "l")
@@ -231,7 +234,7 @@ class ad9081_rx(ad9081_core, converter):
         elif self.solver == "CPLEX":
             self.config["converter_clk"] = self.config["adc_clk"] * self.config["l"]
         else:
-            raise Exception(f"Unknown solver")
+            raise Exception(f"Unknown solver {self.solver}")
 
 
 class ad9081_tx(ad9081_core, converter):
@@ -244,6 +247,9 @@ class ad9081_tx(ad9081_core, converter):
 
         This method will update the config struct to include
         the TX clocking constraints
+
+        Raises:
+            Exception: If solver is not valid
         """
         dac_clk = self.datapath_interpolation * self.sample_clock
         self.config["dac_clk"] = self._convert_input(dac_clk)
@@ -272,6 +278,7 @@ class ad9081(ad9081_core):
 
         Args:
             model (GEKKO,CpoModel): Solver model
+            solver (str): Solver name (gekko or CPLEX)
         """
         self.adc = ad9081_rx(model, solver=solver)
         self.dac = ad9081_tx(model, solver=solver)
@@ -311,7 +318,7 @@ class ad9081(ad9081_core):
         elif self.solver == "CPLEX":
             self.config["converter_clk"] = self.config["dac_clk"]
         else:
-            raise Exception(f"Unknown solver")
+            raise Exception(f"Unknown solver {self.solver}")
 
     def get_required_clocks(self) -> List:
         """Generate list required clocks.

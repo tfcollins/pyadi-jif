@@ -25,7 +25,7 @@ class core:
 
         Args:
             model (GEKKO,CpoModel): Solver model
-            solver (str): Solver name (gekko or cplex)
+            solver (str): Solver name (gekko or CPLEX)
 
         Raises:
             Exception: If solver is not valid
