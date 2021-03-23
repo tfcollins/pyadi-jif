@@ -16,3 +16,7 @@ pre-commit
 isort
 coveralls
 numpy
+gekko
+mkdocstrings
+mkdocs
+mkdocs-material

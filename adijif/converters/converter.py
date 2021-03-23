@@ -1,63 +1,104 @@
-from abc import ABCMeta, abstractmethod
+"""Converter base meta class for all converter clocking models."""
+from __future__ import annotations
 
+from abc import ABCMeta, abstractmethod
+from typing import List, Union
+
+from adijif.common import core
+from adijif.gekko_trans import gekko_translation
 from adijif.jesd import jesd
 
 
-class converter(jesd, metaclass=ABCMeta):
+class converter(core, jesd, gekko_translation, metaclass=ABCMeta):
+    """Converter base meta class used to enforce all converter classes.
+
+    This class should be inherited from for all converters: ADCs, DACs,
+    and transceivers.
+
+    """
+
     @property
     @abstractmethod
-    def name(self):
+    def name(self) -> str:
+        """Name of supported by device.
+
+        Must be a string
+
+        Raises:
+            NotImplementedError: If child classes do not implement method/property
+        """
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def direct_clocking(self):
+    def direct_clocking(self) -> bool:
+        """Utilize direct clocking or internal PLLs.
+
+        Must be a boolean and handle either mode
+
+        Raises:
+            NotImplementedError: If child classes do not implement method/property
+        """
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def available_jesd_modes(self):
+    def device_clock_available(self) -> None:
+        """Allowable K settings for device.
+
+        Must be a list ints
+
+        Raises:
+            NotImplementedError: If child classes do not implement method/property
+        """
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def K_possible(self):
+    def device_clock_ranges(self) -> None:
+        """Allowable ranges for device clocks based on config.
+
+        This is only used for brute-force implementations and not solver based
+
+        Raises:
+            NotImplementedError: If child classes do not implement method/property
+        """
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def L_possible(self):
+    def get_required_clocks(self) -> List:
+        """Get list of strings of names of requested clocks.
+
+        This list of names is for the clocks defined by get_required_clocks
+
+        Raises:
+            NotImplementedError: If child classes do not implement method/property
+        """
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def M_possible(self):
+    def get_required_clock_names(self) -> List[str]:
+        """Generate list of required clock names.
+
+        This is a list of strings
+
+        Raises:
+            NotImplementedError: If child classes do not implement method/property
+        """
         raise NotImplementedError
 
-    @property
-    @abstractmethod
-    def N_possible(self):
-        raise NotImplementedError
+    def _get_converters(self) -> Union[converter, List[converter]]:
+        return self
 
-    @property
-    @abstractmethod
-    def Np_possible(self):
-        raise NotImplementedError
+    def __str__(self) -> str:
+        """Get string description of converter object.
 
-    @property
-    @abstractmethod
-    def F_possible(self):
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def device_clock_available(self):
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def device_clock_ranges(self):
-        raise NotImplementedError
+        Returns:
+            str: Description string
+        """
+        return f"{self.name} data converter model"
 
     # available_jesd_modes = ["jesd204b"]
     # K_possible = [4, 8, 12, 16, 20, 24, 28, 32]

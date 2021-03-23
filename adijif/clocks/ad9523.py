@@ -1,115 +1,289 @@
-import numpy as np
-from adijif.clocks.clock import clock
+"""AD9523-1 clock chip model."""
+from typing import Dict, List, Union
+
+from docplex.cp.expression import CpoIntVar  # type: ignore
+from docplex.cp.solution import CpoSolveResult  # type: ignore
+
+from adijif.clocks.ad9523_1_bf import ad9523_1_bf
 
 
-class ad9523_1(clock):
-    """ AD9523-1 Model """
+class ad9523_1(ad9523_1_bf):
+    """AD9523-1 clock chip model.
 
-    """ VCO divider """
-    m12_available = [3, 4, 5]
+    This model currently supports VCXO+PLL2 configurations
+    """
 
-    """ Output dividers """
-    d_available = np.arange(1, 1024, 1, dtype=int)
-
-    vco_min = 2.94e9
-    vco_max = 3.1e9
-
-    pfb_max = 259e6
-
-    use_vcxo_double = False
-
-    """ VCXO multiplier """
+    # Ranges
+    m1_available = [3, 4, 5]
+    d_available = [*range(1, 1024)]
     n2_available = [12, 16, 17, 20, 21, 22, 24, 25, 26, *range(28, 255)]
-    a_available = range(0, 4)
-    b_available = range(3, 64)
+    a_available = [*range(0, 4)]
+    b_available = [*range(3, 64)]
     # N = (PxB) + A, P=4, A==[0,1,2,3], B=[3..63]
     # See table 46 of DS for limits
+    r2_available = list(range(1, 31 + 1))
 
-    """ VCXO dividers """
-    r2_available = range(1, 32)
+    # Defaults
+    _m1: Union[List[int], int] = [3, 4, 5]
+    _d: Union[List[int], int] = [*range(1, 1024)]
+    _n2: Union[List[int], int] = [12, 16, 17, 20, 21, 22, 24, 25, 26, *range(28, 255)]
+    _r2: Union[List[int], int] = list(range(1, 31 + 1))
 
-    def __init__(self):
-        pass
+    # Limits
+    vco_min = 2.94e9
+    vco_max = 3.1e9
+    pfd_max = 259e6
 
-    def list_possible_references(self, divider_set):
-        """ list_possible_references: Based on config list possible
-            references that can be generated based on VCO and output
-            dividers
+    # State management
+    _clk_names: List[str] = []
+
+    """ Enable internal VCXO/PLL1 doubler """
+    use_vcxo_double = False
+
+    @property
+    def m1(self) -> Union[int, List[int]]:
+        """VCO divider path 1.
+
+        Valid dividers are 3,4,5
+
+        Returns:
+            int: Current allowable dividers
         """
-        # Check input
-        ref = {
-            "m1": 3,
-            "vco": 3000000000,
-            "r2": 24,
-            "required_output_divs": np.array([1.0]),
+        return self._m1
+
+    @m1.setter
+    def m1(self, value: Union[int, List[int]]) -> None:
+        """VCO divider path 1.
+
+        Valid dividers are 3,4,5
+
+        Args:
+            value (int, list[int]): Allowable values for divider
+
+        """
+        self._check_in_range(value, self.m1_available, "m1")
+        self._m1 = value
+
+    @property
+    def d(self) -> Union[int, List[int]]:
+        """Output dividers.
+
+        Valid dividers are 1->1023
+
+        Returns:
+            int: Current allowable dividers
+        """
+        return self._d
+
+    @d.setter
+    def d(self, value: Union[int, List[int]]) -> None:
+        """Output dividers.
+
+        Valid dividers are 1->1023
+
+        Args:
+            value (int, list[int]): Allowable values for divider
+
+        """
+        self._check_in_range(value, self.d_available, "d")
+        self._d = value
+
+    @property
+    def n2(self) -> Union[int, List[int]]:
+        """n2: VCO feedback divider.
+
+        Valid dividers are 12, 16, 17, 20, 21, 22, 24, 25, 26, 28->255
+
+        Returns:
+            int: Current allowable dividers
+        """
+        return self._n2
+
+    @n2.setter
+    def n2(self, value: Union[int, List[int]]) -> None:
+        """VCO feedback divider.
+
+        Valid dividers are 12, 16, 17, 20, 21, 22, 24, 25, 26, 28->255
+
+        Args:
+            value (int, list[int]): Allowable values for divider
+
+        """
+        self._check_in_range(value, self.n2_available, "n2")
+        self._n2 = value
+
+    @property
+    def r2(self) -> Union[int, List[int]]:
+        """VCXO input dividers.
+
+        Valid dividers are 1->31
+
+        Returns:
+            int: Current allowable dividers
+        """
+        return self._r2
+
+    @r2.setter
+    def r2(self, value: Union[int, List[int]]) -> None:
+        """VCXO input dividers.
+
+        Valid dividers are 1->31
+
+        Args:
+            value (int, list[int]): Allowable values for divider
+
+        """
+        self._check_in_range(value, self.r2_available, "r2")
+        self._r2 = value
+
+    def get_config(self, solution: CpoSolveResult = None) -> Dict:
+        """Extract configurations from solver results.
+
+        Collect internal clock chip configuration and output clock definitions
+        leading to connected devices (converters, FPGAs)
+
+        Args:
+            solution (CpoSolveResult): CPlex solution. Only needed for CPlex solver
+
+        Returns:
+            Dict: Dictionary of clocking rates and dividers for configuration
+
+        Raises:
+            Exception: If solver is not called first
+        """
+        if not self._clk_names:
+            raise Exception("set_requested_clocks must be called before get_config")
+        for k in ["out_dividers", "m1", "n2", "r2"]:
+            if k not in self.config.keys():
+                raise Exception("Missing key: " + str(k))
+
+        if self.solver == "CPLEX":
+            if not solution:  # type: ignore
+                solution = self.solution
+            config = {
+                "m1": solution.get_value(self.config["m1"].get_name()),
+                "n2": solution.get_value(self.config["n2"].get_name()),
+                "r2": solution.get_value(self.config["r2"].get_name()),
+                "out_dividers": [
+                    solution.get_value(x) for x in self.config["out_dividers"]
+                ],
+                "output_clocks": [],
+            }
+
+            if isinstance(self.vcxo, CpoIntVar):
+                config["vcxo"] = solution.get_value(self.vcxo.get_name())
+                vcxo = config["vcxo"]
+            else:
+                vcxo = self.vcxo
+
+            clk = vcxo / config["r2"] * config["n2"] / config["m1"]
+            output_cfg = {}
+            for i, div in enumerate(self.config["out_dividers"]):
+                div = solution.get_value(div)
+                rate = clk / div
+                output_cfg[self._clk_names[i]] = {"rate": rate, "divider": div}
+            config["output_clocks"] = output_cfg
+            return config
+        else:
+            config = {
+                "m1": self._get_val(self.config["m1"]),
+                "n2": self._get_val(self.config["n2"]),
+                "r2": self._get_val(self.config["r2"]),
+                "out_dividers": [x.value[0] for x in self.config["out_dividers"]],
+                "output_clocks": [],
+            }
+
+            vcxo = self._get_val(self.vcxo)  # type: ignore
+            config["vcxo"] = vcxo
+
+            clk = (
+                vcxo  # type: ignore
+                / self._get_val(config["r2"])
+                * self._get_val(config["n2"])  # type: ignore
+                / self._get_val(config["m1"])  # type: ignore
+            )
+            # for div in self.config["out_dividers"]:
+            #     config["output_clocks"].append(clk / div.value[0])
+
+            output_cfg = {}
+            for i, div in enumerate(self.config["out_dividers"]):
+                rate = clk / div.value[0]
+                output_cfg[self._clk_names[i]] = {"rate": rate, "divider": div.value[0]}
+
+        config["output_clocks"] = output_cfg
+        return config
+
+    def _setup_solver_constraints(self, vcxo: int) -> None:
+        """Apply constraints to solver model.
+
+        Args:
+            vcxo (int): VCXO frequency in hertz
+        """
+        self.config = {
+            "r2": self._convert_input(self._r2, "r2"),
+            "m1": self._convert_input(self._m1, "m1"),
+            "n2": self._convert_input(self._n2, "n2"),
         }
-        for key in ref:
-            if key not in divider_set:
-                raise Exception(
-                    "Input must be of type dict with fields: " + str(ref.keys())
-                )
-        return [
-            divider_set["vco"] / divider_set["m1"] / div for div in self.d_available
-        ]
+        # self.config = {"r2": self.model.Var(integer=True, lb=1, ub=31, value=1)}
+        # self.config["m1"] = self.model.Var(integer=True, lb=3, ub=5, value=3)
+        # self.config["n2"] = self.model.sos1(self.n2_available)
+        if not isinstance(vcxo, int):
+            self.config["vcxo_set"] = vcxo(self.model)
+            vcxo = self.config["vcxo_set"]["range"]
+        self.vcxo = vcxo
 
-    def find_dividers(self, vcxo, required_output_rates, find=3):
+        # PLL2 equations
+        self._add_equation(
+            [
+                vcxo / self.config["r2"] <= self.pfd_max,
+                vcxo / self.config["r2"] * self.config["n2"] <= self.vco_max,
+                vcxo / self.config["r2"] * self.config["n2"] >= self.vco_min,
+            ]
+        )
+        # Objectives
+        # self.model.Obj(self.config["n2"])
 
+    def set_requested_clocks(
+        self, vcxo: int, out_freqs: List, clk_names: List[str]
+    ) -> None:
+        """Define necessary clocks to be generated in model.
+
+        Args:
+            vcxo (int): VCXO frequency in hertz
+            out_freqs (List): list of required clocks to be output
+            clk_names (List[str]):  list of strings of clock names
+
+        Raises:
+            Exception: If len(out_freqs) != len(clk_names)
+        """
+        if len(clk_names) != len(out_freqs):
+            raise Exception("clk_names is not the same size as out_freqs")
+        self._clk_names = clk_names
+
+        # Setup clock chip internal constraints
+        if self.use_vcxo_double and not isinstance(vcxo, int):
+            raise Exception("VCXO doubler not supported in this mode TBD")
         if self.use_vcxo_double:
             vcxo *= 2
+        self._setup_solver_constraints(vcxo)
 
-        # even =  np.arange(2, 4096, 2, dtype=int)
-        # odivs = np.append([1, 3, 5], even)
+        # FIXME: ADD SPLIT m1 configuration support
 
-        mod = np.gcd.reduce(np.array(required_output_rates, dtype=int))
-        configs = []
+        # Add requested clocks to output constraints
+        self.config["out_dividers"] = []
+        for out_freq in out_freqs:
+            # od = self.model.Var(integer=True, lb=1, ub=1023, value=1)
+            od = self._convert_input(self._d, "d_" + str(out_freq))
+            # od = self.model.sos1([n*n for n in range(1,9)])
 
-        for n2 in self.n2_available:
-            for r2 in self.r2_available:
-                pfb = vcxo / r2
-                if pfb > self.pfb_max:
-                    continue
-                vco = pfb * n2
-                if vco > self.vco_min and vco < self.vco_max:
-                    for m1 in self.m12_available:
-                        # print("vco",vco,mod,m1)
-                        if (vco / m1) % mod == 0:
-                            # See if we can use only m1 and not both m1+m2
-                            required_output_divs = (vco / m1) / required_output_rates
-                            if np.all(np.in1d(required_output_divs, self.d_available)):
-                                configs.append(
-                                    {
-                                        "m1": m1,
-                                        "n2": n2,
-                                        "vco": vco,
-                                        "r2": r2,
-                                        "required_output_divs": required_output_divs,
-                                    }
-                                )
-                            else:
-                                # Try to use m2 as well to meet required out clocks
-                                f1 = np.in1d(required_output_divs, self.d_available)
-                                for m2 in self.m12_available:
-                                    required_output_divs2 = (
-                                        vco / m2
-                                    ) / required_output_rates
-                                    f2 = np.in1d(
-                                        required_output_divs2, self.d_available
-                                    )
-                                    if np.logical_or(f1, f2).all():
-                                        configs.append(
-                                            {
-                                                "m1": m1,
-                                                "m2": m2,
-                                                "n2": n2,
-                                                "vco": vco,
-                                                "r2": r2,
-                                                "required_output_divs": required_output_divs[
-                                                    f1
-                                                ].tolist(),
-                                                "required_output_divs2": required_output_divs2[
-                                                    f2
-                                                ].tolist(),
-                                            }
-                                        )
-
-        return configs
+            self._add_equation(
+                [
+                    self.vcxo
+                    / self.config["r2"]
+                    * self.config["n2"]
+                    / self.config["m1"]
+                    / od
+                    == out_freq
+                ]
+            )
+            self.config["out_dividers"].append(od)
