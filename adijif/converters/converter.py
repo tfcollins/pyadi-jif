@@ -27,7 +27,7 @@ class converter(core, jesd, gekko_translation, metaclass=ABCMeta):
         Raises:
             NotImplementedError: If child classes do not implement method/property
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @property
     @abstractmethod
@@ -39,7 +39,7 @@ class converter(core, jesd, gekko_translation, metaclass=ABCMeta):
         Raises:
             NotImplementedError: If child classes do not implement method/property
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @property
     @abstractmethod
@@ -51,7 +51,7 @@ class converter(core, jesd, gekko_translation, metaclass=ABCMeta):
         Raises:
             NotImplementedError: If child classes do not implement method/property
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @property
     @abstractmethod
@@ -63,7 +63,7 @@ class converter(core, jesd, gekko_translation, metaclass=ABCMeta):
         Raises:
             NotImplementedError: If child classes do not implement method/property
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @property
     @abstractmethod
@@ -75,7 +75,7 @@ class converter(core, jesd, gekko_translation, metaclass=ABCMeta):
         Raises:
             NotImplementedError: If child classes do not implement method/property
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @property
     @abstractmethod
@@ -87,7 +87,7 @@ class converter(core, jesd, gekko_translation, metaclass=ABCMeta):
         Raises:
             NotImplementedError: If child classes do not implement method/property
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     def _get_converters(self) -> Union[converter, List[converter]]:
         return self

@@ -19,7 +19,7 @@ class clock(core, gekko_translation, metaclass=ABCMeta):
         Raises:
             NotImplementedError: Method not implemented
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @property
     @abstractmethod
@@ -32,7 +32,7 @@ class clock(core, gekko_translation, metaclass=ABCMeta):
         Raises:
             NotImplementedError: Method not implemented
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     def _solve_gekko(self) -> bool:
         """Local solve method for clock model.

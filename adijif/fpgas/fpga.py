@@ -19,7 +19,7 @@ class fpga(core, gekko_translation, metaclass=ABCMeta):
         Raises:
             NotImplementedError: Method not implemented
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @property
     @abstractmethod
@@ -31,7 +31,7 @@ class fpga(core, gekko_translation, metaclass=ABCMeta):
         Raises:
             NotImplementedError: Method not implemented
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @property
     @abstractmethod
@@ -41,4 +41,4 @@ class fpga(core, gekko_translation, metaclass=ABCMeta):
         Raises:
             NotImplementedError: Method not implemented
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
