@@ -100,7 +100,7 @@ class xilinx(xilinx_bf):
                 return 670000000
         else:
             raise Exception(
-                f"Unknown ref_clock_max for transceiver {self.transciever_type}"
+                f"Unknown ref_clock_max for transceiver type {self.transciever_type}"
             )
             # raise Exception(f"Unknown transceiver type {self.transciever_type}")
 
@@ -119,7 +119,7 @@ class xilinx(xilinx_bf):
             return 60000000
         else:
             raise Exception(
-                f"Unknown ref_clock_max for transceiver {self.transciever_type}"
+                f"Unknown ref_clock_min for transceiver type {self.transciever_type}"
             )
             # raise Exception(f"Unknown transceiver type {self.transciever_type}")
 
@@ -139,7 +139,9 @@ class xilinx(xilinx_bf):
         elif self.transciever_type in ["GTH3", "GTH4", "GTY4"]:
             return 2000000000
         else:
-            raise Exception(f"Unknown transceiver type {self.transciever_type}")
+            raise Exception(
+                f"Unknown vco_min for transceiver type {self.transciever_type}"
+            )
 
     @property
     def vco_max(self) -> int:
@@ -162,7 +164,9 @@ class xilinx(xilinx_bf):
                     return 4250000000
             return 6250000000
         else:
-            raise Exception(f"Unknown transceiver type {self.transciever_type}")
+            raise Exception(
+                f"Unknown vco_max for transceiver type {self.transciever_type}"
+            )
 
     # QPLL
     @property
@@ -185,7 +189,9 @@ class xilinx(xilinx_bf):
             else:
                 return 9800000000
         else:
-            raise Exception(f"Unknown transceiver type {self.transciever_type}")
+            raise Exception(
+                f"Unknown vco0_min for transceiver type {self.transciever_type}"
+            )
 
     @property
     def vco0_max(self) -> int:
@@ -213,7 +219,9 @@ class xilinx(xilinx_bf):
             else:
                 return 16375000000
         else:
-            raise Exception(f"Unknown transceiver type {self.transciever_type}")
+            raise Exception(
+                f"Unknown vco0_max for transceiver type {self.transciever_type}"
+            )
 
     @property
     def vco1_min(self) -> int:
@@ -232,7 +240,9 @@ class xilinx(xilinx_bf):
         elif self.transciever_type in ["GTH3", "GTH4", "GTY4"]:
             return self.vco0_min
         else:
-            raise Exception(f"Unknown transceiver type {self.transciever_type}")
+            raise Exception(
+                f"Unknown vco1_min for transceiver type {self.transciever_type}"
+            )
 
     @property
     def vco1_max(self) -> int:
@@ -253,7 +263,9 @@ class xilinx(xilinx_bf):
         elif self.transciever_type in ["GTH3", "GTH4", "GTY4"]:
             return self.vco0_max
         else:
-            raise Exception(f"Unknown transceiver type {self.transciever_type}")
+            raise Exception(
+                f"Unknown vco1_max for transceiver type {self.transciever_type}"
+            )
 
     @property
     def N(self) -> List[int]:
@@ -270,7 +282,7 @@ class xilinx(xilinx_bf):
         if self.transciever_type == "GTX2":
             return [16, 20, 32, 40, 64, 66, 80, 100]
         else:
-            raise Exception(f"Unknown transceiver type {self.transciever_type}")
+            raise Exception(f"Unknown N for transceiver type {self.transciever_type}")
 
     def setup_by_dev_kit_name(self, name: str) -> None:
         """Configure object based on board name. Ex: zc706, zcu102.

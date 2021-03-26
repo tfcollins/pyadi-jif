@@ -165,3 +165,45 @@ def test_ad9523_1_daq2_variable_vcxo_validate(solver):
     assert o["r2"] in clk.r2_available
     assert o["output_clocks"]["ADC"]["rate"] == 1e9
     assert o["vcxo"] == 125000000
+
+
+def test_ad9523_1_fail_no_solver():
+
+    with pytest.raises(Exception, match=r"Unknown solver NAN"):
+        clk = adijif.ad9523_1(solver="NAN")
+        output_clocks = [1e9, 500e6, 7.8125e6]
+        clock_names = ["ADC", "FPGA", "SYSREF"]
+        clk.set_requested_clocks(vcxo, output_clocks, clock_names)
+        clk.solve()
+
+
+def test_ad9523_1_fail_no_solver2():
+
+    with pytest.raises(Exception, match=r"Unknown solver NAN2"):
+        vcxo = 125000000
+        clk = adijif.ad9523_1()
+        clk.solver = "NAN2"
+        output_clocks = [1e9, 500e6, 7.8125e6]
+        clock_names = ["ADC", "FPGA", "SYSREF"]
+        clk.set_requested_clocks(vcxo, output_clocks, clock_names)
+        clk.solve()
+
+
+def test_ad9523_1_fail_no_solver3():
+
+    with pytest.raises(Exception, match=r"Unknown solver NAN3"):
+        vcxo = 125000000
+        clk = adijif.ad9523_1()
+        output_clocks = [1e9, 500e6, 7.8125e6]
+        clock_names = ["ADC", "FPGA", "SYSREF"]
+        clk.set_requested_clocks(vcxo, output_clocks, clock_names)
+        clk.solver = "NAN3"
+        clk.solve()
+
+
+def test_system_fail_no_solver3():
+
+    with pytest.raises(Exception, match=r"Unknown solver NAN4"):
+        vcxo = 125000000
+        sys = adijif.system("ad9680", "hmc7044", "xilinx", vcxo, solver="NAN4")
+        sys.solve()
