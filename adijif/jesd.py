@@ -36,7 +36,7 @@ class jesd(metaclass=ABCMeta):
         Raises:
             NotImplementedError: If child classes do not implement method/property
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     """ CS: Control bits per conversion sample 0-3"""
     _CS = 0
@@ -120,7 +120,7 @@ class jesd(metaclass=ABCMeta):
         Raises:
             NotImplementedError: If child classes do not implement method/property
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @property
     @abstractmethod
@@ -132,7 +132,7 @@ class jesd(metaclass=ABCMeta):
         Raises:
             NotImplementedError: If child classes do not implement method/property
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @property
     @abstractmethod
@@ -144,7 +144,7 @@ class jesd(metaclass=ABCMeta):
         Raises:
             NotImplementedError: If child classes do not implement method/property
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @property
     @abstractmethod
@@ -156,7 +156,7 @@ class jesd(metaclass=ABCMeta):
         Raises:
             NotImplementedError: If child classes do not implement method/property
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @property
     @abstractmethod
@@ -168,7 +168,7 @@ class jesd(metaclass=ABCMeta):
         Raises:
             NotImplementedError: If child classes do not implement method/property
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @property
     @abstractmethod
@@ -180,7 +180,7 @@ class jesd(metaclass=ABCMeta):
         Raises:
             NotImplementedError: If child classes do not implement method/property
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     """ bits
         Usually:
