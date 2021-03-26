@@ -13,6 +13,8 @@ pyadi-jif
         :target: https://adijif.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
+.. image:: https://codecov.io/gh/tfcollins/pyadi-jif/branch/main/graph/badge.svg?token=3C5X8WHIXK
+        :target: https://codecov.io/gh/tfcollins/pyadi-jif
 
 
 
