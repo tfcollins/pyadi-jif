@@ -1,6 +1,10 @@
-## Installing the library
+# Installing PyADI-JIF
 
-**pyadi-jif** can be installed from pip with all its dependencies
+Before installing the module make sure <img src="https://img.shields.io/badge/python-3.7+-blue.svg" alt="Python Version"> is installed. **pyadi-jif** has been validated to function on Windows, Linux, and MacOS. However, not all internal solvers function across all architectures. Specifically the CPLEX solver will not function under ARM. This does not limit functionality, only solving speed.
+
+## Installing from pip (Recommended)
+
+**pyadi-jif** can be installed from pip with all its dependencies: 
 
 <div class="termy">
 
@@ -12,7 +16,9 @@ $ pip install pyadi-jif
 
 </div>
 
-or it can be installed directly from source
+## Installing from source
+
+Alternatively, **pyadi-jif** can be installed directly from source. This will require git to be installed
 
 <div class="termy">
 
