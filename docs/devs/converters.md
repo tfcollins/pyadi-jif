@@ -1,5 +1,9 @@
 # Reference
 
+::: adijif.converters.ad9081
+    rendering:
+      show_source: false
+
 ::: adijif.converters.ad9680
     rendering:
       show_source: false
