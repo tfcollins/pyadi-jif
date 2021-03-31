@@ -42,44 +42,30 @@ clean-pyc: ## remove Python file artifacts
 	find . -name '__pycache__' -exec rm -fr {} +
 
 clean-test: ## remove test and coverage artifacts
-	rm -fr .tox/
+	rm -fr .nox/
 	rm -f .coverage
 	rm -fr htmlcov/
 	rm -fr .pytest_cache
 
-lint: ## check style with flake8
-	flake8 adijif tests
+test: ## run tests
+	poetry run nox -rs tests
 
-test: ## run tests quickly with the default Python
-	pytest
+testp: ## run tests parallel
+	poetry run nox -rs tests -- -n=$(shell nproc)
 
-test-all: ## run tests on every Python version with tox
-	tox
+coverage: ## run test with coverage enabled
+	poetry run nox -rs coverage
 
-coverage: ## check code coverage quickly with the default Python
-	coverage run --source adijif -m pytest
-	coverage report -m
-	coverage html
-	$(BROWSER) htmlcov/index.html
+lint: ## format and lint code
+	poetry run nox -rs format lint
 
-docs: ## generate Sphinx HTML documentation, including API docs
-	rm -f docs/adijif.rst
-	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ adijif
-	$(MAKE) -C docs clean
-	$(MAKE) -C docs html
-	$(BROWSER) docs/_build/html/index.html
+docs: ## build documentation
+	poetry run nox -rs docs
 
-servedocs: docs ## compile the docs watching for changes
-	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
+install: ## install module
+	poetry install
 
-release: dist ## package and upload a release
-	twine upload dist/*
-
-dist: clean ## builds source and wheel package
-	python setup.py sdist
-	python setup.py bdist_wheel
-	ls -l dist
-
-install: clean ## install the package to the active Python's site-packages
-	python setup.py install
+dev: ## setup development environment
+	curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+	poetry shell
+	poetry install --no-root

@@ -36,7 +36,7 @@ def format(session):
     session.run("isort", *args)
 
 
-@nox.session(python=multi_python_versions_support)
+@nox.session(python=main_python)
 def lint(session):
     args = session.posargs or locations
     install_with_constraints(
