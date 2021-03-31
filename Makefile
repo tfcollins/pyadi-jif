@@ -66,6 +66,6 @@ install: ## install module
 	poetry install
 
 dev: ## setup development environment
-	curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+	@poetry --version || curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
 	poetry shell
 	poetry install --no-root
