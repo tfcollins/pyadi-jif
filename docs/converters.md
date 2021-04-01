@@ -4,13 +4,15 @@ Four types of data converters are supported: ADCs, DACs, transceivers, and ADC/D
 
 ### Clocking architectures
 
-**pyadi-jif** supports both direct clocking and on-board PLL generation for different converters. Assuming the desired parts support those features. Usually an external clock generation source, like a PLL, is used to have better phase noise performance. However, routing faster clocks can be challenging above 10 GHz. If a part does support both options (like the [AD9081](https://www.analog.com/en/products/ad9081.html)) the internal solver will not look across both options. One mode must be selected before the solver is called. If both options are available the internal PLL will be used by default. This is set through the property __use_direct_clocking__.
+**pyadi-jif** supports both direct clocking and on-board PLL generation for different converters. Assuming the desired parts support those features. Usually an external clock generation source, like a PLL, is used to have better phase noise performance. However, routing faster clocks can be challenging above 10 GHz. If a part does support both options (like the [AD9081](https://www.analog.com/en/products/ad9081.html)) the internal solver will not look across both options. One mode must be selected before the solver is called. If both options are available the internal PLL will be used by default. This is set through the property **use_direct_clocking**.
 
 ```python
 sys = adijif.system("ad9081_rx", "hmc7044", "xilinx", vcxo)
 # Enable internal PLL
 sys.converter.use_direct_clocking = False
 ```
+
+Below is a diagram of the [AD9081](https://www.analog.com/en/products/ad9081.html) internal clock generation PLL. **pyadi-jif** determines the necessary input clock (CLOCK RECEIVER) and dividers (D,M,N,R,L) for a given data rate specification.
 
 ![AD9081 PLL](imgs/ad9081_pll.png)
 
@@ -33,7 +35,7 @@ print(cnv.bit_clock, cnv.multiframe_clock, cnv.device_clock)
 ```
 
 ```bash
-10000000000.0 31250000.0 250000000.0 
+10000000000.0 31250000.0 250000000.0
 ```
 
 ### Nested converters

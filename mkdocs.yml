@@ -1,5 +1,5 @@
 site_name: pyadi-jif
-site_description: Python interface and configurator for ADI JESD Interface Framework
+site_description: Python interface and configurator for the ADI JESD Interface Framework
 site_author: Travis F. Collins
 
 #theme: readthedocs
@@ -29,13 +29,13 @@ repo_url: https://github.com/tfcollins/pyadi-jif
 nav:
     - Home: index.md
     - Quick Start: install.md
-    - Definitions: defs.md
     - Usage Flow: flow.md
     - Data Converters: converters.md
     - Clock Chips: clocks.md
     - FPGAs: fpgas.md
-    - CLI: cli.md
+    # - CLI: cli.md
     - Supported Parts: parts.md
+    - Definitions: defs.md
     - Reference:
       - Data Converters: devs/converters.md
       - Clocks: devs/clocks.md
@@ -43,6 +43,7 @@ nav:
     - Developers: developers.md
 
 markdown_extensions:
+  - admonition
   # - pymdownx.highlight
   # - pymdownx.superfences
   - pymdownx.arithmatex:

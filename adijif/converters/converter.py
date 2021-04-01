@@ -1,6 +1,4 @@
 """Converter base meta class for all converter clocking models."""
-from __future__ import annotations
-
 from abc import ABCMeta, abstractmethod
 from typing import List, Union
 
@@ -89,7 +87,7 @@ class converter(core, jesd, gekko_translation, metaclass=ABCMeta):
         """
         raise NotImplementedError  # pragma: no cover
 
-    def _get_converters(self) -> Union[converter, List[converter]]:
+    def _get_converters(self) -> Union["converter", List["converter"]]:
         return self
 
     def __str__(self) -> str:
