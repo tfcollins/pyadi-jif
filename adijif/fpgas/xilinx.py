@@ -28,6 +28,9 @@ class xilinx(xilinx_bf):
 
     transceiver_voltage = 800
 
+    ref_clock_min = -1  # Not set
+    ref_clock_max = -1  # Not set
+
     available_fpga_packages = [
         "Unknown",
         "RF",
@@ -83,7 +86,7 @@ class xilinx(xilinx_bf):
     _clock_names: Union[List[str]] = []
 
     @property
-    def ref_clock_max(self) -> int:
+    def _ref_clock_max(self) -> int:
         """Get maximum reference clock for config.
 
         Returns:
@@ -105,7 +108,7 @@ class xilinx(xilinx_bf):
             # raise Exception(f"Unknown transceiver type {self.transciever_type}")
 
     @property
-    def ref_clock_min(self) -> int:
+    def _ref_clock_min(self) -> int:
         """Get minimum reference clock for config.
 
         Returns:
@@ -126,7 +129,7 @@ class xilinx(xilinx_bf):
     # CPLL
     @property
     def vco_min(self) -> int:
-        """Get minimum VCO rate for config.
+        """Get minimum CPLL VCO rate for config.
 
         Returns:
             int: Rate in samples per second.
@@ -145,7 +148,7 @@ class xilinx(xilinx_bf):
 
     @property
     def vco_max(self) -> int:
-        """Get maximum VCO rate for config.
+        """Get maximum CPLL VCO rate for config.
 
         Returns:
             int: Rate in samples per second.
@@ -171,7 +174,7 @@ class xilinx(xilinx_bf):
     # QPLL
     @property
     def vco0_min(self) -> int:
-        """Get minimum VCO0 rate for config.
+        """Get minimum QPLL VCO0 rate for config.
 
         This is applicable for QPLLs only.
 
@@ -195,7 +198,7 @@ class xilinx(xilinx_bf):
 
     @property
     def vco0_max(self) -> int:
-        """Get maximum VCO0 rate for config.
+        """Get maximum QPLL VCO0 rate for config.
 
         This is applicable for QPLLs only.
 
@@ -225,7 +228,7 @@ class xilinx(xilinx_bf):
 
     @property
     def vco1_min(self) -> int:
-        """Get minimum VCO1 rate for config.
+        """Get minimum QPLL VCO1 rate for config.
 
         This is applicable for QPLLs only.
 
@@ -246,7 +249,7 @@ class xilinx(xilinx_bf):
 
     @property
     def vco1_max(self) -> int:
-        """Get maximum VCO1 rate for config.
+        """Get maximum QPLL VCO1 rate for config.
 
         This is applicable for QPLLs only.
 
@@ -299,6 +302,23 @@ class xilinx(xilinx_bf):
             self.fpga_family = "Zynq"
             self.fpga_package = "FF"
             self.speed_grade = -2
+            self.ref_clock_min = 60000000
+            self.ref_clock_max = 670000000
+        elif name.lower() == "zcu102":
+            self.transciever_type = "GTH4"
+            self.fpga_family = "Zynq"
+            self.fpga_package = "FF"
+            self.speed_grade = -2
+            self.ref_clock_min = 60000000
+            self.ref_clock_max = 820000000
+        elif name.lower() == "vcu118":
+            # XCVU9P-L2FLGA2104
+            self.transciever_type = "GTY4"
+            self.fpga_family = "Virtex"
+            self.fpga_package = "FL"
+            self.speed_grade = -2
+            self.ref_clock_min = 60000000
+            self.ref_clock_max = 820000000
         else:
             raise Exception(f"No boardname found in library for {name}")
 
@@ -591,6 +611,8 @@ class xilinx(xilinx_bf):
         Raises:
             Exception: If solver is not valid
         """
+        if self.ref_clock_min == -1 or self.ref_clock_max == -1:
+            raise Exception("ref_clock_min or ref_clock_max not set")
         if "_get_converters" in dir(converter):
             converter = (
                 converter._get_converters()  # type: ignore

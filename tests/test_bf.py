@@ -488,6 +488,8 @@ def test_daq2_fpga_qpll_rxtx_zc706_config():
     fpga.fpga_family = "Zynq"
     fpga.fpga_package = "FF"
     fpga.speed_grade = -2
+    fpga.ref_clock_min = 60000000
+    fpga.ref_clock_max = 670000000
 
     refs = clk.list_possible_references(cfs[0])
     for ref in refs:
