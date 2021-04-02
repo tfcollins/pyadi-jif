@@ -3,7 +3,7 @@ name = "pyadi-jif"
 version = "0.0.1"
 description = "Python interface and configurator for ADI JESD Interface Framework"
 authors = ["Travis F. Collins <travis.collins@analog.com>"]
-license = "GPLv3"
+license = "EPL-2.0"
 readme = "README.rst"
 
 [tool.poetry.dependencies]
