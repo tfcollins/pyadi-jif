@@ -114,7 +114,6 @@ def tests(session):
         "pytest-mock",
         "gekko",
         "numpy",
-        "cplex",
         "docplex",
         "coverage[toml]",
     )
