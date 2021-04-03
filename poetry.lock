@@ -201,6 +201,14 @@ toml = {version = "*", optional = true, markers = "extra == \"toml\""}
 toml = ["toml"]
 
 [[package]]
+name = "cplex"
+version = "20.1.0.1"
+description = "A Python interface to the CPLEX Callable Library, Community Edition."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "darglint"
 version = "1.6.0"
 description = "A utility for ensuring Google-style docstrings stay up to date with the source code."
@@ -1248,7 +1256,7 @@ tests = ["pytest", "pytest-cov", "codecov", "scikit-build", "cmake", "ninja", "p
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "a4789bcbeee54e3f8c453ff0362c163988d071e0c4afd53ecc503bbf86163f16"
+content-hash = "cb68cf18624dff890b56491a49f558aa4be130bbb20f4e44fb843e088449c708"
 
 [metadata.files]
 apipkg = [
@@ -1369,6 +1377,16 @@ coverage = [
     {file = "coverage-5.4-pp36-none-any.whl", hash = "sha256:c0ff1c1b4d13e2240821ef23c1efb1f009207cb3f56e16986f713c2b0e7cd37f"},
     {file = "coverage-5.4-pp37-none-any.whl", hash = "sha256:cd601187476c6bed26a0398353212684c427e10a903aeafa6da40c63309d438b"},
     {file = "coverage-5.4.tar.gz", hash = "sha256:6d2e262e5e8da6fa56e774fb8e2643417351427604c2b177f8e8c5f75fc928ca"},
+]
+cplex = [
+    {file = "cplex-20.1.0.1-cp37-cp37m-macosx_10_6_x86_64.whl", hash = "sha256:c10ecedf112d2d97a70f980c0f5662cef2c6d3da57ed60b2796c8862e3402cd8"},
+    {file = "cplex-20.1.0.1-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:b341f3f4414f1a9427476cab4b6f58a241b0dd4fce9d1b1ab5f200f91298eaa6"},
+    {file = "cplex-20.1.0.1-cp37-cp37m-manylinux2014_ppc64le.whl", hash = "sha256:3bbb2fa9dcd10d243d450b0f287302b6df531a14c2e34d5cf4f8a0635abf748d"},
+    {file = "cplex-20.1.0.1-cp37-cp37m-win_amd64.whl", hash = "sha256:4377e5b83315e8c19cc41d354eeffcb6559b3edc1ff7e1e19ffed57b43351a54"},
+    {file = "cplex-20.1.0.1-cp38-cp38-macosx_10_6_x86_64.whl", hash = "sha256:c59c768b77e0b00dfe477c97c58bdb037744dcd9f99b17ce71501ca5bd97d5d8"},
+    {file = "cplex-20.1.0.1-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:93b2ec8316ca46b09a06a2288cc16aeb2e5523746ca927ffc239d1b14d95e233"},
+    {file = "cplex-20.1.0.1-cp38-cp38-manylinux2014_ppc64le.whl", hash = "sha256:0eae70931eb7ab7c229b7d7c3565352f02b0eac0a35425c38b0f83842a0640cb"},
+    {file = "cplex-20.1.0.1-cp38-cp38-win_amd64.whl", hash = "sha256:591b7dcbace5f23388e8c92e29d8c55324737ce5b0506b0bd6761d72e0b55c2a"},
 ]
 darglint = [
     {file = "darglint-1.6.0-py3-none-any.whl", hash = "sha256:c80849fd83a06d0bec3c93240360214cf56979691c6d18e2abb293aa404bf443"},
