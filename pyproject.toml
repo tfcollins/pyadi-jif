@@ -3,7 +3,7 @@ name = "pyadi-jif"
 version = "0.0.1"
 description = "Python interface and configurator for ADI JESD Interface Framework"
 authors = ["Travis F. Collins <travis.collins@analog.com>"]
-license = "GPLv3"
+license = "EPL-2.0"
 readme = "README.rst"
 
 [tool.poetry.dependencies]
@@ -11,8 +11,8 @@ python = "^3.8"
 gekko = "^0.2.8"
 numpy = "^1.20.1"
 virtualenv = "20.4.0"
-cplex = "^20.1.0"
 docplex = "^2.20.204"
+cplex = "^20.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.2"
@@ -46,6 +46,7 @@ xdoctest = "^0.15.4"
 codecov = "^2.1.11"
 pytest-xdist = "^2.2.1"
 commitizen = "^2.16.0"
+mike = "^0.6.0"
 
 [tool.coverage.paths]
 source = ["adijif"]

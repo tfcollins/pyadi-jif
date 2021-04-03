@@ -18,22 +18,8 @@ pyadi-jif
 
 
 
-Python interface and configurator for ADI JESD Interface Framework
+Python interface and configurator for the ADI JESD Interface Framework
 
 
-* Free software: BSD license
+* Eclipse Public License 2.0 license
 * Documentation: https://adijif.readthedocs.io.
-
-
-Features
---------
-
-* TODO
-
-Credits
--------
-
-This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
-
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
-.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage

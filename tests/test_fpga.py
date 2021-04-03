@@ -9,8 +9,6 @@ import adijif
 @pytest.mark.parametrize(
     "attr",
     [
-        "ref_clock_max",
-        "ref_clock_min",
         "vco_min",
         "vco_max",
         "vco0_min",
@@ -44,4 +42,13 @@ def test_jesd_wrong_order():
     )
     with pytest.raises(Exception, match=msg):
         f = adijif.xilinx()
+        f.ref_clock_min = 60000000
+        f.ref_clock_max = 670000000
         cn = f.get_required_clock_names()
+
+
+def test_ref_clock_not_set():
+    msg = "ref_clock_min or ref_clock_max not set"
+    with pytest.raises(Exception, match=msg):
+        f = adijif.xilinx()
+        cn = f.get_required_clocks([])

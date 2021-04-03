@@ -60,6 +60,7 @@ def test_fpga_cpll_solver(solver):
     sys.converter.Np = 16
     sys.converter.K = 32
     sys.converter.F = 1
+    sys.converter.HD = 1
 
     if 0:
         # cnv_config = type("AD9680", (), {})()
@@ -90,6 +91,7 @@ def test_fpga_cpll_cplex_solver():
     sys.converter.Np = 16
     sys.converter.K = 32
     sys.converter.F = 1
+    sys.converter.HD = 1
 
     if 0:
         # cnv_config = type("AD9680", (), {})()
@@ -125,6 +127,7 @@ def test_ad9680_all_clk_chips_solver(qpll, cpll, rate, clock_chip, solver):
     sys.converter.Np = 16
     sys.converter.K = 32
     sys.converter.F = 1
+    sys.converter.HD = 1
 
     sys.fpga.setup_by_dev_kit_name("zc706")
     sys.fpga.force_cpll = cpll
@@ -160,6 +163,7 @@ def test_ad9144_solver(solver):
     sys.converter.Np = 16
     sys.converter.K = 32
     sys.converter.F = 1
+    sys.converter.HD = 1
     sys.converter.use_direct_clocking = False
 
     assert sys.converter.S == 1
@@ -196,6 +200,7 @@ def test_daq2_split_rates_solver():
     sys.converter[0].Np = 16
     sys.converter[0].K = 32
     sys.converter[0].F = 1
+    sys.converter[0].HD = 1
 
     sys.converter[1].sample_clock = 1e9
     sys.converter[1].datapath_interpolation = 1

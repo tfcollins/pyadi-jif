@@ -64,10 +64,14 @@ def test_adc_clk_solver():
     sys.converter.datapath_decimation = 1
     sys.converter.L = 4
     sys.converter.M = 2
+    sys.converter.F = 1
+    sys.converter.HD = 1
+
     sys.converter.N = 14
     sys.converter.Np = 16
     sys.converter.K = 32
-    sys.converter.F = 1
+
+    assert sys.converter.S == 1
 
     cnv_clocks = sys.converter.get_required_clocks()
     names = ["a", "b"]
@@ -133,6 +137,7 @@ def test_sys_solver():
     sys.converter.Np = 16
     sys.converter.K = 32
     sys.converter.F = 1
+    sys.converter.HD = 1
 
     cnv_clocks = sys.converter.get_required_clocks()
 
@@ -238,6 +243,7 @@ def test_daq2_qpll_or_cpll():
     sys.converter.Np = 16
     sys.converter.K = 32
     sys.converter.F = 1
+    sys.converter.HD = 1
     sys.Debug_Solver = True
 
     # Get FPGA clocking requirements
@@ -263,6 +269,8 @@ def test_daq2_cpll():
     sys.converter.Np = 16
     sys.converter.K = 32
     sys.converter.F = 1
+    sys.converter.HD = 1
+
     sys.Debug_Solver = False
 
     # Get FPGA clocking requirements

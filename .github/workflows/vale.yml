@@ -18,6 +18,7 @@ jobs:
         vale -v
         cd .github/doc
         bash scripts/get_styles.sh
+        cp styles/GoogleUpdate/* styles/Google/
         cd ../..
     - name: Lint doc
       run: |

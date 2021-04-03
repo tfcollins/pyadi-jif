@@ -1,7 +1,44 @@
 """AD9680 high speed ADC clocking model."""
-from typing import List
+from typing import Dict, List, Union
 
 from adijif.converters.ad9680_bf import ad9680_bf
+
+
+def _convert_to_config(
+    L: Union[int, float],
+    M: Union[int, float],
+    F: Union[int, float],
+    S: Union[int, float],
+    HD: Union[int, float],
+    N: Union[int, float],
+    Np: Union[int, float],
+    CS: Union[int, float],
+) -> Dict:
+    # return {"L": L, "M": M, "F": F, "S": S, "HD": HD, "N": N, "Np": Np, "CS": CS}
+    return {"L": L, "M": M, "F": F, "S": S, "HD": HD, "Np": Np}
+
+
+quick_configuration_modes = {
+    # M = 1
+    str(0x01): _convert_to_config(1, 1, 2, 1, 0, -1, 16, -1),
+    str(0x40): _convert_to_config(2, 1, 1, 1, 1, -1, 16, -1),
+    str(0x41): _convert_to_config(2, 1, 2, 2, 0, -1, 16, -1),
+    str(0x80): _convert_to_config(4, 1, 1, 2, 1, -1, 16, -1),
+    str(0x81): _convert_to_config(4, 1, 2, 4, 0, -1, 16, -1),
+    # M = 2
+    str(0x0A): _convert_to_config(1, 2, 4, 1, 0, -1, 16, -1),
+    str(0x49): _convert_to_config(2, 2, 2, 1, 0, -1, 16, -1),
+    str(0x88): _convert_to_config(4, 2, 1, 1, 1, -1, 16, -1),
+    str(0x89): _convert_to_config(4, 2, 2, 2, 0, -1, 16, -1),
+    # M = 4
+    str(0x13): _convert_to_config(1, 4, 8, 1, 0, -1, 16, -1),
+    str(0x52): _convert_to_config(2, 4, 4, 1, 0, -1, 16, -1),
+    str(0x91): _convert_to_config(4, 4, 2, 1, 0, -1, 16, -1),
+    # M = 8
+    str(0x13): _convert_to_config(1, 8, 16, 1, 0, -1, 16, -1),
+    str(0x52): _convert_to_config(2, 8, 8, 1, 0, -1, 16, -1),
+    str(0x91): _convert_to_config(4, 8, 4, 1, 0, -1, 16, -1),
+}
 
 
 class ad9680(ad9680_bf):
@@ -31,6 +68,8 @@ class ad9680(ad9680_bf):
     link_min = 3.125e9
     link_max = 12.5e9
 
+    quick_configuration_modes = quick_configuration_modes
+
     # Input clock requirements
     available_input_clock_dividers = [1, 2, 4, 8]
     input_clock_divider = 1
@@ -44,6 +83,37 @@ class ad9680(ad9680_bf):
         baseband_sample_rate = (input_clock / input_clock_divider) / datapath_decimation
     """
     max_input_clock = 4e9
+
+    def set_quick_configuration_mode(self, mode: int) -> None:
+        """Set JESD configuration based on preset mode table. This does not set K or N.
+
+        Args:
+            mode (int): Integer of desired mode. See table 26 of datasheet
+
+        Raises:
+            Exception: Invalid mode selected
+        """
+        smode = str(mode)
+        if smode not in self.quick_configuration_modes.keys():
+            raise Exception("Mode {smode} not among configurations")
+        for jparam in self.quick_configuration_modes[smode]:
+            setattr(self, jparam, self.quick_configuration_modes[smode][jparam])
+
+    def _check_valid_jesd_mode(self) -> None:
+        """Verify current JESD configuration for part is valid.
+
+        Raises:
+            Exception: Invalid JESD configuration
+        """
+        self._check_jesd_config()
+        current_config = _convert_to_config(
+            self.L, self.M, self.F, self.S, self.HD, self.N, self.Np, self.CS
+        )
+        print("current_config", current_config)
+        for mode in self.quick_configuration_modes.keys():
+            if current_config == quick_configuration_modes[mode]:
+                return
+        raise Exception("Invalid JESD configuration")
 
     def get_required_clock_names(self) -> List[str]:
         """Get list of strings of names of requested clocks.
@@ -63,6 +133,7 @@ class ad9680(ad9680_bf):
         Returns:
             List: List of solver variables, equations, and constants
         """
+        self._check_valid_jesd_mode()
         # possible_sysrefs = []
         # for n in range(1, 10):
         #     r = self.multiframe_clock / (n * n)
