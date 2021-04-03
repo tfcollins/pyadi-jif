@@ -1,11 +1,18 @@
 """AD9680 high speed ADC clocking model."""
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from adijif.converters.ad9680_bf import ad9680_bf
 
 
 def _convert_to_config(
-    L: int, M: int, F: int, S: int, HD: int, N: int, Np: int, CS: int
+    L: Union[int, float],
+    M: Union[int, float],
+    F: Union[int, float],
+    S: Union[int, float],
+    HD: Union[int, float],
+    N: Union[int, float],
+    Np: Union[int, float],
+    CS: Union[int, float],
 ) -> Dict:
     # return {"L": L, "M": M, "F": F, "S": S, "HD": HD, "N": N, "Np": Np, "CS": CS}
     return {"L": L, "M": M, "F": F, "S": S, "HD": HD, "Np": Np}
@@ -86,10 +93,11 @@ class ad9680(ad9680_bf):
         Raises:
             Exception: Invalid mode selected
         """
-        if mode not in self.quick_configuration_modes.key():
-            raise Exception("Mode {} not among configurations")
-        for jparam in self.quick_configuration_modes[mode]:
-            setattr(self, jparam, self.quick_configuration_modes[mode][jparam])
+        smode = str(mode)
+        if smode not in self.quick_configuration_modes.keys():
+            raise Exception("Mode {smode} not among configurations")
+        for jparam in self.quick_configuration_modes[smode]:
+            setattr(self, jparam, self.quick_configuration_modes[smode][jparam])
 
     def _check_valid_jesd_mode(self) -> None:
         """Verify current JESD configuration for part is valid.
