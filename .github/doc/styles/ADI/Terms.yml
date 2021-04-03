@@ -11,4 +11,4 @@ level: error
 ignorecase: true
 swap:  
   libIIO: libiio
-  linux: Linux 
+  linux: Linux

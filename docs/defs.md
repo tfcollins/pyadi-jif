@@ -4,6 +4,8 @@ To better understand the system as a whole common definitions must be used betwe
 
 ### Link parameters
 
+<!-- vale off -->
+
 **E**
 : Number of multiblocks in an extended multiblock
 
@@ -31,18 +33,22 @@ To better understand the system as a whole common definitions must be used betwe
 **S**
 : Samples per converter per frame
 
+<!-- vale on -->
+
 ### Clocks
 
+<!-- vale off -->
 **frame_clock**
 : Frames per second $$ \text{frame clock} = \frac{\text{sample clock}}{S} $$. Clock rate at which samples are generated/processed. Has the same rate as the conversion clock, except for interpolating DACs or decimating DACs, where it is slower by the interpolation/decimation factor.
+<!-- vale on -->
 
 **sample clock**
 : Data rate in samples per second after decimation stages for ADCs or before interpolation stages for DACs. This is usually referred to as device clock
 
 **local multi-frame clock (LMFC)**
-: Clock which is equivalent to the link clock counts $$ lmfc = (F \times K/4) $$
+: Clock which is equivalent to the link clock counts $$ LMFC = (F \times K/4) $$
 
-**system reference (sysref) clock**
+**system reference (SYSREF) clock**
 : Clock used for synchronization in subclass 1 and subclass 2 configurations for deterministic latency. It is assumed to be aligned with the sample clock from the clock chip but with periods at integer multiples of the device clock.
 
 **character clock**

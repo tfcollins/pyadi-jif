@@ -1,10 +1,10 @@
 # FPGAs
 
-FPGA clock models focus upon the PLLs inside different FPGA variants which drive different transceivers that connect to data converters. Currently only certain Xilinx FPGA models are supported but more are being added. However, the configurations determined by **pyadi-jif** are in the context of the [ADI JESD Interface Framework](https://wiki.analog.com/resources/tools-software/linux-drivers/jesd204/jesd204-fsm-framework) and their related HDL cores. This is important since IP from different vendors will have different supported modes.
+FPGA clock models focus upon the PLLs inside different FPGA variants that drive different transceivers which connect to data converters. Currently, only specific Xilinx FPGA models are supported, but more are planned. However, the configurations determined by **pyadi-jif** are in the context of the [ADI JESD Interface Framework](https://wiki.analog.com/resources/tools-software/linux-drivers/jesd204/jesd204-fsm-framework) and their related HDL cores. This is important since IP from different vendors have different supported modes.
 
 The FPGA models are similar to converter models but they require converter objects to be passed to them for configuration. From the converter objects the FPGA classes can derive the dependent clocks and JESD configuration. Due to this limitation, FPGA classes cannot be used standalone like data converter or clock chip classes.
 
-The second primary limitation is that the FPGA hardware model must be known and set beforehand. The FPGA hardware model determines clock ranges, internal PLL limits, and transceiver constraints. Since these can vary widely, making the internal solvers directly determine supported FPGAs would be a very burdensome task. However, **pyadi-jif** could be called in a loop to validate or check against different FPGA hardware models.
+The second primary limitation is that the FPGA hardware model must be known and set beforehand. The FPGA hardware model determines clock ranges, internal PLL limits, and transceiver constraints. Since these can vary widely, making the internal solvers directly determine supported FPGAs would be a very burdensome task. However, **pyadi-jif** could be called in a loop to validate against different FPGA hardware models.
 
 !!! note "**pyadi-jif** is not endorsed or verified by Xilinx or Intel"
 
@@ -44,7 +44,7 @@ sys.fpga.force_cpll = 0
 sys.fpga.force_qpll = 0
 ```
 
-The solver will try to use the CPLL since it is more flexible architecturally. For more detail on the 7000 Series PLL architecture consult [ug476](https://www.xilinx.com/support/documentation/user_guides/ug476_7Series_Transceivers.pdf).
+The solver tries to use the CPLL since it is more flexible architecturally. For more detail on the 7000 Series PLL architecture consult [ug476](https://www.xilinx.com/support/documentation/user_guides/ug476_7Series_Transceivers.pdf).
 
 ### Current known limitations
 
