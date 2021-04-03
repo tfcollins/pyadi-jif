@@ -26,6 +26,25 @@ class jesd(metaclass=ABCMeta):
         self.Np = Np
         # self.S = S
 
+    def _check_jesd_config(self) -> None:
+        """Check if bit clock is within JESD limits based on supported standard.
+
+        Raises:
+            Exception: bit clock (lane rate) too high for JESD mode or invalid
+        """
+        if "jesd204c" in self.available_jesd_modes:
+            if self.bit_clock > 32e9:
+                raise Exception(
+                    "bit clock (lane rate) {self.bit_clock} too high for JESD204C"
+                )
+        elif "jesd204b" in self.available_jesd_modes:
+            if self.bit_clock > 12.5e9:
+                raise Exception(
+                    "bit clock (lane rate) {self.bit_clock} too high for JESD204B"
+                )
+        else:
+            raise Exception(f"JESD mode(s) {self.available_jesd_modes}")
+
     @property
     @abstractmethod
     def available_jesd_modes(self) -> List[str]:
@@ -40,12 +59,38 @@ class jesd(metaclass=ABCMeta):
 
     """ CS: Control bits per conversion sample 0-3"""
     _CS = 0
+    CS_possible = [0, 1, 2, 3]
+
+    @property
+    def CS(self) -> Union[int, float]:
+        """Get Control bits per conversion sample.
+
+        Returns:
+            int: Control bits per conversion sample
+        """
+        return self._CS
+
+    @CS.setter
+    def CS(self, value: int) -> None:
+        """Set Control bits per conversion sample.
+
+        Args:
+            value (int): Control bits per conversion sample
+
+        Raises:
+            Exception: CS not an integer or not in range
+        """
+        if int(value) != value:
+            raise Exception("CS must be an integer")
+        if value not in self.CS_possible:
+            raise Exception("CS not in range for device")
+        self._CS = value
 
     """ CF: Control word per frame clock period per link 0-32 """
     _CF = 0
 
     """ HD: High density mode """
-    _HD = 0
+    # _HD = 0
 
     # Encoding functions
 
@@ -216,6 +261,37 @@ class jesd(metaclass=ABCMeta):
             raise Exception("data_path_width must be an integer")
         self._data_path_width = value
 
+    """ HD: High-density mode (Single sample split over multiple lanes)"""
+    HD_min = 0
+    HD_max = 1
+    _HD = 0
+    HD_possible = [0, 1]
+
+    @property
+    def HD(self) -> Union[int, float]:
+        """Get High density mode.
+
+        Returns:
+            int: High density mode
+        """
+        return self._HD
+
+    @HD.setter
+    def HD(self, value: int) -> None:
+        """Set High density mode.
+
+        Args:
+            value (int): High density mode
+
+        Raises:
+            Exception: HD not an integer or not in range
+        """
+        if int(value) != value:
+            raise Exception("HD must be an integer")
+        if value not in self.HD_possible:
+            raise Exception("HD not in range for device")
+        self._HD = value
+
     """ K: Frames per multiframe
         17/F <= K <= 32
     """
@@ -267,9 +343,15 @@ class jesd(metaclass=ABCMeta):
 
         Returns:
             int: Samples per converter per frame
+
+        Raises:
+            Exception: S is not an integer, a clock must be invalid
         """
         # F == self.M * self.S * self.Np / (self.encoding_n * self.L)
-        return self.F / (self.M * self.Np) * self.encoding_n * self.L
+        s = self.F / (self.M * self.Np) * self.encoding_n * self.L
+        if float(int(s)) != float(s):
+            raise Exception("S is not an integer, a clock must be invalid")
+        return int(s)
 
     """ L: Lanes per link """
     L_min = 1
