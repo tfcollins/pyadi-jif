@@ -54,7 +54,9 @@ markdown_extensions:
       #   - name: mermaid
       #     class: mermaid
       #     format: !!python/name:mermaid2.fence_mermaid
-
+extra:
+  version:
+    provider: mike
 extra_css:
   - https://fastapi.tiangolo.com/css/termynal.css
   - https://fastapi.tiangolo.com/css/custom.css
