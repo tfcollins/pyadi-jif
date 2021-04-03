@@ -33,7 +33,7 @@ jobs:
         run: |
          pip install poetry==1.1.4
          poetry install --no-root
-         mike deploy --push master
+         poetry run mike deploy --push master
 
   deploy:
     name: Deploy docs
