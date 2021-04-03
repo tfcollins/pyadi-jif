@@ -17,8 +17,8 @@ jobs:
         export PATH="./bin:$PATH"
         vale -v
         cd .github/doc
-        cp styles/GoogleUpdate/* styles/Google/
         bash scripts/get_styles.sh
+        cp styles/GoogleUpdate/* styles/Google/
         cd ../..
     - name: Lint doc
       run: |
