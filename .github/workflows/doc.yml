@@ -17,6 +17,24 @@ jobs:
     - run: poetry install --no-root
     - run: poetry run mkdocs build
 
+  deploy_dev:
+    name: Deploy master docs
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Build and push doc
+        run: |
+         pip install poetry==1.1.4
+         poetry install --no-root
+         mike deploy --push master
+
   deploy:
     name: Deploy docs
     runs-on: ubuntu-latest
