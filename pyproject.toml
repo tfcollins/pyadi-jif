@@ -5,6 +5,9 @@ description = "Python interface and configurator for ADI JESD Interface Framewor
 authors = ["Travis F. Collins <travis.collins@analog.com>"]
 license = "EPL-2.0"
 readme = "README.rst"
+packages = [
+    { include = "adijif" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.8"
