@@ -11,7 +11,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.7"
-gekko = "^0.2.8"
+gekko = { version = "^0.2.8", optional = true }
 numpy = "^1.19.1"
 docplex = "^2.20.204"
 cplex = "^20.1.0"
