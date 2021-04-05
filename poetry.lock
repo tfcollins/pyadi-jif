@@ -1377,8 +1377,8 @@ gekko = ["gekko"]
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.7"
-content-hash = "77e6835c766c0d879af5a86d5ff457f9fc24ec3ffc701a30752c5f3b2e8b4e28"
+python-versions = "^3.7.9"
+content-hash = "7a6c060eba19b5fa765b3924de6c6391a38e0cf38bd5b3dac459c26410aa7a78"
 
 [metadata.files]
 apipkg = [

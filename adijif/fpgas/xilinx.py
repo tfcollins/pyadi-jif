@@ -377,13 +377,17 @@ class xilinx(xilinx_bf):
         out = []
         for config in self.configs:
             pll_config: Dict[str, Union[str, int, float]] = {}
-            if isinstance(config["qpll_0_cpll_1"], gekko.gk_variable.GKVariable):
-                pll = config["qpll_0_cpll_1"].value[0]
+            if self.solver == "gekko":
+                if isinstance(config["qpll_0_cpll_1"], GKVariable):
+                    pll = config["qpll_0_cpll_1"].value[0]
+                else:
+                    pll = config["qpll_0_cpll_1"].value
             elif self.solver == "CPLEX":
                 name = config["qpll_0_cpll_1"].get_name()
                 pll = solution.get_value(name)  # type: ignore
             else:
-                pll = config["qpll_0_cpll_1"].value
+                raise Exception(f"Unknown solver {self.solver}")
+
             if self.solver == "gekko":
                 if pll > 0:
                     pll_config["type"] = "cpll"
