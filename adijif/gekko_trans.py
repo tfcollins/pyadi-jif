@@ -3,12 +3,10 @@ from abc import ABCMeta
 from typing import List, Optional, Union
 
 import numpy as np
-from docplex.cp.expression import CpoExpr, CpoFunctionCall  # type: ignore
-from docplex.cp.model import binary_var, integer_var  # type: ignore
-from docplex.cp.solution import CpoSolveResult  # type: ignore
-from gekko import GEKKO  # type: ignore
-from gekko.gk_operators import GK_Intermediate, GK_Operators  # type: ignore
-from gekko.gk_variable import GKVariable  # type: ignore
+
+from adijif.solvers import (GEKKO, CpoExpr, CpoFunctionCall, CpoSolveResult,
+                            GK_Intermediate, GK_Operators, GKVariable,
+                            binary_var, integer_var)
 
 
 class gekko_translation(metaclass=ABCMeta):
