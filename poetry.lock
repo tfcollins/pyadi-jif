@@ -1372,10 +1372,13 @@ python-versions = ">=3.6"
 docs = ["sphinx", "jaraco.packaging (>=8.2)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pytest-cov", "pytest-enabler", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
+[extras]
+dev_tools = ["gekko"]
+
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "fce1b0e49696ff0140d8ed5ea3539a25f74230a6dc6fd06a3988451319ea1fda"
+content-hash = "2da7d28b26ed065c6bdfb0cada996e5f4ee07a3d91852fa7d0b7c22a8c0da407"
 
 [metadata.files]
 apipkg = [
