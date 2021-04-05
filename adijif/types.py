@@ -3,9 +3,8 @@
 from typing import Dict, Union
 
 import numpy as np
-from docplex.cp.model import CpoModel  # type: ignore
-from docplex.cp.model import integer_var  # type: ignore
-from gekko import GEKKO  # type: ignore # noqa: I100 flake8/isort conflict
+
+from adijif.solvers import GEKKO, CpoModel, integer_var  # type: ignore
 
 
 class range:

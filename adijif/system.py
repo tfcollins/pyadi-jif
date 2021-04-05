@@ -2,10 +2,9 @@
 from typing import Dict, List, Tuple, Union
 
 import numpy as np
-from docplex.cp.model import CpoModel  # type: ignore
-from gekko import GEKKO  # type: ignore
 
 import adijif  # noqa: F401
+import adijif.solvers as solvers
 from adijif.converters.converter import converter as convc
 from adijif.types import range as rangec
 
@@ -48,13 +47,18 @@ class system:
 
         Raises:
             Exception: Unknown solver
+            Exception: GEKKO Solver not installed
         """
         if solver:
             self.solver = solver
         if self.solver == "gekko":
-            model = GEKKO(remote=False)
+            if not solvers.gekko_solver:
+                raise Exception("GEKKO Solver not installed")
+            model = solvers.GEKKO(remote=False)
         elif self.solver == "CPLEX":
-            model = CpoModel()
+            if not solvers.cplex_solver:
+                raise Exception("CPLEX Solver not installed")
+            model = solvers.CpoModel()
         else:
             raise Exception(f"Unknown solver {self.solver}")
 

@@ -4,6 +4,7 @@ __author__ = """Travis F. Collins"""
 __email__ = "travis.collins@analog.com"
 __version__ = "0.0.1"
 
+import adijif.solvers
 from adijif.clocks.ad9523 import ad9523_1
 from adijif.clocks.ad9528 import ad9528
 from adijif.clocks.hmc7044 import hmc7044

@@ -1,10 +1,8 @@
 """AD9523-1 clock chip model."""
 from typing import Dict, List, Union
 
-from docplex.cp.expression import CpoIntVar  # type: ignore
-from docplex.cp.solution import CpoSolveResult  # type: ignore
-
 from adijif.clocks.ad9523_1_bf import ad9523_1_bf
+from adijif.solvers import CpoIntVar, CpoSolveResult
 
 
 class ad9523_1(ad9523_1_bf):

@@ -2,10 +2,8 @@
 from abc import ABCMeta, abstractmethod
 from typing import Dict, List, Union
 
-from docplex.cp.model import CpoModel, integer_var  # type: ignore
-from gekko import GEKKO  # type: ignore
-
 from adijif.converters.converter import converter
+from adijif.solvers import GEKKO, CpoModel, integer_var  # type: ignore
 
 
 class ad9081_core(converter, metaclass=ABCMeta):

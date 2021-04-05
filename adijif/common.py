@@ -1,8 +1,7 @@
 """Common class for all JIF components."""
 from typing import Union
 
-from docplex.cp.model import CpoModel  # type: ignore
-from gekko import GEKKO  # type: ignore
+from adijif.solvers import GEKKO, CpoModel
 
 
 class core:
