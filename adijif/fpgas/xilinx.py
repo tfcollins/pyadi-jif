@@ -3,9 +3,9 @@ from typing import Dict, List, Optional, Union
 
 from adijif.converters.converter import converter as conv
 from adijif.fpgas.xilinx_bf import xilinx_bf
-from adijif.solvers import (CpoIntVar, CpoSolveResult,  # type: ignore
-                            GK_Intermediate, GK_Operators, GKVariable, gekko,
-                            integer_var)
+from adijif.solvers import CpoSolveResult  # type: ignore
+from adijif.solvers import (CpoIntVar, GK_Intermediate, GK_Operators,
+                            GKVariable, gekko, integer_var)
 
 
 class xilinx(xilinx_bf):

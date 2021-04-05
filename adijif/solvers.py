@@ -28,6 +28,7 @@ try:
     gekko_solver = True
 except ImportError:
     gekko_solver = False
+    gekko = None
     GEKKO = None
     GK_Intermediate = None
     GK_Operators = None
