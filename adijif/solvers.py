@@ -1,7 +1,11 @@
+# flake8: noqa
+# pytype: skip-file
 """Common solver API management layer."""
+
 try:
     from docplex.cp.expression import CpoExpr  # type: ignore
-    from docplex.cp.expression import CpoFunctionCall, CpoIntVar
+    from docplex.cp.expression import CpoFunctionCall  # type: ignore
+    from docplex.cp.expression import CpoIntVar  # type: ignore
     from docplex.cp.model import binary_var  # type: ignore
     from docplex.cp.model import CpoModel, integer_var  # type: ignore
     from docplex.cp.solution import CpoSolveResult  # type: ignore
@@ -15,6 +19,7 @@ except ImportError:
     integer_var = None
 
 try:
+    import gekko  # type: ignore
     from gekko import GEKKO  # type: ignore
     from gekko.gk_operators import GK_Intermediate  # type: ignore
     from gekko.gk_operators import GK_Operators  # type: ignore
