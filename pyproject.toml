@@ -52,7 +52,7 @@ mike = "^0.6.0"
 mkdocs-macros-plugin = "^0.5.5"
 
 [tool.poetry.extras]
-dev_tools = ["gekko"]
+gekko = ["gekko"]
 
 [tool.coverage.paths]
 source = ["adijif"]
