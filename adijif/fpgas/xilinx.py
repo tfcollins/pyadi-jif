@@ -1,15 +1,11 @@
 """Xilinx FPGA clocking model."""
 from typing import Dict, List, Optional, Union
 
-import gekko  # type: ignore
-from docplex.cp.expression import CpoIntVar  # type: ignore
-from docplex.cp.model import integer_var  # type: ignore
-from docplex.cp.solution import CpoSolveResult  # type: ignore
-from gekko.gk_operators import GK_Intermediate, GK_Operators  # type: ignore
-from gekko.gk_variable import GKVariable  # type: ignore
-
 from adijif.converters.converter import converter as conv
 from adijif.fpgas.xilinx_bf import xilinx_bf
+from adijif.solvers import (CpoIntVar, CpoSolveResult,  # type: ignore
+                            GK_Intermediate, GK_Operators, GKVariable, gekko,
+                            integer_var)
 
 
 class xilinx(xilinx_bf):
