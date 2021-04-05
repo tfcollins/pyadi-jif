@@ -181,7 +181,7 @@ class system:
     def _solve_cplex(self) -> None:
         """Call CPLEX solver API."""
         # Set up solver
-        ll = "Quiet" if self.Debug_Solver else "Normal"
+        ll = "Normal" if self.Debug_Solver else "Quiet"
         self.solution = self.model.solve(LogVerbosity=ll)
 
     def solve(self) -> Dict:

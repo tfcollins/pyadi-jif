@@ -97,6 +97,8 @@ class ad9680(ad9680_bf):
         if smode not in self.quick_configuration_modes.keys():
             raise Exception("Mode {smode} not among configurations")
         for jparam in self.quick_configuration_modes[smode]:
+            if jparam == "S":
+                continue
             setattr(self, jparam, self.quick_configuration_modes[smode][jparam])
 
     def _check_valid_jesd_mode(self) -> None:
