@@ -109,7 +109,6 @@ class ad9680(ad9680_bf):
         current_config = _convert_to_config(
             self.L, self.M, self.F, self.S, self.HD, self.N, self.Np, self.CS
         )
-        print("current_config", current_config)
         for mode in self.quick_configuration_modes.keys():
             if current_config == quick_configuration_modes[mode]:
                 return

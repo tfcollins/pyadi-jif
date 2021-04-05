@@ -659,7 +659,7 @@ class xilinx(xilinx_bf):
                 if self.solver == "gekko":
                     self.model.Obj(-1 * config["qpll_0_cpll_1"])  # Favor CPLL over QPLL
                 elif self.solver == "CPLEX":
-                    print("FIXME LATER")
+                    # FIXME
                     # self.model.maximize(config["qpll_0_cpll_1"])
                     obs.append(-1 * config["qpll_0_cpll_1"])
                 else:
