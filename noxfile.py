@@ -9,7 +9,7 @@ from nox.sessions import Session
 nox.options.sessions = "lint", "mypy", "tests"
 
 locations = "adijif", "tests", "noxfile.py"
-main_python = "3.8"
+main_python = "3.7"
 multi_python_versions_support = ["3.8", "3.7"]
 package = "adijif"
 
