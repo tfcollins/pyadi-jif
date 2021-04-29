@@ -1,0 +1,21 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "13:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: pre-commit
+    versions:
+    - 2.11.1
+    - 2.12.0
+  - dependency-name: pytype
+    versions:
+    - 2021.3.10
+    - 2021.3.22
+    - 2021.4.1
+  - dependency-name: flake8-bugbear
+    versions:
+    - 21.3.2
